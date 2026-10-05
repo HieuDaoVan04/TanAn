@@ -1,0 +1,144 @@
+@* "Một sản phẩm của HieuDV" *@
+
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
+@using Service.Shared.Contracts.DTOs
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@using Service.Shared.Commons.Extensions
+@using Service.Shared.Commons.Interfaces
+@using Service.Shared.Commons.Models
+
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentIcon Value="@(new Icons.Regular.Size24.Info())" />
+        <FluentLabel Typo="Typography.PaneHeader">
+            @Dialog.Instance.Parameters.Title
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
+
+@if (!IsLoading)
+{
+    <FluentDialogBody>
+        <FluentGrid Class="s-form-view" Spacing="2" AdaptiveRendering="true" Justify="JustifyContent.FlexStart" Style="padding: 4px;">
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Tên đơn vị:</label>
+                    <div>@Item.Name</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Tên viết tắt:</label>
+                    <div>@(string.IsNullOrEmpty(Item.ShortName) ? "Chưa cập nhật" : Item.ShortName)</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Mã định danh:</label>
+                    <div>@(string.IsNullOrEmpty(Item.IdentifierCode) ? "Chưa cập nhật" : Item.IdentifierCode)</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Thứ tự sắp xếp:</label>
+                    <div>@Item.SortOrder</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Phân loại đơn vị:</label>
+                    <div>@SIConvert.GetEnumDescription(Item.UnitType)</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Nhóm đơn vị:</label>
+                    <div>@SIConvert.GetEnumDescription(Item.UnitGroup)</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="12">
+                <div>
+                    <label style="font-weight: 600">Mô tả:</label>
+                    <div>@(string.IsNullOrEmpty(Item.Description) ? "Chưa cập nhật" : Item.Description)</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Đơn vị trực thuộc:</label>
+                    <div>@(string.IsNullOrEmpty(Item.TenDonViTrucThuoc) ? "Không có" : Item.TenDonViTrucThuoc)</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Địa chỉ:</label>
+                    <div>@(string.IsNullOrEmpty(Item.Address) ? "Chưa cập nhật" : Item.Address)</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Email:</label>
+                    <div>@(string.IsNullOrEmpty(Item.Email) ? "Chưa cập nhật" : Item.Email)</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Số điện thoại:</label>
+                    <div>@(string.IsNullOrEmpty(Item.Phone) ? "Chưa cập nhật" : Item.Phone)</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="12">
+                <div>
+                    <label style="font-weight: 600">Avatar (URL):</label>
+                    <div>@(string.IsNullOrEmpty(Item.Avartar) ? "Chưa cập nhật" : Item.Avartar)</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Ngày tạo:</label>
+                    <div>@Item.Created.ToString("HH:mm:ss dd/MM/yyyy")</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Ngày sửa cuối:</label>
+                    <div>@Item.LastModified.ToString("HH:mm:ss dd/MM/yyyy")</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Trạng thái:</label>
+                    <div>@(Item.ModerationStatus != 0 ? "Chưa phê duyệt" : "Đã duyệt")</div>
+                </div>
+            </FluentGridItem>
+        </FluentGrid>
+    </FluentDialogBody>
+}
+else
+{
+    <FluentDialogBody>
+        <FluentProgressRing />
+    </FluentDialogBody>
+}
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync">Đóng</FluentButton>
+</FluentDialogFooter>

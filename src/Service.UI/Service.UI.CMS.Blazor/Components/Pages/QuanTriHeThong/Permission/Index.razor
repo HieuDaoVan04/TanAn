@@ -1,0 +1,95 @@
+@page "/quan-tri-he-thong/nguoi-dung-va-he-thong/permissions"
+@using Service.Shared.Commons.Model.SQL
+@using Service.Shared.Contracts.DTOs
+@using PermissionDto = Service.Shared.Contracts.DTOs.PermissionDto
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16" Style="width:100%">
+    <h2 style="margin: 0;">Danh sách quyền người dùng</h2>
+
+    <FluentCard MinimalStyle="true" Style="padding: 16px;">
+        <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between; align-items:center; width:100%" Class="page-toolbar">
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" Class="page-toolbar">
+                <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.SaveSync())"
+                              OnClick="SyncRole" Loading="@IsLoadingSync">
+                    Đồng bộ
+                </FluentButton>
+            </FluentStack>
+
+            <FluentSearch Style="width:320px"
+                          Placeholder="Nhập từ khóa..."
+                          @bind-Value="@SearchKeyword"
+                          Immediate="true"
+                          ImmediateDelay="1000" />
+        </FluentStack>
+    </FluentCard>
+
+    <FluentCard MinimalStyle="true" Style="padding: 0;">
+        <FluentTabs Style="margin-top:4px; width:100%; min-height:600px">
+            <!-- Tab 1: Cây quyền -->
+            <FluentTab Label="Cây" Icon="@(new Icons.Regular.Size24.LeafOne())" Id="tab-2">
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="12"
+                             Style="width:100%; padding:12px; max-height:75vh">
+                    <FluentTreeView Items="@PemissionTreeItem"
+                                    @bind-SelectedItem="@SelectedItem"
+                                    LazyLoadItems="true"
+                                    Style="width:100%; max-height:75vh; overflow-y:auto;">
+                        <ItemTemplate>
+                            @context.Text
+                        </ItemTemplate>
+                    </FluentTreeView>
+                </FluentStack>
+            </FluentTab>
+            <!-- Tab 2: Danh sách -->
+            <FluentTab Label="Danh sách" Icon="@(new Icons.Regular.Size24.List())" Id="tab-1">
+                <FluentDataGrid ShowHover="true" @ref="Grid" TGridItem="PermissionDto" ItemsProvider="LoadDatas" GridTemplateColumns="5% 35% 35% 15% 10%" RowSize="DataGridRowSize.Large" Style="width:100%;" Pagination="@pagination">
+
+                    <TemplateColumn Title="#" Sortable="false" Align="Align.Center" Style="display: flex;align-items: center;">
+                        @context.STT
+                    </TemplateColumn>
+                    <TemplateColumn Title="Mã quyền" Sortable="false" Align="Align.Center" Style="display: flex;align-items: center;">
+                        <span @onclick="@(() => OpenDetailsModal(context.Id))" style="cursor: pointer; color: dodgerblue;">
+                            @context.PermissionCode
+                        </span>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Tên quyền" Sortable="false" Align="Align.Center" Style="display: flex;align-items: center;">
+                        @context.PermissionName
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Trạng thái" Align="Align.Center" Sortable="false">
+                        <div style="display: flex; justify-content: center; align-items: center;">
+                            @if (context.ModerationStatus == ModerationStatus.Approved)
+                            {
+                                <FluentBadge Appearance="Appearance.Accent" Style="background-color: #16a34a; color: white;">Đã duyệt</FluentBadge>
+                            }
+                            else
+                            {
+                                <FluentBadge Appearance="Appearance.Neutral" Style="background-color: #e2e8f0; color: #475569;">Chưa phê duyệt</FluentBadge>
+                            }
+                        </div>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Thao tác" Style="display: flex; align-items: center; justify-content:space-between;">
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="5" Class="page-toolbar">
+                            @if (context.ModerationStatus == ModerationStatus.Approved)
+                            {
+                                <FluentButton Loading="@IsLoadingSync" Appearance="Appearance.Outline" OnClick="@(() => RejectAction(context.Id))">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" />
+                                </FluentButton>
+                            }
+                            else
+                            {
+                                <FluentButton Loading="@IsLoadingSync" Appearance="Appearance.Outline" OnClick="@(() => ApproveAction(context.Id))">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.Checkmark())" />
+                                </FluentButton>
+                            }
+                        </FluentStack>
+                    </TemplateColumn>
+                </FluentDataGrid>
+                <div style="margin-top: 12px;">
+                    <Paginator PaginationState="@pagination" />
+                </div>
+            </FluentTab>
+        </FluentTabs>
+    </FluentCard>
+</FluentStack>

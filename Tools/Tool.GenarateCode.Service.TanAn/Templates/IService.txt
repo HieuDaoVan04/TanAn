@@ -1,0 +1,60 @@
+// "Một sản phẩm của HieuDV"
+
+@cmt1@
+using Service.Shared.Commons.Model.Commons;
+using Service.Shared.Commons.Model.SQL;
+using Service.Shared.Commons.Querys.ModalQuery;
+using Service.Shared.Contracts.Portal.DTOs;
+using Service.Shared.Contracts.Portal.Forms;
+
+namespace Service.Portal.Application.Interfaces
+{
+    public interface I@Entity@Service
+    {
+        /// <summary>
+        /// Tạo mới bản ghi
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        Task<Guid> CreateAsync(@Entity@Form item);
+
+        /// <summary>
+        /// Xóa bản ghi
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        Task<bool> DeleteAsync(Guid Id);
+
+        /// <summary>
+        /// Cập nhất
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        Task<bool> UpdateAsync(Guid Id, @Entity@Form item);
+
+         /// <summary>
+        /// Get danh sách phân trang
+        /// </summary>
+        /// <param name="baseQuery"></param>
+        /// <returns></returns>
+        Task<DataTableJson> GetPaged(BaseQuery baseQuery);
+
+        /// <summary>
+        /// Get chi tiết theo ID
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        Task<@Entity@Dto> GetByIdAsync(Guid Id);
+
+         /// <summary>
+        /// Đổi trạng thái
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="moderationStatus"></param>
+        /// <returns></returns>
+        Task<bool> ChangeModerationStatusAsync(Guid id, ModerationStatus moderationStatus);
+    }
+}
+
+@cmt2@

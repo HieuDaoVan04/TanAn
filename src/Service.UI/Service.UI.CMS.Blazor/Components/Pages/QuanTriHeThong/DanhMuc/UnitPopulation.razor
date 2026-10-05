@@ -1,0 +1,47 @@
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Service.Shared.Contracts.DTOs
+<DataDialog Title="@($"Hộ và nhân khẩu — {Unit.Name}")" Close="Close" Busy="busy">
+    <div class="unit-toolbar">
+        <FluentButton Disabled="busy" Appearance="@(!people ? Appearance.Accent : Appearance.Outline)" OnClick="@(() => Switch(false))">Hộ gia đình</FluentButton>
+        <FluentButton Disabled="busy" Appearance="@(people ? Appearance.Accent : Appearance.Outline)" OnClick="@(() => Switch(true))">Nhân khẩu</FluentButton>
+        <FluentSearch Placeholder="Tên, mã hộ hoặc CCCD" @bind-Value="keyword" />
+        <FluentButton Disabled="busy" OnClick="Search">Tìm kiếm</FluentButton>
+    </div>
+    @if (error != null) { <p role="alert">@error</p> }
+    @if (busy) { <FluentProgressRing /> }
+    else
+    {
+        <p>@total.ToString("N0") @(people ? "nhân khẩu" : "hộ gia đình") thuộc đơn vị @Unit.Name</p>
+        <div class="unit-table">
+        @if (people)
+        {
+            <FluentDataGrid Items="residents.AsQueryable()" TGridItem="NhanKhauDto" RowSize="DataGridRowSize.Large" MultiLine="true">
+                <ChildContent>
+                <PropertyColumn Property="@(x => x.HoTen)" Title="Họ tên" />
+                <PropertyColumn Property="@(x => x.CCCD)" Title="CCCD" />
+                <TemplateColumn Title="Ngày sinh">@context.NgaySinh.ToString("dd/MM/yyyy")</TemplateColumn>
+                <PropertyColumn Property="@(x => x.QuanHeVoiChuHo)" Title="Quan hệ với chủ hộ" />
+                </ChildContent>
+                <EmptyContent>Không có nhân khẩu phù hợp.</EmptyContent>
+            </FluentDataGrid>
+        }
+        else
+        {
+            <FluentDataGrid Items="households.AsQueryable()" TGridItem="HoGiaDinhDto" RowSize="DataGridRowSize.Large" MultiLine="true">
+                <ChildContent>
+                <PropertyColumn Property="@(x => x.MaSoHo)" Title="Mã hộ" />
+                <PropertyColumn Property="@(x => x.TenChuHo)" Title="Chủ hộ" />
+                <PropertyColumn Property="@(x => x.DiaChi)" Title="Địa chỉ" />
+                <PropertyColumn Property="@(x => x.SoThanhVien)" Title="Nhân khẩu" />
+                </ChildContent>
+                <EmptyContent>Đơn vị chưa liên kết thôn hoặc chưa có hộ phù hợp.</EmptyContent>
+            </FluentDataGrid>
+        }
+        </div>
+        <div class="unit-toolbar">
+            <FluentButton Disabled="@(page <= 1)" OnClick="@(() => Move(-1))">Trang trước</FluentButton>
+            <span>Trang @(page) / @Math.Max(1, (int)Math.Ceiling(total / 20d)) · 20 bản ghi/trang</span>
+            <FluentButton Disabled="@(page * 20 >= total)" OnClick="@(() => Move(1))">Trang sau</FluentButton>
+        </div>
+    }
+</DataDialog>

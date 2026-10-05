@@ -1,0 +1,14 @@
+.moderation { 
+    display: inline-flex; 
+    align-items: center;
+    justify-content: center;
+    padding: 3px 10px; 
+    border-radius: 4px; 
+    font-size: 12px; 
+    font-weight: 500; 
+    white-space: nowrap; 
+}
+.approved { background: #0b63ce; color: #ffffff; }
+.pending { background: #f59e0b; color: #ffffff; }
+.rejected { background: #dc3545; color: #ffffff; }
+.draft { background: #6c757d; color: #ffffff; }

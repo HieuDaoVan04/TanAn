@@ -1,0 +1,13 @@
+.floating-assistant { position:fixed; bottom:20px; right:20px; z-index:1000; }
+.floating-toggle { display:flex; align-items:center; gap:10px; border:0; border-radius:28px; background:#b91c1c; color:white; padding:13px 20px; box-shadow:0 6px 24px #b91c1c40; font-size:14px; font-weight:700; cursor:pointer; }
+.floating-window { width:min(430px,calc(100vw - 32px)); height:min(650px,calc(100dvh - 40px)); box-shadow:0 12px 45px #0f172a33; border-radius:18px; overflow:hidden; background:white; border:1px solid #e2e8f0; }
+.floating-toolbar { height:42px; display:flex; justify-content:space-between; align-items:center; padding:0 16px; background:#fff; font-size:12px; }
+.floating-toolbar a { color:#b91c1c; text-decoration:none; }
+.floating-toolbar button { background:none; border:0; cursor:pointer; color:#475569; padding:5px 8px; }
+.floating-content { height:calc(100% - 42px); }
+.floating-content ::deep .assistant-chat { border:0; border-radius:0; min-height:0; }
+.floating-content ::deep .chat-header { padding:14px 16px 10px; }
+.floating-content ::deep h2 { font-size:17px; }
+.floating-content ::deep .chat-messages { padding:16px; }
+.floating-content ::deep .message { max-width:100%; }
+@media(max-width:600px) { .floating-assistant { bottom:12px; right:12px; } .floating-window { width:calc(100vw - 24px); height:calc(100dvh - 24px); } }

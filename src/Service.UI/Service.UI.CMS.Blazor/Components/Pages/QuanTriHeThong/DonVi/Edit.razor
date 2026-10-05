@@ -1,0 +1,93 @@
+@namespace Service.UI.Blazor.Components.Pages.QuanTriHeThong.DonVi
+@using Service.Shared.Commons.Interfaces.Extentions
+@using Service.Shared.Commons.Model.Commons
+@using Service.Shared.Commons.Model.ServiceCustomHttpClient
+@using Service.Shared.Commons.Querys.Grid
+@using Service.Shared.Commons.Querys.ModalQuery
+@using Service.Shared.Contracts.DTOs
+@using Service.Shared.Contracts.Forms
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+<FluentDialogHeader ShowDismiss="true">
+    @{
+        string title = Content.IsEditMode ? "Cập nhật thông tin" : "Thêm mới";
+        <h3>@title</h3>
+    }
+</FluentDialogHeader>
+<EditForm Model="GroupForm" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <FluentMessageBar Title="Lỗi" Intent="@MessageIntent.Error">
+            @ErrorMessage
+        </FluentMessageBar>
+    }
+    <FluentStack Orientation="Orientation.Vertical" Style="gap: 10px;">
+        <FluentTextField Label="Tên đơn vị/hệ thống"
+                         @bind-Value="GroupForm.Name"
+                         Placeholder="Nhập tên đơn vị/hệ thống"
+                         Style="width: 100%;" />
+        <ValidationMessage style="color:red" For="@(() => GroupForm.Name)" />
+
+        <FluentTextField Label="Mã đơn vị/hệ thống"
+                         @bind-Value="GroupForm.MaGroup"
+                         Placeholder="Nhập tên đơn vị/hệ thống"
+                         Style="width: 100%;" />
+        <ValidationMessage style="color:red" For="@(() => GroupForm.MaGroup)" />
+
+        <label style="display: block; margin-bottom: 4px; font-size: var(--type-ramp-base-font-size);">
+            Đơn vị trực thuộc
+        </label>
+        <div style="margin-bottom: 4px; font-size: var(--type-ramp-minus-1-font-size); color: var(--neutral-foreground-hint);">
+            Để trống nếu đây là một đơn vị Chọn đơn vị cha nếu đây là hệ thống trực thuộc đơn vị.
+        </div>
+
+        <FluentAutocomplete TOption="GroupDto"
+                            ImmediateDelay="250"
+                            AutoComplete="off"
+                            Autofocus="true"
+                            OnOptionsSearch="OnSearchHeThongCha"
+                            Placeholder="Gõ để tìm đơn vị..."
+                            Multiple=false
+                            OptionText="@(item => $"{item.Name}")"
+                            @bind-SelectedOption="@HeThongChaDaChon" />
+
+        @* Quota chỉ áp dụng cho đơn vị, hệ thống không có quota. *@
+        @if (LaDonVi)
+        {
+            <FluentNumberField Label="Quota/Ngày (Limit số lượt request)"
+                            @bind-Value="GroupForm.Quota"
+                            Style="width: 100%;" />
+        }
+
+
+        <FluentTextArea Label="Mô tả"
+                        @bind-Value="GroupForm.Description"
+                        Placeholder="Nhập mô tả"
+                        Style="width: 100%;" />
+
+        <FluentDialogFooter>
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.Right" Style="gap: 10px;" Class="page-toolbar">
+                <FluentButton Appearance="Appearance.Neutral"
+                              @onclick="CloseModal"
+                              Disabled="@isSaving">
+                    Hủy
+                </FluentButton>
+                <FluentButton Appearance="Appearance.Accent"
+                              Type="ButtonType.Submit"
+                              Disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span style="margin-left: 8px;">Đang lưu...</span>
+                    }
+                    else
+                    {
+                        <span>Lưu</span>
+                    }
+                </FluentButton>
+            </FluentStack>
+        </FluentDialogFooter>
+
+    </FluentStack>
+</EditForm>

@@ -1,0 +1,126 @@
+@page "/quan-tri-he-thong/nguoi-dung-va-he-thong/theo-doi-he-thong"
+@using Service.Shared.Contracts.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<PageTitle>Theo dõi hệ thống - Xã Tân An</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="14" Style="width:100%">
+    <div class="monitor-header">
+        <div>
+            <h2>Theo dõi hệ thống</h2>
+            <p>Theo dõi các thao tác phát sinh trong hệ thống, người thực hiện, đối tượng bị tác động và địa chỉ IP.</p>
+        </div>
+    </div>
+
+    <FluentCard MinimalStyle="true" Class="monitor-filter-card">
+        <div class="monitor-filter-grid">
+            <div class="monitor-search">
+                <label>Tìm kiếm</label>
+                <FluentSearch Placeholder="Cán bộ, hành động, đối tượng, mã định danh hoặc IP..."
+                              @bind-Value="SearchKeyword"
+                              Immediate="true"
+                              Style="width:100%" />
+            </div>
+
+            <div>
+                <label>Từ ngày</label>
+                <FluentDatePicker @bind-Value="TuNgay"
+                                  Style="width:100%"
+                                  Culture="@customCulture"
+                                  Placeholder="Từ ngày" />
+            </div>
+
+            <div>
+                <label>Đến ngày</label>
+                <FluentDatePicker @bind-Value="DenNgay"
+                                  Style="width:100%"
+                                  Culture="@customCulture"
+                                  DisabledDateFunc="date => DisableDatesForDenNgay(date)"
+                                  Placeholder="Đến ngày" />
+            </div>
+
+            <div class="monitor-filter-actions">
+                <FluentButton Appearance="Appearance.Accent"
+                              IconStart="@(new Icons.Regular.Size20.Search())"
+                              OnClick="RefreshGrid">
+                    Tìm kiếm
+                </FluentButton>
+                <FluentButton Appearance="Appearance.Outline"
+                              IconStart="@(new Icons.Regular.Size20.ArrowSync())"
+                              OnClick="ResetFilters">
+                    Đặt lại
+                </FluentButton>
+            </div>
+        </div>
+    </FluentCard>
+
+    <FluentCard MinimalStyle="true" Class="monitor-table-card">
+        <div class="monitor-table-heading">
+            <div>
+                <h3>Nhật ký hoạt động</h3>
+                <span>Bản ghi mới nhất được hiển thị trước.</span>
+            </div>
+        </div>
+
+        <div class="monitor-grid-scroll">
+            <FluentDataGrid ShowHover="true" @ref="Grid"
+                            TGridItem="LogHeThongDto"
+                            ItemsProvider="LoadData"
+                            GridTemplateColumns="50px 170px 170px minmax(220px,1.3fr) 170px 220px 150px 110px"
+                            RowSize="DataGridRowSize.Large"
+                            Style="min-width:1260px; width:100%;"
+                            Pagination="@pagination"
+                            MultiLine="true"
+                            RowStyle="@(item => "min-height: 62px;")">
+                <ChildContent>
+                    <TemplateColumn Title="#" Sortable="false" Align="Align.Center">
+                        <div class="cell-center">@context.STT</div>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Thời gian" Sortable="false">
+                        <div class="cell-main">@context.Created.ToString("dd/MM/yyyy HH:mm:ss")</div>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Người thao tác" Sortable="false">
+                        <div class="cell-user">@DisplayValue(context.UserName)</div>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Hành động" Sortable="false">
+                        <FluentBadge Appearance="Appearance.Neutral" Style="@ActionStyle(context.Action)">
+                            @DisplayValue(context.Action)
+                        </FluentBadge>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Đối tượng" Sortable="false">
+                        <div class="cell-main">@DisplayValue(context.EntityName)</div>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Mã định danh" Sortable="false">
+                        <div class="cell-code" title="@context.EntityId">@DisplayValue(context.EntityId)</div>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Địa chỉ IP" Sortable="false">
+                        <div class="cell-ip">@DisplayValue(context.ClientIP)</div>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Chi tiết" Sortable="false" Align="Align.Center">
+                        <FluentButton Appearance="Appearance.Stealth"
+                                      OnClick="@(() => OpenViewModal(context.Id))">
+                            Xem
+                        </FluentButton>
+                    </TemplateColumn>
+                </ChildContent>
+
+                <EmptyContent>
+                    <div class="monitor-empty">
+                        Không có dữ liệu phù hợp với bộ lọc hiện tại.
+                    </div>
+                </EmptyContent>
+            </FluentDataGrid>
+        </div>
+
+        <div class="monitor-pagination">
+            <Paginator PaginationState="@pagination" />
+        </div>
+    </FluentCard>
+</FluentStack>

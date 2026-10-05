@@ -1,0 +1,47 @@
+# .NET build output and IDE state
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Local build and verification output
+/.codex-build/
+/artifacts/
+*.log
+
+# Local databases and SQLite sidecar files
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
+*.db-shm
+*.db-wal
+
+# Local configuration containing credentials
+/src/Service.TanAn/Service.TanAn.API/appsettings.json
+/src/Service.UI/Service.UI.CMS.Blazor/appsettings.json
+appsettings.Local.json
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+
+# Dependency caches and Python bytecode
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Temporary document files and generated report previews
+~$*
+/doi_chieu_quy_dinh/qa_v1/
+/doi_chieu_quy_dinh/qa_v2/
+/doi_chieu_quy_dinh/qa_final/
+/doi_chieu_quy_dinh/report_render/
+/doi_chieu_quy_dinh/report_v[123].pdf

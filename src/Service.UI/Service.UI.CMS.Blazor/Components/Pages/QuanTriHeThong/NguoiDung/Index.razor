@@ -1,0 +1,96 @@
+@page "/quan-tri-he-thong/nguoi-dung"
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Service.UI.CMS.Blazor.Components.Pages.QuanTriHeThong.DanhMuc
+@using System.Text.Json
+@using Service.Shared.Commons.Models
+@using Service.Shared.Contracts.DTOs
+@using Service.UI.CMS.Blazor.Applications
+@using Microsoft.FluentUI.AspNetCore.Components
+
+@inject ModuleTypeState MenuState
+
+<PageTitle>@Title - Tân An</PageTitle>
+<section class="admin-workspace">
+    <h2>@Title</h2>
+    @if (!string.IsNullOrEmpty(error)) { <p class="error" role="alert">@error</p> }
+    @if (!string.IsNullOrEmpty(message)) { <p class="message" role="status">@message</p> }
+    @if (!CurrentUser.IsAuthenticated || CurrentUser.Role != "Admin") { <p>Bạn chưa có quyền quản trị.</p> }
+    else
+    {
+        <div class="toolbar">
+            <div class="toolbar-actions">
+                <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.AddCircle())" OnClick="New" Disabled="busy">Thêm mới</FluentButton>
+                <FluentButton Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.ArrowSync())" OnClick="Reload" Disabled="busy">Tải lại</FluentButton>
+
+            </div>
+            <div class="toolbar-filters">
+                <FluentSearch Placeholder="Nhập vào từ khóa" aria-label="Tìm kiếm" @bind-Value="search" @bind-Value:after="ResetPage" />
+                <select aria-label="Lọc trạng thái" @bind="status" @bind:after="ResetPage"><option value="all">Tất cả trạng thái</option><option value="active">Đã duyệt / đang sử dụng</option><option value="inactive">Chưa duyệt / ngừng dùng</option></select>
+            </div>
+        </div>
+
+        @if (loading) { <FluentProgressRing /> }
+
+        else
+        {
+            <div class="table-scroll">
+                <FluentDataGrid Items="FilteredRecords" TGridItem="AdminRecord" Pagination="pagination" GridTemplateColumns="@GridColumns" ShowHover="true" RowSize="DataGridRowSize.Large" MultiLine="true" Style="width:100%;">
+                    <ChildContent>
+                    <TemplateColumn Title="#"><span>@(records.IndexOf(context) + 1)</span></TemplateColumn>
+                    <TemplateColumn Title="@NameColumnTitle"><button class="text-button" @onclick="() => View(context)">@context.Name</button></TemplateColumn>
+                    <PropertyColumn Property="@(x => x.Code)" Title="Tên tài khoản" Sortable="true" />
+
+                        <PropertyColumn Property="@(x => x.Email)" Title="Email" />
+                        <PropertyColumn Property="@(x => x.Phone)" Title="Số điện thoại" />
+                        <TemplateColumn Title="Vai trò">@foreach (var id in context.AssignedIds) { <span class="role-badge">@RoleName(id)</span> }</TemplateColumn>
+
+                    <TemplateColumn Title="Trạng thái">@if(context.ModerationStatus.HasValue) { <ModerationView Status="context.ModerationStatus.Value" /> } else { <span class="badge @(context.Active ? "active" : "inactive")">@(context.Active ? "Đang sử dụng" : "Ngừng sử dụng")</span> }</TemplateColumn>
+                    <TemplateColumn Title="Thao tác"><div class="actions"><AdminRowActions Item="context" Kind="AdminCatalog.Users" Busy="busy" OnView="View" OnEdit="Edit" OnStatus="ChangeStatus" OnDelete="@(record => pendingDelete = record)" /></div></TemplateColumn>
+                    </ChildContent>
+                    <EmptyContent><p class="empty-state">Không có bản ghi phù hợp.</p></EmptyContent>
+                </FluentDataGrid>
+            </div>
+            <Paginator PaginationState="@pagination" />
+        }
+        @if (pendingDelete != null)
+        {
+            <DataDialog Title="Xác nhận xóa" Busy="busy" Close="@(() => pendingDelete = null)"><p>Xóa “@pendingDelete.Name”? Thao tác này không thể hoàn tác.</p><div class="dialog-actions"><FluentButton Appearance="Appearance.Accent" Disabled="busy" OnClick="Delete">Xác nhận xóa</FluentButton><FluentButton Disabled="busy" OnClick="() => pendingDelete = null">Hủy</FluentButton></div></DataDialog>
+        }
+        @if (form != null)
+        {
+            <FluentDialog Modal="true" TrapFocus="true" Hidden="false" Style="--dialog-width:min(820px, calc(100vw - 32px)); --dialog-height:auto;" aria-labelledby="editor-title"><section class="editor">
+                <div class="editor-heading"><h3 id="editor-title">@(viewOnly ? "Xem chi tiết" : form.Id == Guid.Empty ? "Thêm mới" : "Chỉnh sửa") — @NameColumnTitle</h3><FluentButton Appearance="Appearance.Stealth" Title="Đóng" aria-label="Đóng" OnClick="Close" Disabled="busy" IconStart="@(new Icons.Regular.Size20.Dismiss())" /></div>
+                @if (!string.IsNullOrEmpty(error)) { <p class="error" role="alert">@error</p> }
+                <EditForm Model="form" OnSubmit="Save"><fieldset disabled="@(busy || viewOnly)" class="form-grid">
+                     <label>Tên tài khoản *<InputText @bind-Value="form.Code" /></label> 
+
+                        <label>Cấp quyền<InputSelect @bind-Value="form.AccountRole"><option value="Admin">Quản trị xã</option><option value="CanBoXa">Cán bộ xã</option><option value="CanBoThon">Phụ trách thôn</option><option value="NguoiDan">Người dân</option></InputSelect></label>
+                        @if (form.AccountRole == Service.TanAn.Domain.Enums.RoleEnum.CanBoThon)
+                        {
+                            <div class="full-width"><strong>Thôn được giao quản lý</strong><p>Có quyền nghiệp vụ dân cư, an sinh và hồ sơ trong các thôn được chọn.</p>
+                            @foreach(var village in villageOptions) { <label class="village-assignment"><input type="checkbox" checked="@form.VillageIds.Contains(village.Id)" @onchange="e => SetVillage(village.Id, (bool)e.Value!)" />@village.Ten</label> }
+                            </div>
+                        }
+
+                     <label>Tên *<InputText @bind-Value="form.Name" /></label> 
+
+                        <label>Email<InputText @bind-Value="form.Email" type="email" /></label>
+                        <label>Số điện thoại<InputText @bind-Value="form.Phone" /></label>
+                        <label>@(form.Id == Guid.Empty ? "Mật khẩu (theo chính sách hệ thống)" : "Mật khẩu mới (để trống nếu giữ nguyên)")<InputText @bind-Value="form.Password" type="password" autocomplete="new-password" /></label>
+
+                    <label class="check"><InputCheckbox @bind-Value="form.Active" /> Đã duyệt / đang sử dụng</label>
+
+                        <h3>Vai trò được gán</h3>
+                        <div class="assignments">
+                            @foreach (var option in assignmentOptions)
+                            {
+                                <label class="check"><input type="checkbox" checked="@form.AssignedIds.Contains(option.Id)" @onchange="e => SetAssignment(option.Id, e.Value is true)" />@option.Name <small>@option.Path</small></label>
+                            }
+                            @if (assignmentOptions.Count == 0) { <p>Chưa có dữ liệu để gán.</p> }
+                        </div>
+
+                    </fieldset><div class="editor-actions">@if (!viewOnly) { <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Disabled="busy" IconStart="@(new Icons.Regular.Size20.Save())">Lưu</FluentButton> }<FluentButton Type="ButtonType.Button" Disabled="busy" OnClick="Close">@(viewOnly ? "Đóng" : "Hủy")</FluentButton></div></EditForm>
+            </section></FluentDialog>
+        }
+    }
+</section>

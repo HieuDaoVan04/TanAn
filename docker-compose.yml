@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  tanan.api:
+    image: tanan-api:latest
+    container_name: tanan_api
+    build:
+      context: .
+      dockerfile: TanAn.Api/Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - PORT=5000
+    restart: always
+
+  tanan.ui.blazor:
+    image: tanan-ui-blazor:latest
+    container_name: tanan_ui_blazor
+    build:
+      context: .
+      dockerfile: TanAn.UI.Blazor/Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - PORT=3003
+    depends_on:
+      - tanan.api
+    restart: always

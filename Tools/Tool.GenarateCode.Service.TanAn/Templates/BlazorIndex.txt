@@ -1,0 +1,51 @@
+@page "/danh-muc-dung-chung/....."
+@using Service.Shared.Contracts.Portal.DTOs;
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+    <h2>Danh sách XXXXXX</h2>
+
+    <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between">
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10">
+             <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.AddCircle())" OnClick="OpenAddModal" Loading="@IsLoadingSync">Thêm mới</FluentButton>
+        </FluentStack>
+        <FluentSearch style="width:300px" Placeholder="Nhập vào từ khóa" @bind-Value="@SearchKeyword" @bind-Value:after=HandleSearchChanged />
+    </FluentStack>
+
+    <FluentDataGrid ShowHover="true" @ref="Grid" TGridItem="@Entity@Dto" ItemsProvider="LoadDatas" GridTemplateColumns="5fr 25fr 45fr 5fr 10fr" RowSize="DataGridRowSize.Large" Style="width:100%;" Pagination="@pagination">
+
+        <TemplateColumn Title="#" Sortable="false" Style="display: flex;align-items: center;">
+             @context.STT
+        </TemplateColumn>
+
+         <TemplateColumn Title="Trạng thái" Sortable="false" SortBy="@_roleNameSort" Style="display: flex;align-items: center;">
+           <ModerationView Status="@context.ModerationStatus" />
+        </TemplateColumn>
+
+
+        <TemplateColumn Title="Thao tác" Style="display: flex; align-items: center; justify-content:space-between;">
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="5">
+
+                @if (context.ModerationStatus == 0)
+                {
+                    <FluentButton Loading="@IsLoadingSync" Appearance="Appearance.Outline" OnClick="@(() => RejectAction(context.Id))">
+                        <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" />
+                    </FluentButton>
+                }
+                else
+                {
+                    <FluentButton Loading="@IsLoadingSync" Appearance="Appearance.Outline" OnClick="@(() => ApproveAction(context.Id))">
+                        <FluentIcon Value="@(new Icons.Regular.Size16.Checkmark())" />
+                    </FluentButton>
+                    
+                    <FluentButton Loading="@IsLoadingSync" Appearance="Appearance.Outline" OnClick="@(() => EditAction(context.Id))">
+                        <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" />
+                    </FluentButton>
+                    <FluentButton Title="Xóa" Appearance="Appearance.Outline" OnClick="()=>OpenModalDelete(context.Id)">
+                       <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" />
+                   </FluentButton>
+                }
+                
+            </FluentStack>
+        </TemplateColumn>
+    </FluentDataGrid>
+    <Paginator PaginationState="@pagination" SelectedPageSizeChanged="RefreshData" />
+</FluentStack>

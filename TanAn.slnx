@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/Service.TanAn/">
+    <Project Path="src/Service.TanAn/Service.TanAn.API/Service.TanAn.API.csproj" />
+    <Project Path="src/Service.TanAn/Service.TanAn.Application/Service.TanAn.Application.csproj" />
+    <Project Path="src/Service.TanAn/Service.TanAn.Domain/Service.TanAn.Domain.csproj" />
+    <Project Path="src/Service.TanAn/Service.TanAn.Infrastructure/Service.TanAn.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Service.Shared/">
+    <Project Path="src/Service.Shared/Service.Shared.Commons/Service.Shared.Commons.csproj" />
+    <Project Path="src/Service.Shared/Service.Shared.Contracts/Service.Shared.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Service.UI/">
+    <Project Path="src/Service.UI/Service.UI.CMS.Blazor/Service.UI.CMS.Blazor.csproj" />
+  </Folder>
+  <Folder Name="/Tools/">
+    <Project Path="Tools/Tool.GenarateCode.Service.TanAn/Tool.GenarateCode.Service.TanAn.csproj" />
+  </Folder>
+</Solution>

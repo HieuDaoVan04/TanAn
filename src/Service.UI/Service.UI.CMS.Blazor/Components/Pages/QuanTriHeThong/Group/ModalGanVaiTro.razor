@@ -1,0 +1,174 @@
+@* "Một sản phẩm của HieuDV" *@
+
+@using Service.Shared.Contracts.DTOs
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
+@using Service.Shared.Commons.Extensions
+
+@inherits ComponentBase
+@implements IDialogContentComponent<GanVaiTroParametersDto>
+
+<FluentDialogHeader>
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentIcon Value="@(new Icons.Regular.Size24.PersonAccounts())" />
+        <FluentLabel Typo="Typography.PaneHeader">
+            Phân quyền người dùng
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
+
+<FluentDialogBody>
+    <FluentGrid Class="s-form-view" Spacing="2" AdaptiveRendering="true" Justify="JustifyContent.FlexStart" Style="padding: 4px;">
+        <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between" Class="page-toolbar">
+            <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between; align-items:flex-end;" Class="page-toolbar">
+                <FluentStack Orientation="Orientation.Vertical">
+                    <FluentSelect TOption="ChuyenTrangDto"
+                                  Label="Chuyên trang đã được phân"
+                                  Items="@DanhSachChuyenTrang"
+                                  OptionText="@(x => x.Name)"
+                                  OptionValue="@(x => x.Id.ToString())"
+                                  Value="@SelectedChuyenTrang?.Id.ToString()"
+                                  SelectedOptionChanged="OnChuyenTrangChanged"
+                                  Style="min-width: 220px;" />
+                </FluentStack>
+
+                <FluentButton Appearance="Appearance.Accent"
+                              OnClick="OpenPhanChuyenTrangModal"
+                              Title="Phân chuyên trang cho người dùng">
+                    Phân chuyên trang
+                </FluentButton>
+            </FluentStack>
+        </FluentStack>
+        @if (SelectedChuyenTrang != null)
+        {
+            <!-- Vai trò -->
+            <FluentGridItem md="6" xs="12">
+                <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;" Class="page-toolbar">
+                    <h4 style="margin: 0;">Danh sách Vai trò</h4>
+                    @if (IsAllChuyenMucSelected)
+                    {
+                        <FluentButton Appearance="Appearance.Stealth"
+                                      IconStart="@(new Icons.Regular.Size16.CheckboxUnchecked())"
+                                      OnClick="ToggleAllVaiTro"
+                                      Title="Bỏ chọn tất cả">
+                            Bỏ chọn tất cả
+                        </FluentButton>
+                    }
+                    else
+                    {
+                        <FluentButton Appearance="Appearance.Stealth"
+                                      IconStart="@(new Icons.Regular.Size16.CheckboxChecked())"
+                                      OnClick="ToggleAllVaiTro"
+                                      Title="Chọn/Bỏ chọn tất cả">
+                            Chọn tất cả
+                        </FluentButton>
+                    }
+                </FluentStack>
+                <div style="max-height:400px;min-height:400px; overflow-y:auto; border:1px solid #ddd; padding:4px;">
+                    @if (DanhSachVaiTro?.Any() == true)
+                    {
+                        <FluentStack Orientation="Orientation.Vertical" Style="gap: 8px; padding: 8px;">
+                            @foreach (var vaiTro in DanhSachVaiTro)
+                            {
+                                <div style="display:flex; align-items:center; gap:6px; padding: 4px; border-bottom: 1px solid #f0f0f0;">
+                                    <FluentCheckbox Value="@vaiTro.DaGan"
+                                                    ValueChanged="@((bool val) => OnVaiTroCheckedChanged(vaiTro, val))" />
+                                    <span>@vaiTro.RoleName</span>
+                                </div>
+                            }
+                        </FluentStack>
+                    }
+                    else
+                    {
+                        <FluentMessageBar Intent="MessageIntent.Info">
+                            Không có vai trò nào để hiển thị
+                        </FluentMessageBar>
+                    }
+                </div>
+            </FluentGridItem>
+            <FluentGridItem md="6" xs="12">
+                <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;" Class="page-toolbar">
+                    <h4 style="margin: 0;">Danh sách Chuyên mục</h4>
+                    @if (IsAllChuyenMucSelected)
+                    {
+                        <FluentButton Appearance="Appearance.Stealth"
+                                      IconStart="@(new Icons.Regular.Size16.CheckboxUnchecked())"
+                                      OnClick="ToggleAllChuyenMuc"
+                                      Title="Bỏ chọn tất cả">
+                            Bỏ chọn tất cả
+                        </FluentButton>
+                    }
+                    else
+                    {
+                        <FluentButton Appearance="Appearance.Stealth"
+                                      IconStart="@(new Icons.Regular.Size16.CheckboxChecked())"
+                                      OnClick="ToggleAllChuyenMuc"
+                                      Title="Chọn/Bỏ chọn tất cả">
+                            Chọn tất cả
+                        </FluentButton>
+                    }
+                </FluentStack>
+                <div style="max-height:400px;min-height:400px; overflow-y:auto; border:1px solid #ddd; padding:4px;">
+                    @if (ChuyenMucTreeData?.Any() == true)
+                    {
+                        <FluentTreeView Items="@ChuyenMucTreeData" LazyLoadItems="false">
+                            <ItemTemplate Context="item">
+                                @{
+                                    var dto = item as TreeViewItemDTO;
+                                    var chuyenMucId = Guid.Parse(dto?.Id ?? Guid.Empty.ToString());
+                                    var isChecked = SelectedChuyenMucIds.Contains(chuyenMucId);
+                                }
+                                <div class="tree-item-content">
+                                    <FluentCheckbox Value="@isChecked"
+                                                    ValueChanged="(val) => OnChuyenMucCheckedChanged(dto?.Id ?? string.Empty, val)" />
+                                    <span style="font-size: 14px;">@dto?.Text</span>
+                                </div>
+                            </ItemTemplate>
+                        </FluentTreeView>
+                    }
+                    else
+                    {
+                        <FluentMessageBar Intent="MessageIntent.Info">
+                            Không có chuyên mục nào để hiển thị
+                        </FluentMessageBar>
+                    }
+                </div>
+            </FluentGridItem>
+        }
+    </FluentGrid>
+</FluentDialogBody>
+
+<FluentDialogFooter>
+    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.End" Gap="10" Class="page-toolbar">
+        <FluentButton Appearance="Appearance.Neutral" @onclick="HideDialog">Đóng</FluentButton>
+        <FluentButton Appearance="Appearance.Accent"
+                      @onclick="LuuPhanQuyen"
+                      Disabled="@IsSaving">
+            @if (IsSaving)
+            {
+                <FluentIcon Value="@(new Icons.Regular.Size16.ArrowClockwise())" Style="animation: spin 1s linear infinite;" />
+            }
+            Lưu
+        </FluentButton>
+    </FluentStack>
+</FluentDialogFooter>
+
+<style>
+    fluent-tree-item {
+        --tree-item-nested-indent: 20px !important;
+        margin-bottom: 2px;
+    }
+    fluent-tree-item::part(expand-collapse-button) { display: none !important; }
+    fluent-tree-item svg[slot="start"] { display: none !important; }
+    fluent-tree-item::part(positioning-region) { padding-left: 8px !important; }
+
+    .tree-item-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+    }
+    .tree-item-content:hover { background-color: #f5f5f5; }
+</style>

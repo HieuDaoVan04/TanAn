@@ -1,0 +1,497 @@
+﻿@page "/tong-quan"
+@rendermode InteractiveServer
+
+<PageTitle>Trung Tâm Điều Hành & Giám Sát Thông Minh (IOC) - Xã Tân An</PageTitle>
+
+<style>
+    .ioc-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 24px;
+    }
+
+    .ioc-header-card {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0369a1 100%);
+        color: #ffffff;
+        padding: 20px 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.15);
+    }
+
+    .ioc-header-title {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .ioc-header-subtitle {
+        color: #cbd5e1;
+        font-size: 0.85rem;
+        margin-top: 6px;
+        margin-bottom: 0;
+    }
+
+    .ioc-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #34d399;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #34d399;
+    }
+
+    .stats-card-modern {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 16px 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+        box-sizing: border-box;
+    }
+
+    .stats-card-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        border-color: #0284c7;
+    }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+    }
+
+    .stat-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stat-number {
+        font-size: 1.85rem;
+        font-weight: 800;
+        line-height: 1.1;
+        color: #0f172a;
+        margin-bottom: 8px;
+    }
+
+    .stat-footer-text {
+        font-size: 0.78rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .chart-card-wrapper {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 18px 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        height: 100%;
+    }
+
+    .chart-title {
+        margin: 0 0 14px 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .quick-action-pill {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 10px 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.15s ease-in-out;
+        color: #1e293b;
+        text-decoration: none;
+    }
+
+    .quick-action-pill:hover {
+        background: #eff6ff;
+        border-color: #3b82f6;
+        color: #1d4ed8;
+    }
+
+    .empty-state {
+        color: #64748b;
+        font-size: 0.9rem;
+        text-align: center;
+        padding: 56px 16px;
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+    }
+
+    .dashboard-error {
+        padding: 18px 20px;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        background: #fef2f2;
+        color: #991b1b;
+    }
+</style>
+
+<div class="ioc-container">
+    <!-- Header Banner IOC -->
+    <div class="ioc-header-card">
+        <FluentStack HorizontalAlignment="HorizontalAlignment.SpaceBetween" VerticalAlignment="VerticalAlignment.Center" Wrap="true" Style="gap: 16px;">
+            <div>
+                <h1 class="ioc-header-title">
+                    <FluentIcon Value="@(new Icons.Filled.Size24.BuildingGovernment())" Color="Color.Custom" CustomColor="#38bdf8" />
+                    Trung Tâm Giám Sát & Điều Hành Thông Minh (IOC) - Xã Tân An
+                </h1>
+                <p class="ioc-header-subtitle">
+                    Hệ thống dữ liệu số thời gian thực: Dân cư, Biến động nhân khẩu, An sinh xã hội và Dịch vụ công điện tử
+                </p>
+                <div style="margin-top: 10px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <span class="ioc-status-badge">
+                        <span class="pulse-dot"></span> Hệ Thống Trực Tuyến
+                    </span>
+                    <span style="font-size: 0.78rem; color: #94a3b8;">
+                        Cập nhật lúc: <strong>@lastUpdated.ToString("dd/MM/yyyy HH:mm:ss")</strong>
+                    </span>
+                </div>
+            </div>
+
+            <FluentStack HorizontalGap="10" VerticalAlignment="VerticalAlignment.Center">
+                <FluentButton Appearance="Appearance.Outline"
+                              IconStart="@(new Icons.Regular.Size20.ArrowSync())"
+                              Loading="@isRefreshing"
+                              OnClick="RefreshDataAsync"
+                              Style="background: rgba(255, 255, 255, 0.1); color: #ffffff; border-color: rgba(255, 255, 255, 0.25);">
+                    Làm Mới
+                </FluentButton>
+                <FluentButton Appearance="Appearance.Accent"
+                              IconStart="@(new Icons.Regular.Size20.ArrowDownload())"
+                              OnClick="ExportCsvAsync"
+                              Style="background: #0284c7; color: #ffffff;">
+                    Xuất Báo Cáo IOC
+                </FluentButton>
+            </FluentStack>
+        </FluentStack>
+    </div>
+
+    @if (loading)
+    {
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 0;">
+            <FluentProgressRing Style="width: 48px; height: 48px;" />
+            <p style="margin-top: 14px; font-weight: 600; color: #64748b;">Đang tải và đồng bộ dữ liệu điều hành Xã Tân An...</p>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(loadError) && stats is null)
+    {
+        <div class="dashboard-error">
+            <div style="font-weight: 700; margin-bottom: 8px;">Không thể tải dữ liệu Tổng quan</div>
+            <div style="margin-bottom: 12px;">@loadError</div>
+            <FluentButton Appearance="Appearance.Accent"
+                          IconStart="@(new Icons.Regular.Size20.ArrowSync())"
+                          Loading="@isRefreshing"
+                          OnClick="RefreshDataAsync">
+                Thử lại
+            </FluentButton>
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(loadError))
+        {
+            <div class="dashboard-error">
+                @loadError Dữ liệu đang hiển thị là lần tải thành công gần nhất.
+            </div>
+        }
+
+        <!-- 4 KPI Modern Metric Cards -->
+        <FluentGrid Spacing="3" AdaptiveRendering="true">
+            <!-- Card 1: Hộ gia đình -->
+            <FluentGridItem xs="12" sm="6" md="3">
+                <div class="stats-card-modern" @onclick='() => NavigateTo("/ho-khau")'>
+                    <div class="stat-header">
+                        <span class="stat-label">Tổng Hộ Gia Đình</span>
+                        <div class="stat-icon-wrapper" style="background: rgba(2, 132, 199, 0.1); color: #0284c7;">
+                            <FluentIcon Value="@(new Icons.Filled.Size24.Home())" Color="Color.Custom" CustomColor="#0284c7" />
+                        </div>
+                    </div>
+                    <div>
+                        <div class="stat-number">
+                            @(stats?.TongSoHoGiaDinh.ToString("N0") ?? "0") <span style="font-size: 1rem; font-weight: normal; color: #64748b;">hộ</span>
+                        </div>
+                        <div class="stat-footer-text">
+                            <FluentBadge Appearance="Appearance.Lightweight" BackgroundColor="#e0f2fe" Color="#0369a1">
+                                Danh mục @Service.Shared.Commons.Models.TanAnLocalities.Villages.Count thôn
+                            </FluentBadge>
+                            <span>@((stats?.TongSoHoGiaDinh ?? 0) > 0 ? "Số liệu từ CSDL hệ thống" : "Chưa có dữ liệu hộ gia đình")</span>
+                        </div>
+                    </div>
+                </div>
+            </FluentGridItem>
+
+            <!-- Card 2: Nhân khẩu -->
+            <FluentGridItem xs="12" sm="6" md="3">
+                <div class="stats-card-modern" @onclick='() => NavigateTo("/ho-khau")'>
+                    <div class="stat-header">
+                        <span class="stat-label">Dân Số & Nhân Khẩu</span>
+                        <div class="stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                            <FluentIcon Value="@(new Icons.Filled.Size24.People())" Color="Color.Custom" CustomColor="#10b981" />
+                        </div>
+                    </div>
+                    <div>
+                        <div class="stat-number">
+                            @(stats?.TongSoNhanKhau.ToString("N0") ?? "0") <span style="font-size: 1rem; font-weight: normal; color: #64748b;">người</span>
+                        </div>
+                        <div class="stat-footer-text">
+                            <span style="color: #0284c7; font-weight: 600;">Nam: @(stats?.SoNhanKhauNam.ToString("N0") ?? "0")</span>
+                            <span style="color: #cbd5e1;">|</span>
+                            <span style="color: #ec4899; font-weight: 600;">Nữ: @(stats?.SoNhanKhauNu.ToString("N0") ?? "0")</span>
+                        </div>
+                    </div>
+                </div>
+            </FluentGridItem>
+
+            <!-- Card 3: An sinh xã hội -->
+            <FluentGridItem xs="12" sm="6" md="3">
+                <div class="stats-card-modern" @onclick='() => NavigateTo("/an-sinh")'>
+                    <div class="stat-header">
+                        <span class="stat-label">An Sinh & Bảo Trợ</span>
+                        <div class="stat-icon-wrapper" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                            <FluentIcon Value="@(new Icons.Filled.Size24.HeartPulse())" Color="Color.Custom" CustomColor="#f59e0b" />
+                        </div>
+                    </div>
+                    <div>
+                        <div class="stat-number">
+                            @(stats?.TongDoiTuongAnSinh.ToString("N0") ?? "0") <span style="font-size: 1rem; font-weight: normal; color: #64748b;">đối tượng</span>
+                        </div>
+                        <div class="stat-footer-text">
+                            <FluentBadge Appearance="Appearance.Lightweight" BackgroundColor="#fef3c7" Color="#b45309">
+                                @(stats?.TongSoHoNgheoCanNgheo ?? 0) Hộ nghèo/cận nghèo
+                            </FluentBadge>
+                            <span>@((stats?.TongDoiTuongAnSinh ?? 0) > 0 ? "Số liệu từ hồ sơ an sinh" : "Chưa có dữ liệu an sinh")</span>
+                        </div>
+                    </div>
+                </div>
+            </FluentGridItem>
+
+            <!-- Card 4: Dịch vụ công -->
+            <FluentGridItem xs="12" sm="6" md="3">
+                <div class="stats-card-modern" @onclick='() => NavigateTo("/dich-vu-cong")'>
+                    <div class="stat-header">
+                        <span class="stat-label">Dịch Vụ Công Một Cửa</span>
+                        <div class="stat-icon-wrapper" style="background: rgba(225, 29, 72, 0.1); color: #e11d48;">
+                            <FluentIcon Value="@(new Icons.Filled.Size24.Document())" Color="Color.Custom" CustomColor="#e11d48" />
+                        </div>
+                    </div>
+                    <div>
+                        <div class="stat-number" style="color: #e11d48;">
+                            @(stats?.TongYeuCauChuaXuLy.ToString("N0") ?? "0") <span style="font-size: 1rem; font-weight: normal; color: #64748b;">chờ xử lý</span>
+                        </div>
+                        <div class="stat-footer-text">
+                            <FluentBadge Appearance="Appearance.Lightweight" BackgroundColor="#dcfce7" Color="#15803d">
+                                Đã duyệt: @(stats?.TongYeuCauDaPheDuyet ?? 0)
+                            </FluentBadge>
+                            <span>Số liệu từ hồ sơ tiếp nhận</span>
+                        </div>
+                    </div>
+                </div>
+            </FluentGridItem>
+        </FluentGrid>
+
+        <!-- Charts Section (ApexCharts) -->
+        <FluentGrid Spacing="3" AdaptiveRendering="true">
+            <!-- Chart 1: Bar Chart phân bố 5 ấp -->
+            <FluentGridItem xs="12" md="7">
+                <div class="chart-card-wrapper">
+                    <h3 class="chart-title">
+                        <FluentIcon Value="@(new Icons.Regular.Size20.ChartMultiple())" Color="Color.Accent" />
+                        Phân Bố Dân Cư Theo Thôn (Xã Tân An)
+                    </h3>
+                    @if (HasVillageData)
+                    {
+                        <ApexChart TItem="ThongKeApThon"
+                                   Height="320">
+                            <ApexPointSeries TItem="ThongKeApThon"
+                                             Items="apData"
+                                             Name="Nhân khẩu"
+                                             XValue="e => e.TenApThon"
+                                             YValue="e => (decimal)e.SoNhanKhau"
+                                             SeriesType="SeriesType.Bar"
+                                             Color="#0284c7" />
+                            <ApexPointSeries TItem="ThongKeApThon"
+                                             Items="apData"
+                                             Name="Hộ gia đình"
+                                             XValue="e => e.TenApThon"
+                                             YValue="e => (decimal)e.SoHoGiaDinh"
+                                             SeriesType="SeriesType.Bar"
+                                             Color="#10b981" />
+                        </ApexChart>
+                    }
+                    else
+                    {
+                        <div class="empty-state">Chưa có dữ liệu dân cư theo thôn để hiển thị biểu đồ.</div>
+                    }
+                </div>
+            </FluentGridItem>
+
+            <!-- Chart 2: Donut Chart biến động -->
+            <FluentGridItem xs="12" md="5">
+                <div class="chart-card-wrapper">
+                    <h3 class="chart-title">
+                        <FluentIcon Value="@(new Icons.Regular.Size20.DataPie())" Color="Color.Accent" />
+                        Cơ Cấu Biến Động Dân Cư
+                    </h3>
+                    @if (HasMovementData)
+                    {
+                        <ApexChart TItem="ThongKeBienDong"
+                                   Height="320">
+                            <ApexPointSeries TItem="ThongKeBienDong"
+                                             Items="bienDongData"
+                                             Name="Số ca"
+                                             XValue="e => e.LoaiBienDong"
+                                             YValue="e => (decimal)e.SoLuong"
+                                             SeriesType="SeriesType.Donut" />
+                        </ApexChart>
+                    }
+                    else
+                    {
+                        <div class="empty-state">Chưa ghi nhận biến động dân cư.</div>
+                    }
+                </div>
+            </FluentGridItem>
+        </FluentGrid>
+
+        <!-- Summary Table: Chi tiết số liệu theo thôn -->
+        <FluentCard MinimalStyle="true" Style="padding: 18px 20px; border-radius: 10px; border: 1px solid #e2e8f0; background: #ffffff;">
+            <FluentStack HorizontalAlignment="HorizontalAlignment.SpaceBetween" VerticalAlignment="VerticalAlignment.Center" Style="margin-bottom: 14px;">
+                <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                    <FluentIcon Value="@(new Icons.Regular.Size20.Table())" Color="Color.Accent" />
+                    Bảng Thống Kê Chi Tiết Dân Cư & An Sinh Theo Thôn
+                </h3>
+                <FluentAnchor Href="/ho-khau" Appearance="Appearance.Hypertext" Style="font-size: 0.85rem;">
+                    Xem toàn bộ sổ hộ khẩu →
+                </FluentAnchor>
+            </FluentStack>
+
+            @if (HasVillageData)
+            {
+                <FluentDataGrid Items="@apData.Where(a => a.SoHoGiaDinh > 0 || a.SoNhanKhau > 0 || a.SoDoiTuongAnSinh > 0).AsQueryable()" TGridItem="ThongKeApThon" ShowHover="true" Style="width: 100%;">
+                    <PropertyColumn Property="@(p => p.TenApThon)" Title="Địa Bàn (Thôn)" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.SoHoGiaDinh.ToString("N0") + " hộ")" Title="Số Hộ Gia Đình" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.SoNhanKhau.ToString("N0") + " người")" Title="Tổng Nhân Khẩu" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.BinhQuanNhanKhau.ToString("F1") + " người/hộ")" Title="Bình Quân" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.SoDoiTuongAnSinh.ToString("N0") + " đối tượng")" Title="An Sinh Xã Hội" Sortable="true" />
+                    <TemplateColumn Title="Trạng Thái Dữ Liệu" Align="Align.Center">
+                        <FluentBadge Appearance="Appearance.Accent" Style="background-color: #16a34a; color: white;">
+                            Có dữ liệu
+                        </FluentBadge>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Tác Vụ" Align="Align.End">
+                        <FluentButton Appearance="Appearance.Stealth"
+                                      IconStart="@(new Icons.Regular.Size16.Open())"
+                                      Title="Xem hộ khẩu thôn này"
+                                      OnClick='() => NavigateTo("/ho-khau")'>
+                            Xem hộ khẩu
+                        </FluentButton>
+                    </TemplateColumn>
+                </FluentDataGrid>
+            }
+            else
+            {
+                <div class="empty-state">Chưa có dữ liệu dân cư và an sinh theo thôn.</div>
+            }
+        </FluentCard>
+
+        <!-- Executive Quick Jumps Bar -->
+        <FluentCard MinimalStyle="true" Style="padding: 16px 20px; border-radius: 10px; border: 1px solid #e2e8f0; background: #ffffff;">
+            <div style="font-weight: 700; color: #1e293b; font-size: 0.9rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <FluentIcon Value="@(new Icons.Regular.Size20.Apps())" Color="Color.Accent" />
+                Lối Tắt Điều Hành Đến Các Phân Hệ Chuyên Trách
+            </div>
+            <FluentGrid Spacing="2" AdaptiveRendering="true">
+                <FluentGridItem xs="12" sm="6" md="2">
+                    <a class="quick-action-pill" href="/ho-khau">
+                        <FluentIcon Value="@(new Icons.Regular.Size20.People())" Color="Color.Accent" />
+                        <span style="font-size: 0.85rem; font-weight: 600;">Sổ Hộ Khẩu</span>
+                    </a>
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6" md="2">
+                    <a class="quick-action-pill" href="/bien-dong">
+                        <FluentIcon Value="@(new Icons.Regular.Size20.PersonArrowRight())" Color="Color.Success" />
+                        <span style="font-size: 0.85rem; font-weight: 600;">Biến Động Dân Cư</span>
+                    </a>
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6" md="2">
+                    <a class="quick-action-pill" href="/an-sinh">
+                        <FluentIcon Value="@(new Icons.Regular.Size20.HeartPulse())" Color="Color.Warning" />
+                        <span style="font-size: 0.85rem; font-weight: 600;">An Sinh Xã Hội</span>
+                    </a>
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6" md="2">
+                    <a class="quick-action-pill" href="/dich-vu-cong">
+                        <FluentIcon Value="@(new Icons.Regular.Size20.DocumentCheckmark())" Color="Color.Accent" />
+                        <span style="font-size: 0.85rem; font-weight: 600;">Dịch Vụ Công</span>
+                    </a>
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6" md="2">
+                    <a class="quick-action-pill" href="/ai-duong-trung">
+                        <FluentIcon Value="@(new Icons.Regular.Size20.BrainCircuit())" Color="Color.Error" />
+                        <span style="font-size: 0.85rem; font-weight: 600;">Giám Sát AI</span>
+                    </a>
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6" md="2">
+                    <a class="quick-action-pill" href="/audit-logs">
+                        <FluentIcon Value="@(new Icons.Regular.Size20.History())" Color="Color.Neutral" />
+                        <span style="font-size: 0.85rem; font-weight: 600;">Nhật Ký Thao Tác</span>
+                    </a>
+                </FluentGridItem>
+            </FluentGrid>
+        </FluentCard>
+    }
+</div>

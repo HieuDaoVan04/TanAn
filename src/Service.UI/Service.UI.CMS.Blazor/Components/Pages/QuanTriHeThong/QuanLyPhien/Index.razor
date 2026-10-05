@@ -1,0 +1,97 @@
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Service.UI.CMS.Blazor.Components.Shares.Filter
+@page "/quan-tri-he-thong/quan-ly-phien"
+@inject Service.UI.CMS.Blazor.Applications.SessionAdministrationService Sessions
+
+<PageTitle>Danh sách phiên - Tân An</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="width:100%">
+    <h2>Danh sách phiên</h2>
+
+    <SearchPanel Title="Bộ lọc phiên">
+        <BasicFields>
+            <FluentTextField Label="Từ khóa" Placeholder="Nhập tên tài khoản…" @bind-Value="search" Style="width:100%;" />
+        </BasicFields>
+        <Actions>
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.Search())" OnClick="ApplySearch">Tìm kiếm</FluentButton>
+        </Actions>
+    </SearchPanel>
+
+    <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between; align-items:center;" Class="page-toolbar">
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" Class="page-toolbar">
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.ArrowSync())" OnClick="Reload" Disabled="busy">Tải lại</FluentButton>
+            <FluentButton OnClick="ExportExcel" Appearance="Appearance.Accent" Class="ms-2">
+                <i class="fa-solid fa-file-excel me-1"></i> Xuất Excel
+            </FluentButton>
+        </FluentStack>
+        <span>@Filtered.Count() phiên đăng nhập</span>
+    </FluentStack>
+
+    @if (error != null) { <p role="alert">@error</p> }
+
+    <div class="data-grid-scroll">
+        <FluentDataGrid Items="Filtered"
+                        TGridItem="Service.Shared.Commons.Interfaces.LoginSession"
+                        Pagination="pagination"
+                        ShowHover="true"
+                        MultiLine="true"
+                        RowSize="DataGridRowSize.Large"
+                        GridTemplateColumns="50px minmax(130px,1fr) 180px 140px 140px 140px 100px"
+                        Style="width:100%;"
+                        RowStyle="@(item => "min-height:60px;")">
+            <ChildContent>
+                <TemplateColumn Title="#" Sortable="false" Style="display: flex;align-items: center;">
+                    @(Filtered?.ToList().IndexOf(context) + 1)
+                </TemplateColumn>
+                <TemplateColumn Title="Tài khoản" Sortable="true" Style="display: flex;align-items: center;">
+                    <span @onclick="() => details = context" style="cursor: pointer; color: dodgerblue; font-weight: 500;">
+                        @context.Username
+                    </span>
+                </TemplateColumn>
+                <PropertyColumn Property="@(x => x.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss"))" Title="Đăng nhập lúc" />
+                <TemplateColumn Title="Thời gian còn lại">@Remaining(context)</TemplateColumn>
+                <TemplateColumn Title="Loại"><span class="type-badge">Phiên đăng nhập</span></TemplateColumn>
+                <PropertyColumn Property="@(x => x.IpAddress)" Title="IP" />
+                <TemplateColumn Title="Thao tác" Style="display: flex; align-items: center; justify-content: center;">
+                    <FluentButton Appearance="Appearance.Outline" Title="Thu hồi phiên" aria-label="Thu hồi phiên" IconStart="@(new Icons.Regular.Size20.Delete())" Disabled="busy" OnClick="@(() => pending = context)" />
+                </TemplateColumn>
+            </ChildContent>
+            <EmptyContent><p>Không có phiên phù hợp.</p></EmptyContent>
+        </FluentDataGrid>
+    </div>
+
+    <Paginator PaginationState="@pagination" SelectedPageSizeChanged="RefreshData" />
+   </FluentStack>
+
+@if (pending != null)
+{
+    <FluentDialog Hidden="false" Modal="true" TrapFocus="true" aria-label="Xác nhận thu hồi phiên">
+        <div class="dialog-content">
+            <h3>Thu hồi phiên</h3>
+            <p>Thu hồi phiên đăng nhập của @pending.Username?</p>
+            <div class="dialog-actions">
+                <FluentButton Appearance="Appearance.Accent" Disabled="busy" OnClick="Revoke">Xác nhận</FluentButton>
+                <FluentButton Disabled="busy" OnClick="@(() => pending = null)">Hủy</FluentButton>
+            </div>
+        </div>
+    </FluentDialog>
+}
+
+@if (details != null)
+{
+    <FluentDialog Hidden="false" Modal="true" TrapFocus="true" Style="width:min(640px, calc(100vw - 32px));" aria-label="Chi tiết phiên">
+        <div class="dialog-content">
+            <h3>Chi tiết phiên</h3>
+            <dl>
+                <dt>Tài khoản</dt><dd>@details.Username</dd>
+                <dt>Đăng nhập lúc</dt><dd>@details.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</dd>
+                <dt>Hết hạn lúc</dt><dd>@details.ExpiresAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</dd>
+                <dt>Địa chỉ IP</dt><dd>@details.IpAddress</dd>
+                <dt>Trình duyệt</dt><dd>@details.UserAgent</dd>
+            </dl>
+            <div class="dialog-actions">
+                <FluentButton OnClick="@(() => details = null)">Đóng</FluentButton>
+            </div>
+        </div>
+    </FluentDialog>
+}

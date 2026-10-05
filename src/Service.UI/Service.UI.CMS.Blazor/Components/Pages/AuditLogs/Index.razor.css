@@ -1,0 +1,13 @@
+.data-page { padding:8px 4px; color:var(--neutral-foreground-rest); }
+h2 { font-size:1.4rem; font-weight:600; margin:0 0 20px; }
+.data-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:20px; }
+.data-toolbar-actions,.data-toolbar-filters { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.data-grid-scroll { overflow-x:auto; }
+.data-grid-scroll ::deep td { display:flex; align-items:center; gap:5px; }
+.data-grid-scroll ::deep .fluent-data-grid-row { min-height:60px; }
+
+.data-grid-scroll ::deep th .col-title-text { white-space:normal; text-overflow:clip; line-height:1.3; }
+.data-grid-scroll ::deep th .col-title { width:100% !important; }
+.data-grid-scroll ::deep th .col-sort-button { width:100% !important; }
+.data-grid-scroll ::deep td:last-child { display:flex; align-items:center; justify-content:flex-start; gap:5px; white-space:nowrap; }
+.audit-value { display:block; max-width:100%; white-space:normal; overflow-wrap:anywhere; line-height:1.35; }

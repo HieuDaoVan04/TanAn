@@ -1,0 +1,25 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Service.UI.CMS.Blazor.Components.Layout
+@using NavLinkModel = Service.UI.CMS.Blazor.Components.Layout.NavLink
+
+@switch (Value)
+{
+    case NavGroup group:
+        <FluentNavGroup @bind-Expanded="@group.Expanded" Gap="@group.Gap" Icon="@group.Icon">
+            <TitleTemplate>
+                <span class="menu-group-title">@group.Title</span>
+            </TitleTemplate>
+            <ChildContent>
+                @foreach (var item in group.Children)
+                {
+                    <NavMenuItem @key="item.MenuId" Value="item" />
+                }
+            </ChildContent>
+        </FluentNavGroup>
+        break;
+    case NavLinkModel link:
+        <FluentNavLink Icon="@link.Icon" Href="@link.Href" Match="@link.Match">
+            @link.Title
+        </FluentNavLink>
+        break;
+}

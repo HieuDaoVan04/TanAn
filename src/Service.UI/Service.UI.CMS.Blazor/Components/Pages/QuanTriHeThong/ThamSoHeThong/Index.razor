@@ -1,0 +1,78 @@
+@page "/quan-ly-tham-so-ht"
+@page "/quan-tri-he-thong/tham-so-he-thong"
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Service.UI.CMS.Blazor.Components.Pages.QuanTriHeThong.DanhMuc
+@using System.Text.Json
+@using Service.Shared.Commons.Models
+@using Service.Shared.Contracts.DTOs
+@using Service.UI.CMS.Blazor.Applications
+@using Microsoft.FluentUI.AspNetCore.Components
+
+@inject ModuleTypeState MenuState
+
+<PageTitle>@Title - Tân An</PageTitle>
+<section class="admin-workspace">
+    <h2>@Title</h2>
+    @if (!string.IsNullOrEmpty(error)) { <p class="error" role="alert">@error</p> }
+    @if (!string.IsNullOrEmpty(message)) { <p class="message" role="status">@message</p> }
+    @if (!CurrentUser.IsAuthenticated || CurrentUser.Role != "Admin") { <p>Bạn chưa có quyền quản trị.</p> }
+    else
+    {
+        <div class="toolbar">
+            <div class="toolbar-actions">
+                <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.AddCircle())" OnClick="New" Disabled="busy">Thêm mới</FluentButton>
+                <FluentButton Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.ArrowSync())" OnClick="Reload" Disabled="busy">Tải lại</FluentButton>
+                <FluentButton Appearance="Appearance.Outline" OnClick="Sync" Disabled="busy">Bổ sung tham số mặc định</FluentButton>
+                <a href="/quan-ly-tham-so-ht/cau-hinh-chung">Cấu hình chung hệ thống</a>
+
+            </div>
+            <div class="toolbar-filters">
+                <FluentSearch Placeholder="Nhập vào từ khóa" aria-label="Tìm kiếm" @bind-Value="search" @bind-Value:after="ResetPage" />
+                <select aria-label="Lọc trạng thái" @bind="status" @bind:after="ResetPage"><option value="all">Tất cả trạng thái</option><option value="active">Đã duyệt / đang sử dụng</option><option value="inactive">Chưa duyệt / ngừng dùng</option></select>
+            </div>
+        </div>
+
+        @if (loading) { <FluentProgressRing /> }
+
+        else
+        {
+            <div class="table-scroll">
+                <FluentDataGrid Items="FilteredRecords" TGridItem="AdminRecord" Pagination="pagination" GridTemplateColumns="@GridColumns" ShowHover="true" RowSize="DataGridRowSize.Large" MultiLine="true" Style="width:100%;">
+                    <ChildContent>
+                    <TemplateColumn Title="#"><span>@(records.IndexOf(context) + 1)</span></TemplateColumn>
+                    <TemplateColumn Title="@NameColumnTitle"><button class="text-button" @onclick="() => View(context)">@context.Name</button></TemplateColumn>
+                    <PropertyColumn Property="@(x => x.Code)" Title="Mã" Sortable="true" />
+
+                         <PropertyColumn Property="@(x => x.Path)" Title="Giá trị" /> 
+                        <PropertyColumn Property="@(x => x.Description)" Title="Mô tả" />
+
+                    <TemplateColumn Title="Trạng thái">@if(context.ModerationStatus.HasValue) { <ModerationView Status="context.ModerationStatus.Value" /> } else { <span class="badge @(context.Active ? "active" : "inactive")">@(context.Active ? "Đang sử dụng" : "Ngừng sử dụng")</span> }</TemplateColumn>
+                    <TemplateColumn Title="Thao tác"><div class="actions"><AdminRowActions Item="context" Kind="AdminCatalog.Parameters" Busy="busy" OnView="View" OnEdit="Edit" OnStatus="ChangeStatus" OnDelete="@(record => pendingDelete = record)" /></div></TemplateColumn>
+                    </ChildContent>
+                    <EmptyContent><p class="empty-state">Không có bản ghi phù hợp.</p></EmptyContent>
+                </FluentDataGrid>
+            </div>
+            <Paginator PaginationState="@pagination" />
+        }
+        @if (pendingDelete != null)
+        {
+            <DataDialog Title="Xác nhận xóa" Busy="busy" Close="@(() => pendingDelete = null)"><p>Xóa “@pendingDelete.Name”? Thao tác này không thể hoàn tác.</p><div class="dialog-actions"><FluentButton Appearance="Appearance.Accent" Disabled="busy" OnClick="Delete">Xác nhận xóa</FluentButton><FluentButton Disabled="busy" OnClick="() => pendingDelete = null">Hủy</FluentButton></div></DataDialog>
+        }
+        @if (form != null)
+        {
+            <FluentDialog Modal="true" TrapFocus="true" Hidden="false" Style="--dialog-width:min(820px, calc(100vw - 32px)); --dialog-height:auto;" aria-labelledby="editor-title"><section class="editor">
+                <div class="editor-heading"><h3 id="editor-title">@(viewOnly ? "Xem chi tiết" : form.Id == Guid.Empty ? "Thêm mới" : "Chỉnh sửa") — @NameColumnTitle</h3><FluentButton Appearance="Appearance.Stealth" Title="Đóng" aria-label="Đóng" OnClick="Close" Disabled="busy" IconStart="@(new Icons.Regular.Size20.Dismiss())" /></div>
+                @if (!string.IsNullOrEmpty(error)) { <p class="error" role="alert">@error</p> }
+                <EditForm Model="form" OnSubmit="Save"><fieldset disabled="@(busy || viewOnly)" class="form-grid">
+                     <label>Mã *<InputText @bind-Value="form.Code" disabled="@(form.Id != Guid.Empty && SystemParameterCatalog.Find(form.Code) != null)" /></label>
+
+                         <label>Giá trị<ParameterValueEditor Definition="SystemParameterCatalog.Find(form.Code)" @bind-Value="form.Path" /></label>
+                        <label>Mô tả<InputTextArea @bind-Value="form.Description" /></label>
+
+                    <label class="check"><InputCheckbox @bind-Value="form.Active" /> Đã duyệt / đang sử dụng</label>
+
+                    </fieldset><div class="editor-actions">@if (!viewOnly) { <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Disabled="busy" IconStart="@(new Icons.Regular.Size20.Save())">Lưu</FluentButton> }<FluentButton Type="ButtonType.Button" Disabled="busy" OnClick="Close">@(viewOnly ? "Đóng" : "Hủy")</FluentButton></div></EditForm>
+            </section></FluentDialog>
+        }
+    }
+</section>

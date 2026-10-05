@@ -1,0 +1,171 @@
+@namespace Service.UI.Blazor.Components.Pages.QuanTriHeThong.DonVi
+@using Service.Shared.Commons.Interfaces
+@using Service.Shared.Commons.Interfaces.Extentions
+@using Service.Shared.Commons.Model.Commons
+@using Service.Shared.Commons.Model.ServiceCustomHttpClient
+@using Service.Shared.Commons.Querys.Grid
+@using Service.Shared.Commons.Querys.ModalQuery
+@using Service.Shared.Contracts.DTOs
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@using Service.Shared.Commons.Enums
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentIcon Value="@(new Icons.Regular.Size24.ArrowSwap())" />
+        <FluentLabel Typo="Typography.PaneHeader">
+            Chuyển Client / Dịch vụ sang đơn vị khác
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
+
+<FluentDialogBody>
+
+    <FluentMessageBar Intent="MessageIntent.Warning">
+        Đơn vị này đang chứa Client, cấu hình Dịch vụ, lịch sử Logs hoặc các đơn vị con.
+        Vui lòng chọn đơn vị mới để chuyển giao trước khi xóa.
+    </FluentMessageBar>
+
+<FluentGrid Class="s-form-view" Spacing="2" Style="width: 100%;">
+
+    <FluentGridItem md="12">
+        <FluentTextField Label="Đơn vị đang xóa"
+                         Value="@CurrentGroup?.Name"
+                         ReadOnly="true"
+                         Style="width: 100%;" />
+    </FluentGridItem>
+
+    <FluentGridItem md="12">
+        <FluentAutocomplete TOption="GroupDto"
+                            ImmediateDelay="250"
+                            AutoComplete="off"
+                            Label="Chuyển dữ liệu sang đơn vị"
+                            Placeholder="Chọn đơn vị"
+                            OnOptionsSearch="OnSearchGroup"
+                            OptionText="@(item => item.Name)"
+                            Multiple="false"
+                            Style="width: 100%;"
+                            @bind-SelectedOption="SelectedGroup" />
+    </FluentGridItem>
+
+</FluentGrid>
+
+</FluentDialogBody>
+
+<FluentDialogFooter>
+
+    <FluentButton Appearance="Appearance.Neutral"
+                  OnClick="CancelAsync">
+        Hủy
+    </FluentButton>
+
+    <FluentButton Appearance="Appearance.Accent"
+                  OnClick="ConfirmAsync">
+        Chuyển & Xóa
+    </FluentButton>
+
+</FluentDialogFooter>
+
+@code {
+
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    [Parameter]
+    public EditOrUpdateParametersDto Content { get; set; } = new();
+
+    [Inject]
+    private ICallServiceRegistry CallService { get; set; } = default!;
+
+    private GroupDto? CurrentGroup;
+
+    private List<GroupDto> Groups = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private GroupDto? SelectedGroup;
+
+    private async Task OnSearchGroup(OptionsSearchEventArgs<GroupDto> e)
+    {
+        e.Items = await FetchGroups(e.Text);
+    }
+
+    private async Task<List<GroupDto>> FetchGroups(string keyword)
+    {
+        var output = new List<GroupDto>();
+
+        ApiRequestModel apiRequest = new()
+        {
+            ApiService = ServicesRegistryEnum.ServiceAIM,
+            Endpoint = "/Group/GetPaged"
+        };
+
+        var query = new BaseQuery
+        {
+            Keyword = keyword,
+            SearchIn = new List<string> { "Name" },
+            gridRequest = new GridRequest
+            {
+                page = 1,
+                pageSize = 20,
+                filter = new Filter()
+            }
+        };
+
+        var result = await CallService.Post<DataTableJson<GroupDto>>(apiRequest, query);
+
+        if (result.Status == StatusCode.OK && result.Data != null)
+        {
+            output = result.Data.Data
+                .Where(x => x.Id != Content.Id) 
+                .ToList();
+        }
+
+        return output;
+    }
+
+    private async Task LoadData()
+    {
+        var current = await CallService.Get<GroupDto>(
+            new ApiRequestModel
+            {
+                ApiService = ServicesRegistryEnum.ServiceAIM,
+                Endpoint = $"/Group/{Content.Id}"
+            });
+
+        if (current.Status == StatusCode.OK)
+            CurrentGroup = current.Data;
+
+        var groups = await CallService.Get<List<GroupDto>>(
+            new ApiRequestModel
+            {
+                ApiService = ServicesRegistryEnum.ServiceAIM,
+                Endpoint = "/Group/GetAll"
+            });
+
+        if (groups.Status == StatusCode.OK)
+        {
+            Groups = groups.Data!
+                .Where(x => x.Id != Content.Id)
+                .ToList();
+        }
+    }
+
+    private async Task ConfirmAsync()
+    {
+        if (SelectedGroup == null)
+            return;
+
+        await Dialog.CloseAsync(SelectedGroup.Id);
+    }
+
+    private async Task CancelAsync()
+    {
+        await Dialog.CancelAsync();
+    }
+
+}

@@ -1,0 +1,26 @@
+@using Service.Shared.Contracts.DTOs
+
+@if (Definition?.DataType == ParameterDataType.Boolean)
+{
+    <select aria-label="@(Definition.Name)" value="@Value" @onchange="Changed">
+        <option value="true">Bật / Có</option><option value="false">Tắt / Không</option>
+    </select>
+}
+else if (Definition?.DataType == ParameterDataType.Integer)
+{
+    <input aria-label="@(Definition.Name)" type="number" min="@Definition.Minimum" max="@Definition.Maximum" step="1" required
+        value="@Value" @onchange="Changed" />
+}
+else
+{
+    <textarea aria-label="@(Definition?.Name ?? "Giá trị tham số")" rows="3" maxlength="@(Definition?.MaxLength ?? 2000)"
+        required="@(Definition?.Required ?? false)" @bind="Value" @bind:after="NotifyChanged"></textarea>
+}
+
+@code {
+    [Parameter] public SystemParameterDefinition? Definition { get; set; }
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    private Task Changed(ChangeEventArgs e) => ValueChanged.InvokeAsync(e.Value?.ToString());
+    private Task NotifyChanged() => ValueChanged.InvokeAsync(Value);
+}

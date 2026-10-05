@@ -1,0 +1,32 @@
+@namespace Service.UI.Blazor.Components.Pages.QuanTriHeThong.DonVi.Client
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+
+<FluentDialogHeader ShowDismiss="true">
+    <h3>Danh sách Client - @Content.Parameter</h3>
+</FluentDialogHeader>
+
+<FluentDialogBody>
+    <p>Chức năng cấu hình và gán Client OAuth2 cho đơn vị/hệ thống.</p>
+    <FluentMessageBar Intent="MessageIntent.Info">
+        Danh sách Client được đồng bộ tự động với hệ thống Identity và Redis Cache.
+    </FluentMessageBar>
+</FluentDialogBody>
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Neutral" OnClick="CloseAsync">Đóng</FluentButton>
+</FluentDialogFooter>
+
+@code {
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    [Parameter]
+    public EditOrUpdateParametersDto Content { get; set; } = new();
+
+    private async Task CloseAsync()
+    {
+        await Dialog.CloseAsync();
+    }
+}

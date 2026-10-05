@@ -1,0 +1,28 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject NavigationManager NavManager
+
+<FluentCard Style="margin-bottom: 20px; padding: 18px; border-radius: 8px;">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center" HorizontalGap="10" Style="margin-bottom: 16px;">
+        <FluentIcon Value="@(new Icons.Regular.Size24.Star())" Color="Color.Accent" />
+        <h3 style="margin: 0; font-weight: 700; color: #1e293b; font-size: 1.1rem;">Tính Năng Hay Dùng</h3>
+    </FluentStack>
+
+    <FluentGrid Spacing="3" AdaptiveRendering="true">
+        @foreach (var feature in Features)
+        {
+            <FluentGridItem xs="12" sm="6" md="4">
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;"
+                     @onclick="() => NavManager.NavigateTo(feature.Url)">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <FluentIcon Value="@feature.Icon" Color="@feature.IconColor" />
+                        <div>
+                            <div style="font-weight: 600; color: #1e293b; font-size: 0.9rem;">@feature.Name</div>
+                            <div style="color: #64748b; font-size: 0.78rem;">@feature.Description</div>
+                        </div>
+                    </div>
+                    <FluentIcon Value="@(new Icons.Regular.Size16.ChevronRight())" Color="Color.Neutral" />
+                </div>
+            </FluentGridItem>
+        }
+    </FluentGrid>
+</FluentCard>

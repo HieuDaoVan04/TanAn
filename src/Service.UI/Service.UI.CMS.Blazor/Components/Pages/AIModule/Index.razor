@@ -1,0 +1,53 @@
+﻿@page "/ai-duong-trung"
+@inject IAIService AIService
+
+<PageTitle>AI Trùng Lặp & Anomaly Validator - Xã Tân An</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+    <FluentCard MinimalStyle="true" Style="padding: 0; box-shadow:none;">
+        <FluentStack HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+            <div>
+                <h2 style="margin:0; font-size:1.4rem; font-weight:600;">AI Phát Hiện Hồ Sơ Trùng Lặp & Cảnh Báo Bất Thường</h2>
+                <span style="font-size:0.8rem; color:#64748b;">Mô hình AI quét đối soát mờ mâu thuẫn dữ liệu dân cư Xã Tân An</span>
+            </div>
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.Sparkle())" OnClick="RunAnalysis">
+                Chạy Phân Tích AI
+            </FluentButton>
+        </FluentStack>
+    </FluentCard>
+
+    <FluentCard MinimalStyle="true" Style="padding: 0; box-shadow:none;">
+        <h4 style="color: #b91c1c; font-weight: bold;">Danh Sách Hồ Sơ Trùng Lặp Nghi Vấn</h4>
+        @if (duplicates != null && duplicates.Any())
+        {
+            <FluentDataGrid Items="@duplicates.AsQueryable()" TGridItem="DuplicateRecordResultDto" ShowHover="true" RowSize="DataGridRowSize.Large" MultiLine="true" Style="width:100%;">
+                <PropertyColumn Property="@(d => d.HoTen1 + " (CCCD: " + d.CCCD1 + ")")" Title="Hồ Sơ A" />
+                <PropertyColumn Property="@(d => d.HoTen2 + " (CCCD: " + d.CCCD2 + ")")" Title="Hồ Sơ B" />
+                <PropertyColumn Property="@(d => d.SimilarityPercentage.ToString("F1") + "%")" Title="Độ Tương Đồng" />
+                <PropertyColumn Property="@(d => d.MatchReason)" Title="Nguyên Nhân Trùng Lặp" />
+            </FluentDataGrid>
+        }
+        else
+        {
+            <p style="font-size: 0.85rem; color: #64748b;">Không phát hiện ca trùng lặp mới.</p>
+        }
+    </FluentCard>
+
+    <FluentCard MinimalStyle="true" Style="padding: 0; box-shadow:none;">
+        <h4 style="color: #b45309; font-weight: bold;">Cảnh Báo Dữ Liệu Bất Thường (Anomaly Detection)</h4>
+        @if (anomalies != null && anomalies.Any())
+        {
+            <FluentDataGrid Items="@anomalies.AsQueryable()" TGridItem="AnomalyRecordResultDto" ShowHover="true" RowSize="DataGridRowSize.Large" MultiLine="true" Style="width:100%;">
+                <PropertyColumn Property="@(a => a.HoTen)" Title="Họ Tên Nhân Khẩu" />
+                <PropertyColumn Property="@(a => a.CCCD)" Title="Số CCCD" />
+                <PropertyColumn Property="@(a => a.AnomalyType)" Title="Loại Bất Thường" />
+                <PropertyColumn Property="@(a => a.Description)" Title="Mô Tả Cảnh Báo" />
+                <PropertyColumn Property="@(a => a.Severity)" Title="Mức Độ" />
+            </FluentDataGrid>
+        }
+        else
+        {
+            <p style="font-size: 0.85rem; color: #64748b;">Không có cảnh báo dữ liệu bất thường.</p>
+        }
+    </FluentCard>
+</FluentStack>

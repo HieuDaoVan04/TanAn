@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "View";
+}
+
+
+@model SI.Domain.Entitys.@Entity@
+
+
+@{
+    if (Model == null || Model.Id == 0)
+    {
+        <div class="text-center">
+            Dữ liệu không tồn tại!
+        </div>
+       
+
+    }
+    else
+    {
+        <div class="tab-pane fade show active" id="nav-duan" role="tabpanel" aria-labelledby="nav-duan-tab" tabindex="0">
+            <div class="table-responsive invoice-table custom-scrollbar" id="table">
+                <table class="table table-bordered table-striped">
+                    <tbody>
+                        <tr>
+                            <td class="item">
+                                <h6 class="p-2 mb-0">Trường giá trị</h6>
+                            </td>
+                            <td class="Hours">
+                                <h6 class="p-2 mb-0">Nội dung</h6>
+                            </td>
+
+                        </tr>
+                       @columnsTemplate@
+
+                        @if (!string.IsNullOrEmpty(Model.CreatedByText))
+                        {
+                            <tr>
+                                <td>
+                                    <label>Người tạo</label>
+                                </td>
+                                <td>
+                                    <p class="itemtext">@Model.CreatedByText</p>
+                                </td>
+
+                            </tr>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.LastModifiedByText))
+                        {
+                            <tr>
+                                <td>
+                                    <label>Người sửa cuối</label>
+                                </td>
+                                <td>
+                                    <p class="itemtext">@Model.LastModifiedByText</p>
+                                </td>
+
+                            </tr>
+                        }
+
+
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+       
+    }
+}

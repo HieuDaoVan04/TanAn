@@ -1,0 +1,11 @@
+@page "/account/logout"
+@attribute [ExcludeFromInteractiveRouting]
+@layout Service.UI.CMS.Blazor.Components.Layout.AccountLayout
+<section>
+    <h1>Đăng xuất</h1>
+    <form method="post" action="/account/sign-out" data-enhance="false">
+        <AntiforgeryToken />
+        <button type="submit">Xác nhận đăng xuất</button>
+        <a href="/ban-lam-viec">Quay lại</a>
+    </form>
+</section>

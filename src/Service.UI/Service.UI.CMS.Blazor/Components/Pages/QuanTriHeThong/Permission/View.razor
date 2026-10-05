@@ -1,0 +1,84 @@
+@namespace Service.UI.CMS.Blazor.Components.Pages.QuanTriHeThong.Permission
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@using Service.Shared.Commons.Model.SQL
+@using PermissionDto = Service.Shared.Contracts.DTOs.PermissionDto
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentIcon Value="@(new Icons.Regular.Size24.Info())" />
+        <FluentLabel Typo="Typography.PaneHeader">
+            @Dialog.Instance.Parameters.Title
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
+
+@if (!IsLoading)
+{
+    <FluentDialogBody>
+        <FluentGrid Class="s-form-view" Spacing="2" AdaptiveRendering="true" Justify="JustifyContent.FlexStart" Style="padding: 4px;">
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Mã quyền:</label>
+                    <div>@Item.PermissionCode</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Tên quyền:</label>
+                    <div>@Item.PermissionName</div>
+                </div>
+            </FluentGridItem>
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Ngày tạo:</label>
+                    <div>@(Item.Created.ToString("HH:mm:ss dd/MM/yyyy"))</div>
+                </div>
+            </FluentGridItem>
+            @if (!string.IsNullOrEmpty(Item.PermissionParentName))
+            {
+                <FluentGridItem md="6">
+                    <div>
+                        <label style="font-weight: 600">Quyền trực thuộc:</label>
+                        <div>@Item.PermissionParentName</div>
+                    </div>
+                </FluentGridItem>
+            }
+
+            <FluentGridItem md="12">
+                <div>
+                    <label style="font-weight: 600">Mô tả:</label>
+                    <div>@Item.Description</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Ngày sửa cuối:</label>
+                    <div>@(Item.LastModified.ToString("HH:mm:ss dd/MM/yyyy"))</div>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <div>
+                    <label style="font-weight: 600">Trạng thái:</label>
+                    <div>@(Item.ModerationStatus == ModerationStatus.Approved ? "Đã duyệt" : "Chưa phê duyệt")</div>
+                </div>
+            </FluentGridItem>
+        </FluentGrid>
+    </FluentDialogBody>
+}
+else
+{
+    <FluentDialogBody>
+        <FluentProgressRing />
+    </FluentDialogBody>
+}
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync">Đóng</FluentButton>
+</FluentDialogFooter>

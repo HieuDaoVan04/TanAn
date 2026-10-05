@@ -1,0 +1,303 @@
+// "Một sản phẩm của HieuDV"
+
+using Microsoft.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
+using Service.Shared.Commons.Interfaces.Extentions;
+using Service.Shared.Commons.Model.Commons;
+using Service.Shared.Commons.Model.ServiceCustomHttpClient;
+using Service.Shared.Commons.Querys.Grid;
+using Service.Shared.Commons.Querys.ModalQuery;
+using Service.Shared.Contracts.Portal.DTOs;
+using Service.UI.CMS.Blazor.Applications.Dtos;
+using Service.UI.CMS.Blazor.Components.Shared;
+
+namespace  Service.UI.CMS.Blazor.Components.Pages.DanhMucDungChung.XXXX
+{
+    public partial class Index : ComponentBase
+    {
+        [Inject]
+        private IToastService ToastService { get; set; } = default!;
+
+        [Inject]
+        private IDialogService DialogService { get; set; } = default!;
+
+        [Inject]
+        private ICallServiceRegistry CallService { get; set; } = default!;
+        protected string? SearchKeyword { get; set; } = string.Empty;
+
+
+        private ColumnKeyGridSort<@Entity@Dto> _roleNameSort = new ColumnKeyGridSort<@Entity@Dto>("Created");
+        protected FluentDataGrid<@Entity@Dto> Grid { get; set; } = default!;
+
+        protected PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+
+        private bool IsLoadingSync { get; set; } = false;
+
+
+
+        protected async Task<bool> RejectAction(Guid id)
+        {
+            IsLoadingSync = true;
+            try
+            {
+                ApiRequestModel apiRequest = new ApiRequestModel()
+                {
+
+                    ApiService = ServicesRegistryEnum.ServicePortal,
+                    Endpoint = $"/@Entity@/{id}/Reject"
+
+                };
+
+                ResultAPI result = await CallService.Put(apiRequest, new object());
+                if (result.Status == StatusCode.OK)
+                {
+                    await RefreshGrid();
+                    ToastService.ShowSuccess("Hủy duyệt thành công!");
+                    return true;
+                }
+                else
+                {
+                    throw new Exception(result.Message ?? "Lỗi khi hủy duyệt.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Lỗi khi hủy duyệt: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                IsLoadingSync = false;
+            }
+        }
+        protected async Task<bool> ApproveAction(Guid id)
+        {
+            IsLoadingSync = true;
+            try
+            {
+                ApiRequestModel apiRequest = new ApiRequestModel()
+                {
+
+                    ApiService = ServicesRegistryEnum.ServicePortal,
+                    Endpoint = $"/@Entity@/{id}/approve"
+
+                };
+
+                ResultAPI result = await CallService.Put(apiRequest, new object());
+                if (result.Status == StatusCode.OK)
+                {
+                    await RefreshGrid();
+                    ToastService.ShowSuccess("Duyệt thành công!");
+                    return true;
+                }
+                else
+                {
+                    throw new Exception(result.Message ?? "Lỗi khi duyệt.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Lỗi khi hủy duyệt vai trò: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                IsLoadingSync = false;
+            }
+        }
+        protected async Task EditAction(Guid Id)
+        {
+            try
+            {
+                var parameters = new EditOrUpdateParametersDto
+                {
+                    Id = Id,
+                    IsEditMode = true,
+                    OnRefresh = EventCallback.Factory.Create(this, RefreshGrid)
+                };
+                await DialogService.ShowDialogAsync<Edit>(parameters, new DialogParameters
+                {
+                    Title = "Chỉnh sửa XXX",
+                    PreventDismissOnOverlayClick = true,
+                    PreventScroll = true,
+                    Width="800px",
+                    Modal = true,
+                });
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Lỗi khi mở modal chỉnh sửa: {ex.Message}");
+            }
+        }
+         protected async Task OpenModalDelete(Guid id)
+        {
+            try
+            {
+
+                var dialog = await DialogService.ShowDialogAsync<ModalConfirm>(new DialogParameters());
+                var resultDialog = await dialog.Result;
+                if (resultDialog.Cancelled == false && resultDialog.Data is bool success && success)
+                {
+                    ApiRequestModel apiRequest = new ApiRequestModel()
+                    {
+
+                        ApiService = ServicesRegistryEnum.ServicePortal,
+                        Endpoint = $"/@Entity@/{id}"
+
+                    };
+                    var result = await CallService.Delete(apiRequest);
+                    if (result.Status == StatusCode.OK)
+                    {
+                        await RefreshGrid();
+                        ToastService.ShowSuccess("Xóa bản ghi thành công!");
+                    }
+                    else
+                    {
+                        ToastService.ShowError(result.Message ?? "Lỗi khi xóa bản ghi.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Lỗi khi xóa bản ghi: {ex.Message}");
+            }
+
+        }
+        protected async Task OpenAddModal()
+        {
+            try
+            {
+                var parameters = new EditOrUpdateParametersDto
+                {
+                    Id = Guid.Empty,
+                    IsEditMode = false,
+                    OnRefresh = EventCallback.Factory.Create(this, RefreshGrid)
+                };
+
+                await DialogService.ShowDialogAsync<Edit>(parameters, new DialogParameters
+                {
+                    Title = "Thêm mới XXXX",
+                    PreventDismissOnOverlayClick = true,
+                    PreventScroll = true,
+                    Modal = true,
+                    Width="800px"
+                });
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Lỗi khi mở modal thêm mới: {ex.Message}");
+            }
+        }
+        protected async Task OpenDetailsModal(Guid Id)
+        {
+            try
+            {
+                var parameters = new EditOrUpdateParametersDto
+                {
+                    Id = Id,
+                };
+                await DialogService.ShowDialogAsync<View>(parameters, new DialogParameters
+                {
+                    Title = "Thông tin chi tiết XXXX",
+                    PreventDismissOnOverlayClick = true,
+                    PreventScroll = true,
+                    Modal = true,
+                    PrimaryAction = null,
+                    Width="800px",
+                    SecondaryAction = null,
+                });
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Lỗi khi mở modal chi tiết: {ex.Message}");
+            }
+        }
+
+        private async ValueTask<GridItemsProviderResult<@Entity@Dto>> LoadDatas(GridItemsProviderRequest<@Entity@Dto> request)
+        {
+            try
+            {
+                ApiRequestModel apiRequest = new ApiRequestModel()
+                {
+
+                    ApiService = ServicesRegistryEnum.ServicePortal,
+                    Endpoint = "/@Entity@/GetPaged"
+
+                };
+                var baseQuery = new BaseQuery
+                {
+                    draw = 1,
+                    SearchIn = new List<string> { "Ten@Entity@" },
+                    Keyword = SearchKeyword,
+                    sort = request.GetSortByProperties().Select(s => new Sort { field = s.PropertyName, dir = s.Direction == SortDirection.Ascending ? "asc" : "desc" }).ToList(),
+                    gridRequest = new GridRequest
+                    {
+                        filter = new Filter(),
+                        sort = request.GetSortByProperties().Select(s => new Sort { field = s.PropertyName, dir = s.Direction == SortDirection.Ascending ? "asc" : "desc" }).ToList(),
+                        page = request.StartIndex / pagination.ItemsPerPage + 1,
+                        pageSize = pagination.ItemsPerPage,
+
+                    }
+                };
+                ResultAPI<DataTableJson<@Entity@Dto>> result = await CallService.Post<DataTableJson<@Entity@Dto>>(apiRequest, baseQuery);
+
+                if (result.Status == StatusCode.OK && result.Data is DataTableJson<@Entity@Dto>)
+                {
+                    var dataTable = result.Data;
+
+                    // Gán STT trực tiếp
+                    var indexedItems = dataTable.Data.Select((item, idx) =>
+                    {
+                        item.STT = request.StartIndex + idx + 1;
+                        return item;
+                    }).ToList();
+
+                    var totalRecords = dataTable.RecordsTotal;
+                    return GridItemsProviderResult.From(indexedItems, totalRecords);
+                }
+
+
+                return GridItemsProviderResult.From(new List<@Entity@Dto>(), 0);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Lỗi khi tải danh sách vai trò: {ex.Message}");
+                return GridItemsProviderResult.From(new List<@Entity@Dto>(), 0);
+            }
+        }
+
+        protected async Task HandleSearchChanged()
+        {
+            try
+            {
+                await Grid.RefreshDataAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Lỗi khi tìm kiếm: {ex.Message}");
+            }
+        }
+
+        private async Task RefreshData(int value)
+        {
+            try
+            {
+                pagination.ItemsPerPage = value;
+                await pagination.SetCurrentPageIndexAsync(0);
+            }
+            catch (Exception ex)
+            {
+
+                ToastService.ShowError($"Lỗi khi tải danh sách: {ex.Message}");
+            }
+
+        }
+
+        protected async Task RefreshGrid()
+        {
+            await Grid.RefreshDataAsync();
+        }
+
+
+    }
+}

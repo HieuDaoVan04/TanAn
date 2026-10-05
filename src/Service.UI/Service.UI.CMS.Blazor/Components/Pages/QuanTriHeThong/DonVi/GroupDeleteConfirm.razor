@@ -1,0 +1,32 @@
+@namespace Service.UI.Blazor.Components.Pages.QuanTriHeThong.DonVi
+@using Microsoft.FluentUI.AspNetCore.Components
+@implements IDialogContentComponent<GroupDeleteConfirm.Request>
+
+<FluentDialogHeader ShowDismiss="true">
+    <h3>@Content.Title</h3>
+</FluentDialogHeader>
+<FluentDialogBody style="margin: 0; padding: 16px;">
+    <p style="margin: 0; line-height: 1.5;">@Content.Message</p>
+    <p style="margin: 12px 0 0; line-height: 1.5; color: var(--error);">Hành động này không thể hoàn tác.</p>
+</FluentDialogBody>
+<FluentDialogFooter Style="padding-top:15px">
+    <FluentButton Appearance="Appearance.Neutral" @onclick="Cancel">Hủy</FluentButton>
+    <FluentButton BackgroundColor="red" Color="White" @onclick="Confirm">Xóa vĩnh viễn</FluentButton>
+</FluentDialogFooter>
+
+@code {
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    [Parameter]
+    public Request Content { get; set; } = default!;
+
+    private Task Confirm() => Dialog.CloseAsync(true);
+    private Task Cancel() => Dialog.CloseAsync(false);
+
+    public class Request
+    {
+        public string Title { get; set; } = "Xác nhận xóa đơn vị";
+        public string Message { get; set; } = "Xóa đơn vị sẽ xóa vĩnh viễn toàn bộ dữ liệu liên quan, bao gồm các đơn vị con.";
+    }
+}

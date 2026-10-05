@@ -1,0 +1,72 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject NavigationManager NavManager
+
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-color: #2563eb;
+    }
+
+    .stat-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-top: 6px;
+    }
+
+    .stat-icon {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+</style>
+
+<FluentCard Style="margin-bottom: 20px; padding: 18px; border-radius: 8px;">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center" HorizontalGap="10" Style="margin-bottom: 16px;">
+        <FluentIcon Value="@(new Icons.Regular.Size24.Flash())" Color="Color.Accent" />
+        <h3 style="margin: 0; font-weight: 700; color: #1e293b; font-size: 1.1rem;">Tác Vụ Xử Lý Nhanh</h3>
+    </FluentStack>
+
+    <div class="stats-grid">
+        @foreach (var task in QuickTasks)
+        {
+            <div class="stat-card" @onclick="() => NavigateTo(task.Url)">
+                <div class="stat-icon">
+                    <span class="stat-title">@task.Category</span>
+                    <FluentIcon Value="@task.Icon" Color="@task.IconColor" />
+                </div>
+                <div>
+                    <div class="stat-value">@task.Title</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">@task.Subtitle</div>
+                </div>
+            </div>
+        }
+    </div>
+</FluentCard>

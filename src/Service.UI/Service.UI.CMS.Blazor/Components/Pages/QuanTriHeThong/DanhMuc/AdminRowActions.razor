@@ -1,0 +1,20 @@
+@using Service.Shared.Contracts.DTOs
+@if (!Item.Active || Item.ModerationStatus == null || Kind == AdminCatalog.Parameters)
+{
+<FluentButton Appearance="Appearance.Outline" Title="Chỉnh sửa" aria-label="Chỉnh sửa" Disabled="Busy" IconStart="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => OnEdit.InvokeAsync(Item))" />
+}
+@if (Kind == AdminCatalog.Users || (!Item.Active && Kind == AdminCatalog.Roles))
+{
+    <FluentButton Appearance="Appearance.Outline" Title="@(Kind == AdminCatalog.Users ? "Gán vai trò" : "Gán menu")" aria-label="@(Kind == AdminCatalog.Users ? "Gán vai trò" : "Gán menu")" Disabled="Busy" IconStart="@(new Icons.Regular.Size20.PersonKey())" OnClick="@(() => OnEdit.InvokeAsync(Item))" />
+}
+<FluentButton Appearance="Appearance.Outline" Title="@(Item.Active ? (Item.ModerationStatus.HasValue ? "Hủy duyệt" : "Ngừng sử dụng") : (Item.ModerationStatus.HasValue ? "Duyệt" : "Sử dụng"))" aria-label="@(Item.Active ? (Item.ModerationStatus.HasValue ? "Hủy duyệt" : "Ngừng sử dụng") : (Item.ModerationStatus.HasValue ? "Duyệt" : "Sử dụng"))" Disabled="Busy" IconStart="@(Item.Active ? (Icon)new Icons.Regular.Size16.Prohibited() : new Icons.Regular.Size16.CheckmarkCircle())" OnClick="@(() => OnStatus.InvokeAsync(Item))" />
+@if (!Item.Active && (Kind is (AdminCatalog.Modules or AdminCatalog.Menus or AdminCatalog.Roles)
+    || Kind == AdminCatalog.Parameters && SystemParameterCatalog.Find(Item.Code) == null))
+{
+    <FluentButton Appearance="Appearance.Outline" Title="Xóa" aria-label="Xóa" Disabled="Busy" IconStart="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => OnDelete.InvokeAsync(Item))" />
+}
+
+@if (Kind == AdminCatalog.Groups && Item.UnitType == 0)
+{
+    <FluentButton Appearance="Appearance.Outline" Title="Hộ và nhân khẩu" aria-label="Hộ và nhân khẩu" Disabled="Busy" IconStart="@(new Icons.Regular.Size16.People())" OnClick="@(() => OnPopulation.InvokeAsync(Item))" />
+}

@@ -1,0 +1,21 @@
+.settings-button,
+.settings-button:hover,
+.settings-button:focus,
+.settings-button:active {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: transparent !important;
+    border: none;
+    box-shadow: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.settings-button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}

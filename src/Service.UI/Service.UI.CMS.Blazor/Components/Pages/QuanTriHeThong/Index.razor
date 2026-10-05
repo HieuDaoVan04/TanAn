@@ -1,0 +1,26 @@
+@page "/quan-tri-he-thong"
+@using Service.Shared.Commons.Models
+@using Service.UI.CMS.Blazor.Components.Layouts.ShareComponent.SecurePage
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject IMenuAccessCache MenuAccess
+
+<PageTitle>Quản trị hệ thống - Xã Tân An</PageTitle>
+
+<section class="admin-overview">
+    <h1>Quản trị hệ thống</h1>
+    <p>Chọn chức năng quản lý tổ chức, quyền truy cập và cấu hình hệ thống.</p>
+    <div class="admin-links">
+        @foreach (var item in AvailableItems)
+        {
+            <a class="admin-card" href="@item.Path">
+                <h2>@item.Title</h2>
+                <p>@item.Description</p>
+                <span>Mở chức năng →</span>
+            </a>
+        }
+    </div>
+    @if (!AvailableItems.Any())
+    {
+        <p role="status">Bạn chưa được cấp quyền truy cập các chức năng quản trị.</p>
+    }
+</section>

@@ -1,0 +1,58 @@
+@namespace Service.UI.CMS.Blazor.Components.Pages.QuanTriHeThong.SystemParameter
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@using Service.Shared.Commons.Model.SQL
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentIcon Value="@(new Icons.Regular.Size24.Info())" />
+        <FluentLabel Typo="Typography.PaneHeader">
+            @Dialog.Instance.Parameters.Title
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
+
+@if (!IsLoading)
+{
+    <FluentDialogBody>
+        <FluentGrid Class="s-form-view" Spacing="2" AdaptiveRendering="true" Justify="JustifyContent.FlexStart" Style="padding: 4px;">
+            <FluentGridItem md="12">
+                <div class="row-info">
+                    <label>Mã tham số:</label>
+                    <div>@Item.Code</div>
+                </div>
+            </FluentGridItem>
+            <FluentGridItem md="12">
+                <div class="row-info">
+                    <label>Giá trị:</label>
+                    <div class="wrap-text">@Item.Value</div>
+                </div>
+            </FluentGridItem>
+            <FluentGridItem md="12">
+                <div class="row-info">
+                    <label>Mô tả:</label>
+                    <div>@Item.Description</div>
+                </div>
+            </FluentGridItem>
+            <FluentGridItem md="12">
+                <div class="row-info">
+                    <label>Trạng thái:</label>
+                    <div>@(Item.ModerationStatus == ModerationStatus.Approved ? "Đã duyệt" : "Chưa phê duyệt")</div>
+                </div>
+            </FluentGridItem>
+        </FluentGrid>
+    </FluentDialogBody>
+}
+else
+{
+    <FluentDialogBody>
+        <FluentProgressRing />
+    </FluentDialogBody>
+}
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync">Đóng</FluentButton>
+</FluentDialogFooter>

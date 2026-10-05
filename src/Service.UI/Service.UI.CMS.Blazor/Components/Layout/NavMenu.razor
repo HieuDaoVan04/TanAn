@@ -1,0 +1,32 @@
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Microsoft.FluentUI.AspNetCore.Components
+@rendermode InteractiveServer
+
+<div class="navmenu">
+    <input type="checkbox" title="Mở hoặc đóng menu" @bind="mobileExpanded" id="navmenu-toggle" class="navmenu-icon" />
+    <label for="navmenu-toggle" class="navmenu-icon">
+        <FluentIcon Value="@(new Icons.Regular.Size20.Navigation())" Color="Color.Neutral" />
+    </label>
+    <label for="navmenu-toggle" class="nav-backdrop" aria-label="Đóng menu"></label>
+    <nav class="sitenav" aria-labelledby="main-menu">
+
+        @if (IsLoadingDataMenu)
+        {
+            <LoadingProgressRing />
+        }
+        else if (NavMenuItems.Count > 0)
+        {
+            <FluentNavMenu Id="main-menu" Title="Main menu" CustomToggle="true">
+                @foreach (var item in NavMenuItems)
+                {
+                    <NavMenuItem @key="item.MenuId" Value="item" />
+                }
+            </FluentNavMenu>
+        }
+        else
+        {
+            <p style="padding: 16px; color: #94a3b8;">Không có menu để hiển thị.</p>
+        }
+
+    </nav>
+</div>

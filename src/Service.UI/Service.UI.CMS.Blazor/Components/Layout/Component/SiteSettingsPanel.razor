@@ -1,0 +1,27 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.Extensions
+@implements IDialogContentComponent<SiteThemePreferences>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="24">
+    <FluentSelect Label="Chế độ giao diện" Width="100%" Items="@(Enum.GetValues<DesignThemeModes>())"
+                  OptionText="@(mode => ModeLabel(mode))"
+                  @bind-SelectedOption="Content.Mode" @bind-SelectedOption:after="ApplyAsync" />
+    <FluentSelect Label="Màu chủ đạo" Width="100%" Height="200px"
+                  Items="@(OfficeColorUtilities.AllColors.Cast<OfficeColor?>())"
+                  @bind-SelectedOption="Content.OfficeColor" @bind-SelectedOption:after="ApplyAsync">
+        <OptionTemplate>
+            <FluentStack VerticalAlignment="VerticalAlignment.Center">
+                <FluentIcon Value="@(new Icons.Filled.Size20.RectangleLandscape())" Color="Color.Custom"
+                            CustomColor="@(context?.ToAttributeValue() ?? "#036ac4")" />
+                <FluentLabel>@context</FluentLabel>
+            </FluentStack>
+        </OptionTemplate>
+    </FluentSelect>
+    <FluentSwitch Label="Hướng hiển thị" CheckedMessage="Từ trái sang phải" UncheckedMessage="Từ phải sang trái"
+                  Value="@(Content.Direction != LocalizationDirection.RightToLeft)" ValueChanged="HandleDirectionChanged" />
+    <p>Chế độ và màu giao diện được lưu trên trình duyệt để sử dụng cho lần truy cập sau. Hướng hiển thị áp dụng trong phiên hiện tại.</p>
+    <FluentDivider Style="width: 100%;" />
+    <p>Đặt lại để dùng giao diện theo hệ thống và chọn một màu ngẫu nhiên.</p>
+    <FluentButton OnClick="ResetSiteAsync">Đặt lại giao diện</FluentButton>
+    @if (!string.IsNullOrEmpty(_status)) { <p role="status">@_status</p> }
+</FluentStack>

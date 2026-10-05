@@ -1,0 +1,75 @@
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Service.UI.CMS.Blazor.Components.Shares.Filter
+
+<PageTitle>@Title - Xã Tân An</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="width:100%">
+    <h2>@Title</h2>
+
+    <SearchPanel Title="Bộ lọc đối tượng an sinh">
+        <BasicFields>
+            <FluentSearch aria-label="Tìm kiếm"
+                          Placeholder="Nhập vào từ khóa (Họ tên, CCCD, thôn...)"
+                          @bind-Value="searchKeyword"
+                          @bind-Value:after="ReloadData"
+                          Style="width: 100%;" />
+        </BasicFields>
+        <Actions>
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.Search())" OnClick="ReloadData">Tìm kiếm</FluentButton>
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.ArrowSync())" OnClick="ClearSearch">Tải lại</FluentButton>
+        </Actions>
+    </SearchPanel>
+
+    <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between; align-items:center;" Class="page-toolbar">
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" Class="page-toolbar">
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.AddCircle())" OnClick="@(() => showCreate = true)">Thêm mới</FluentButton>
+            <FluentButton OnClick="ExportExcel" Appearance="Appearance.Accent" Class="ms-2">
+                <i class="fa-solid fa-file-excel me-1"></i> Xuất Excel
+            </FluentButton>
+        </FluentStack>
+    </FluentStack>
+
+    <div class="data-grid-scroll">
+        <FluentDataGrid Items="@welfareQuery"
+                        TGridItem="DoiTuongAnSinhDto"
+                        Pagination="@pagination"
+                        ShowHover="true"
+                        MultiLine="true"
+                        RowSize="DataGridRowSize.Large"
+                        GridTemplateColumns="50px minmax(140px,1.2fr) 130px 110px 130px 130px 110px 110px"
+                        Style="width:100%;"
+                        RowStyle="@(item => "min-height:60px;")">
+            <ChildContent>
+                <TemplateColumn Title="#" Sortable="false" Style="display: flex;align-items: center;">
+                    @(welfareQuery?.ToList().IndexOf(context) + 1)
+                </TemplateColumn>
+                <TemplateColumn Title="Họ tên đối tượng" Sortable="true" Style="display: flex;align-items: center;">
+                    <span @onclick="@(() => detail = context)" style="cursor: pointer; color: dodgerblue; font-weight: 500;">
+                        @context.HoTen
+                    </span>
+                </TemplateColumn>
+                <PropertyColumn Property="@(w => w.CCCD)" Title="Số CCCD" />
+                <PropertyColumn Property="@(w => w.ApThon)" Title="Thôn" Sortable="true" />
+                <PropertyColumn Property="@(w => BusinessCreateDialog.Label(w.LoaiDoiTuong.ToString()))" Title="Phân Loại An Sinh" Sortable="true" />
+                <PropertyColumn Property="@(w => w.MucTroCapHangThang.ToString("N0") + " VNĐ")" Title="Trợ Cấp / Tháng" />
+                <PropertyColumn Property="@(w => w.NgayBatDauHuong.ToString("dd/MM/yyyy"))" Title="Ngày Hưởng" />
+                <TemplateColumn Title="Thao tác" Style="display: flex; align-items: center;">
+                    <FluentButton Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.Payment())" Title="Ghi nhận chi trả" aria-label="Ghi nhận chi trả" OnClick="@(() => payoutTarget = context)" />
+                </TemplateColumn>
+            </ChildContent>
+            <EmptyContent><p style="padding:20px">Không có dữ liệu phù hợp.</p></EmptyContent>
+        </FluentDataGrid>
+    </div>
+
+    <Paginator PaginationState="@pagination" SelectedPageSizeChanged="RefreshData" />
+</FluentStack>
+
+@if(showCreate) { <BusinessCreateDialog Kind="welfare" Category="Category" Saved="Created" Cancel="@(() => showCreate = false)" /> }
+@if(payoutTarget != null) { <BusinessCreateDialog Kind="payout" TargetId="payoutTarget.Id" TargetName="@payoutTarget.HoTen" Amount="payoutTarget.MucTroCapHangThang" Saved="Created" Cancel="@(() => payoutTarget = null)" /> }
+@if(detail != null)
+{
+    <DataDialog Title="Chi tiết đối tượng an sinh" Close="@(() => detail = null)">
+        <dl><dt>Họ tên</dt><dd>@detail.HoTen</dd><dt>CCCD</dt><dd>@detail.CCCD</dd><dt>Thôn</dt><dd>@detail.ApThon</dd><dt>Phân loại</dt><dd>@BusinessCreateDialog.Label(detail.LoaiDoiTuong.ToString())</dd><dt>Trợ cấp/tháng</dt><dd>@detail.MucTroCapHangThang.ToString("N0") VNĐ</dd><dt>Ngày hưởng</dt><dd>@detail.NgayBatDauHuong.ToString("dd/MM/yyyy")</dd><dt>Ghi chú</dt><dd>@detail.GhiChu</dd></dl>
+        <div class="dialog-actions"><FluentButton OnClick="@(() => detail = null)">Đóng</FluentButton></div>
+    </DataDialog>
+}

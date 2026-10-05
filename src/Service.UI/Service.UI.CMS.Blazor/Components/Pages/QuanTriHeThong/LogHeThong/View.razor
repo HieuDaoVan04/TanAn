@@ -1,0 +1,126 @@
+@namespace Service.UI.CMS.Blazor.Components.Pages.QuanTriHeThong.LogHeThong
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+@if (!IsLoading)
+{
+    <FluentDialogHeader ShowDismiss="true">
+        <FluentStack VerticalAlignment="VerticalAlignment.Center">
+            <FluentIcon Value="@(new Icons.Regular.Size24.Info())" />
+            <FluentLabel Typo="Typography.PaneHeader">Chi tiết hoạt động hệ thống</FluentLabel>
+        </FluentStack>
+    </FluentDialogHeader>
+
+    <FluentDialogBody>
+        <div class="log-detail-grid">
+            <div class="log-detail-item">
+                <label>Thời gian</label>
+                <div>@Item.Created.ToString("dd/MM/yyyy HH:mm:ss")</div>
+            </div>
+
+            <div class="log-detail-item">
+                <label>Người thao tác</label>
+                <div>@Display(Item.UserName)</div>
+            </div>
+
+            <div class="log-detail-item">
+                <label>Hành động</label>
+                <div>@Display(Item.Action)</div>
+            </div>
+
+            <div class="log-detail-item">
+                <label>Đối tượng</label>
+                <div>@Display(Item.EntityName)</div>
+            </div>
+
+            <div class="log-detail-item log-detail-wide">
+                <label>Mã định danh</label>
+                <div class="log-code">@Display(Item.EntityId)</div>
+            </div>
+
+            <div class="log-detail-item">
+                <label>Địa chỉ IP</label>
+                <div class="log-code">@Display(Item.ClientIP)</div>
+            </div>
+
+            <div class="log-detail-item log-detail-wide">
+                <label>Giá trị cũ</label>
+                <pre>@Display(Item.OldValues)</pre>
+            </div>
+
+            <div class="log-detail-item log-detail-wide">
+                <label>Giá trị mới / Mô tả</label>
+                <pre>@Display(Item.NewValues)</pre>
+            </div>
+        </div>
+    </FluentDialogBody>
+}
+else
+{
+    <FluentDialogBody>
+        <div style="display:flex;justify-content:center;padding:24px;">
+            <FluentProgressRing />
+        </div>
+    </FluentDialogBody>
+}
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync">Đóng</FluentButton>
+</FluentDialogFooter>
+
+<style>
+    .log-detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 4px;
+    }
+
+    .log-detail-item {
+        border: 1px solid #ececec;
+        border-radius: 8px;
+        padding: 12px;
+        min-width: 0;
+    }
+
+    .log-detail-item label {
+        display: block;
+        margin-bottom: 6px;
+        color: #666;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .log-detail-wide {
+        grid-column: 1 / -1;
+    }
+
+    .log-detail-item pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: inherit;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .log-code {
+        word-break: break-word;
+        font-family: Consolas, monospace;
+        font-size: 13px;
+    }
+
+    @@media (max-width: 700px) {
+        .log-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .log-detail-wide {
+            grid-column: auto;
+        }
+    }
+</style>

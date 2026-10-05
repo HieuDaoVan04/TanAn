@@ -1,0 +1,44 @@
+@page "/quan-ly-tham-so-ht/cau-hinh-chung"
+@using Service.Shared.Contracts.DTOs
+@using Service.Shared.Commons.Models
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<PageTitle>Cấu hình chung hệ thống - Tân An</PageTitle>
+<section class="configuration">
+    <div class="heading"><h2>Cấu hình chung hệ thống</h2><a href="/quan-ly-tham-so-ht">Danh sách tham số</a></div>
+    @if (!CurrentUser.IsAuthenticated || CurrentUser.Role != "Admin") { <p>Bạn chưa có quyền quản trị.</p> }
+    else
+    {
+        <p>Cấu hình áp dụng sau khi lưu. Thời hạn phiên áp dụng cho lần đăng nhập mới; chính sách mật khẩu áp dụng khi tạo hoặc đổi mật khẩu.</p>
+        @if (!string.IsNullOrEmpty(error)) { <p class="error" role="alert">@error</p> }
+        @if (!string.IsNullOrEmpty(message)) { <p class="message" role="status">@message</p> }
+        @if (loading) { <FluentProgressRing /> }
+        else if (fields.Count > 0)
+        {
+            <form @onsubmit="Save" @onsubmit:preventDefault>
+                <fieldset disabled="@busy">
+                    @foreach (var group in fields.GroupBy(x => x.Group))
+                    {
+                        <section class="config-group"><h3>@group.Key</h3><div class="config-grid">
+                            @foreach (var field in group)
+                            {
+                                <label @key="field.Code" class="config-field">
+                                    <span>@field.Name</span>
+                                    <ParameterValueEditor Definition="SystemParameterCatalog.Find(field.Code)" @bind-Value="field.Value" />
+                                    @if (field.Minimum.HasValue) { <small>Từ @field.Minimum đến @field.Maximum</small> }
+                                    @if (field.IsDefault) { <small>Đang dùng giá trị mặc định</small> }
+                                </label>
+                            }
+                        </div></section>
+                    }
+                </fieldset>
+                <div class="config-actions">
+                    <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Disabled="@(busy || !IsDirty)">@(busy ? "Đang lưu…" : "Lưu cấu hình")</FluentButton>
+                    <FluentButton Type="ButtonType.Button" OnClick="Reload" Disabled="busy">Tải lại</FluentButton>
+                    <span role="status">@(IsDirty ? "Có thay đổi chưa lưu" : "Cấu hình đã tải")</span>
+                </div>
+            </form>
+        }
+        else { <FluentButton OnClick="Reload">Thử tải lại</FluentButton> }
+    }
+</section>

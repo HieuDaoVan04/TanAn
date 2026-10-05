@@ -1,0 +1,16 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject IDialogService DialogService
+
+<FluentDesignTheme @ref="_theme" @bind-Mode="_preferences.Mode"
+                   @bind-OfficeColor="_preferences.OfficeColor"
+                   Direction="_preferences.Direction" StorageName="theme" />
+
+<button id="site-settings" class="settings-button" type="button"
+        title="Cài đặt giao diện" aria-label="Cài đặt giao diện"
+        @onclick="OpenSiteSettingsAsync">
+    <FluentIcon Value="@(new Icons.Regular.Size20.Settings())" />
+</button>
+
+<FluentTooltip Anchor="site-settings">
+    Cài đặt giao diện
+</FluentTooltip>

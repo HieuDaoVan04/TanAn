@@ -1,0 +1,13 @@
+// "Một sản phẩm của HieuDV"
+@cmt1@
+
+using Service.Shared.Contracts.Shared;
+namespace Service.Shared.Contracts.Portal.DTOs
+{
+    public class @Entity@Dto : BaseEntiyDto
+    {
+        public int STT { get; set; }
+    }
+
+}
+@cmt2@

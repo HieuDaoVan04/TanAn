@@ -1,0 +1,1 @@
+.unit-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0}.unit-table{max-height:55vh;overflow:auto}.unit-table ::deep fluent-data-grid{min-width:650px;width:100%}

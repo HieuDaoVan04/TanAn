@@ -1,0 +1,18 @@
+@page "/account/login"
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@attribute [ExcludeFromInteractiveRouting]
+@layout Service.UI.CMS.Blazor.Components.Layout.AccountLayout
+
+<PageTitle>Đăng nhập - Xã Tân An</PageTitle>
+<section class="login-card">
+    <h1>Đăng nhập</h1>
+    <p>Hệ thống quản lý UBND Xã Tân An</p>
+    @if (Error != null) { <p role="alert">@ErrorMessage</p> }
+    <form method="post" action="/account/sign-in" data-enhance="false">
+        <AntiforgeryToken />
+        <input type="hidden" name="returnUrl" value="@ReturnUrl" />
+        <label>Tên đăng nhập<input name="username" autocomplete="username" required maxlength="100" autofocus /></label>
+        <label>Mật khẩu<input name="password" type="password" autocomplete="current-password" required maxlength="1024" /></label>
+        <button type="submit">Đăng nhập</button>
+    </form>
+</section>

@@ -1,0 +1,74 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Service.Shared.Commons.Extensions
+
+@implements IDialogContentComponent<Guid>
+
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentIcon Value="@(new Icons.Regular.Size24.WindowApps())" />
+        <FluentLabel Typo="Typography.PaneHeader">
+            @Dialog.Instance.Parameters.Title
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
+
+<FluentDialogBody>
+    <FluentGrid Class="s-form-view" Spacing="2" AdaptiveRendering="true" Justify="JustifyContent.FlexStart" Style="padding: 4px;">
+        <FluentGridItem md="12">
+            <div class="row-info">
+                <label>Tên người dùng:</label>
+                <div>@Item.FullName</div>
+            </div>
+        </FluentGridItem>
+        <FluentGridItem md="12">
+            <div class="row-info">
+                <label>Tên tài khoản:</label>
+                <div>@Item.UserName</div>
+            </div>
+        </FluentGridItem>
+
+        <FluentGridItem md="12">
+            <div class="row-info">
+                <label>Email:</label>
+                <div class="wrap-text">@Item.Email</div>
+            </div>
+        </FluentGridItem>
+        <FluentGridItem md="12">
+            <div class="row-info">
+                <label>Số điện thoại:</label>
+                <div>@Item.PhoneNumber</div>
+            </div>
+        </FluentGridItem>
+        <FluentGridItem md="12">
+            <div class="row-info">
+                <label>Trạng thái:</label>
+                <div>@SIConvert.GetEnumDescription(Item.ModerationStatus)</div>
+            </div>
+        </FluentGridItem>
+    </FluentGrid>
+</FluentDialogBody>
+
+<div class="dialog-actions">
+    <FluentButton Appearance="Appearance.Accent" OnClick="@OpenChangePasswordModal">Đổi mật khẩu</FluentButton>
+    <FluentButton Appearance="Appearance.Neutral" OnClick="@CancelAsync">Đóng</FluentButton>
+</div>
+
+<style>
+    .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 16px 0 0;
+    }
+    .row-info {
+        display: grid;
+        grid-template-columns: 50% 50%;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 0;
+    }
+
+    .row-info label {
+        font-weight: 500;
+    }
+</style>

@@ -1,0 +1,13 @@
+// "Một sản phẩm của HieuDV"
+
+@cmt1@
+using Service.Shared.Commons.Querys.ModalQuery;
+namespace Service.Core.Share.Querys
+{
+    public class @Entity@Query : BaseQuery
+    {
+        
+    }
+}
+
+@cmt2@

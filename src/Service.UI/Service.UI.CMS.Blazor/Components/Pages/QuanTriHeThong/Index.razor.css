@@ -1,0 +1,8 @@
+.admin-overview { padding: 24px; }
+.admin-overview h1 { margin: 0 0 8px; font-size: 1.5rem; }
+.admin-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; margin-top: 24px; }
+.admin-card { display: block; padding: 20px; border: 1px solid var(--neutral-stroke-rest); border-radius: 8px; background: transparent; color: var(--neutral-foreground-rest); text-decoration: none; }
+.admin-card h2 { margin: 0; font-size: 1.1rem; }
+.admin-card p { line-height: 1.5; }
+.admin-card span { color: var(--accent-foreground-rest); }
+.admin-card:hover, .admin-card:focus-visible { border-color: var(--accent-foreground-rest); }
