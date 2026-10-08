@@ -1,29 +1,58 @@
-@page "/bien-dong"
+@page "/bien-dong/tam-tru"
+
 @using Service.UI.CMS.Blazor.Components.Shared
 @using Service.UI.CMS.Blazor.Components.Shares.Filter
 
-<PageTitle>Quản Lý Biến Động Dân Cư - Xã Tân An</PageTitle>
+<PageTitle>@Title - Xã Tân An</PageTitle>
 
 <FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="width:100%">
-    <h2>Danh sách biến động dân cư</h2>
+    <h2>@Title</h2>
 
-    <SearchPanel Title="Bộ lọc biến động dân cư">
+    <SearchPanel Title="@($"Bộ lọc {TypeLabel.ToLowerInvariant()}")">
         <BasicFields>
-            <FluentSearch aria-label="Tìm kiếm"
+            <div>
+                <label>Từ khóa</label>
+                <FluentSearch aria-label="Tìm kiếm"
                           Placeholder="Nhập vào từ khóa (Tên nhân khẩu, CCCD, nơi đi/đến...)"
                           @bind-Value="searchKeyword"
                           @bind-Value:after="LoadData"
                           Style="width: 100%;" />
+            </div>
+            <div>
+                <label for="change-village-filter">Thôn</label>
+                <select id="change-village-filter" class="change-filter-input" @bind="selectedVillageId" @bind:after="LoadData">
+                    <option value="">Tất cả thôn</option>
+                    @foreach (var village in villages)
+                    {
+                        <option value="@village.Id">@village.Ten</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label for="change-from-date">Từ ngày</label>
+                <input id="change-from-date" class="change-filter-input" type="date" @bind="fromDate" @bind:format="yyyy-MM-dd" @bind:after="LoadData" />
+            </div>
+            <div>
+                <label for="change-to-date">Đến ngày</label>
+                <input id="change-to-date" class="change-filter-input" type="date" @bind="toDate" @bind:format="yyyy-MM-dd" @bind:after="LoadData" />
+            </div>
         </BasicFields>
         <Actions>
             <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.Search())" OnClick="LoadData">Tìm kiếm</FluentButton>
             <FluentButton Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.ArrowSync())" OnClick="ClearSearch">Tải lại</FluentButton>
         </Actions>
     </SearchPanel>
+    @if (!string.IsNullOrEmpty(filterError))
+    {
+        <p class="filter-error" role="alert">@filterError</p>
+    }
 
     <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between; align-items:center;" Class="page-toolbar">
         <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" Class="page-toolbar">
-            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.AddCircle())" OnClick="@(() => showCreate = true)">Thêm mới</FluentButton>
+            @if (ChangeType.HasValue)
+            {
+                <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.AddCircle())" OnClick="OpenEdit">Thêm mới</FluentButton>
+            }
             <FluentButton OnClick="ExportExcel" Appearance="Appearance.Accent" Class="ms-2">
                 <i class="fa-solid fa-file-excel me-1"></i> Xuất Excel
             </FluentButton>
@@ -37,22 +66,23 @@
                         ShowHover="true"
                         MultiLine="true"
                         RowSize="DataGridRowSize.Large"
-                        GridTemplateColumns="50px 120px minmax(140px,1.2fr) 120px 110px minmax(120px,1fr) minmax(140px,1.5fr) 110px"
+                        GridTemplateColumns="56px minmax(180px,1fr) minmax(160px,1fr) 140px 170px minmax(160px,1fr) minmax(120px,0.65fr) 140px"
                         Style="width:100%;"
                         RowStyle="@(item => "min-height:60px;")">
             <ChildContent>
-                <TemplateColumn Title="#" Sortable="false" Style="display: flex;align-items: center;">
-                    @(bienDongQuery?.ToList().IndexOf(context) + 1)
+                <TemplateColumn Title="#" Sortable="false" Align="Align.Center" HeaderTooltip="Số thứ tự">
+                    <HeaderCellItemTemplate Context="column"><span class="row-number-heading">#</span></HeaderCellItemTemplate>
+                    <ChildContent Context="row">@(bienDongQuery?.ToList().IndexOf(row) + 1)</ChildContent>
                 </TemplateColumn>
                 <PropertyColumn Property="@(b => BusinessCreateDialog.Label(b.LoaiBienDong.ToString()))" Title="Loại Biến Động" Sortable="true" />
-                <TemplateColumn Title="Họ tên nhân khẩu" Sortable="true" Style="display: flex;align-items: center;">
-                    <span @onclick="@(() => detail = context)" style="cursor: pointer; color: dodgerblue; font-weight: 500;">
+                <TemplateColumn Title="Họ tên nhân khẩu" Sortable="true">
+                    <span @onclick="@(() => OpenView(context))" style="cursor: pointer; color: dodgerblue; font-weight: 500;">
                         @context.HoTenNhanKhau
                     </span>
                 </TemplateColumn>
                 <PropertyColumn Property="@(b => b.CCCDNhanKhau)" Title="Số CCCD" />
                 <PropertyColumn Property="@(b => b.NgayPhatSinh.ToString("dd/MM/yyyy"))" Title="Ngày Phát Sinh" />
-                <PropertyColumn Property="@(b => b.NoiDenOrDi)" Title="Nơi Đi / Đến" />
+                <PropertyColumn Property="@(b => b.NoiDenOrDi)" Title="@(ChangeType == LoaiBienDongEnum.KhaiSinh ? "Nơi sinh" : "Nơi Đi / Đến")" />
                 <PropertyColumn Property="@(b => b.LyDo)" Title="Lý Do" />
                 <PropertyColumn Property="@(b => b.CanBoGhiNhan)" Title="Cán Bộ Ghi Nhận" />
             </ChildContent>
@@ -63,11 +93,12 @@
     <Paginator PaginationState="@pagination" SelectedPageSizeChanged="RefreshData" />
 </FluentStack>
 
-@if(showCreate) { <BusinessCreateDialog Kind="change" Saved="Created" Cancel="@(() => showCreate = false)" /> }
-@if(detail != null)
+@if (showEdit)
 {
-    <DataDialog Title="Chi tiết biến động dân cư" Close="@(() => detail = null)">
-        <dl><dt>Nhân khẩu</dt><dd>@detail.HoTenNhanKhau</dd><dt>CCCD</dt><dd>@detail.CCCDNhanKhau</dd><dt>Loại biến động</dt><dd>@BusinessCreateDialog.Label(detail.LoaiBienDong.ToString())</dd><dt>Ngày phát sinh</dt><dd>@detail.NgayPhatSinh.ToString("dd/MM/yyyy")</dd><dt>Nơi đi / đến</dt><dd>@detail.NoiDenOrDi</dd><dt>Lý do</dt><dd>@detail.LyDo</dd><dt>Cán bộ ghi nhận</dt><dd>@detail.CanBoGhiNhan</dd></dl>
-        <div class="dialog-actions"><FluentButton OnClick="@(() => detail = null)">Đóng</FluentButton></div>
-    </DataDialog>
+    <Edit Saved="OnSaved" Cancel="CloseEdit" />
+}
+
+@if (selectedRecord != null)
+{
+    <View Record="selectedRecord" Close="CloseView" />
 }

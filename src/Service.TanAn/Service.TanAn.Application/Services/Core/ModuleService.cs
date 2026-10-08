@@ -131,7 +131,7 @@ namespace Service.TanAn.Application.Services.Core
             if (module == null)
                 return false;
 
-            module.ModerationStatus = ModerationStatus.Rejected;
+            module.ModerationStatus = ModerationStatus.Pending;
             _unitOfWork.ModuleRepository.Update(module);
             await _unitOfWork.CompleteAsync();
 

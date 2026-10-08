@@ -20,6 +20,7 @@ namespace Service.TanAn.Domain.Entities
         public string LyDo { get; set; } = string.Empty;
         public string CanBoGhiNhan { get; set; } = string.Empty;
         public string? FileDinhKemUrl { get; set; }
+        public string? HoSoKhaiSinhJson { get; set; }
         public DateTime NgayTao { get; set; } = DateTime.UtcNow;
     }
 }

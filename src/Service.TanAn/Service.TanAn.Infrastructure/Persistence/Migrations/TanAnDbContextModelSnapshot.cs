@@ -128,6 +128,9 @@ namespace Service.TanAn.Infrastructure.Persistence.Migrations
                     b.Property<string>("FileDinhKemUrl")
                         .HasColumnType("text");
 
+                    b.Property<string>("HoSoKhaiSinhJson")
+                        .HasColumnType("text");
+
                     b.Property<int>("LoaiBienDong")
                         .HasColumnType("integer");
 
@@ -297,6 +300,96 @@ namespace Service.TanAn.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("HoGiaDinhs");
+                });
+
+            modelBuilder.Entity("Service.TanAn.Domain.Entities.HoSoKhaiSinh", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ApThonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("HoGiaDinhId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("HoTenNguoiYeuCau")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("HoTenTre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("MaHoSo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("MaSoHo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("ModerationStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
+                    b.Property<DateTime?>("NgayDuyet")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("NgaySinh")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("NgaySua")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("NguoiDuyet")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid?>("NguoiDuyetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("NguoiSuaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("NguoiTaoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NoiDungJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PhienBan")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HoGiaDinhId");
+
+                    b.HasIndex("MaHoSo")
+                        .IsUnique();
+
+                    b.HasIndex("NguoiDuyetId");
+
+                    b.HasIndex("ApThonId", "NgayTao");
+
+                    b.HasIndex("NguoiTaoId", "NgayTao");
+
+                    b.ToTable("HoSoKhaiSinhs", t =>
+                        {
+                            t.HasCheckConstraint("CK_HoSoKhaiSinhs_ModerationStatus", "\"ModerationStatus\" IN (0, 1)");
+                        });
                 });
 
             modelBuilder.Entity("Service.TanAn.Domain.Entities.LichSuTroCap", b =>
@@ -1284,6 +1377,29 @@ namespace Service.TanAn.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("DiaBan");
+                });
+
+            modelBuilder.Entity("Service.TanAn.Domain.Entities.HoSoKhaiSinh", b =>
+                {
+                    b.HasOne("Service.TanAn.Domain.Entities.ApThon", null)
+                        .WithMany()
+                        .HasForeignKey("ApThonId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Service.TanAn.Domain.Entities.HoGiaDinh", null)
+                        .WithMany()
+                        .HasForeignKey("HoGiaDinhId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Service.TanAn.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("NguoiDuyetId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Service.TanAn.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("NguoiTaoId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Service.TanAn.Domain.Entities.LichSuTroCap", b =>

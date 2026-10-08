@@ -174,7 +174,7 @@ namespace Service.UI.CMS.Blazor.Components.Layout
                         "gap-sm",
                         BuildNavItems(dto.Children)
                     )
-                    { STT = dto.ViTri, MenuId = dto.Id });
+                    { STT = dto.ViTri, MenuId = dto.Id, Href = MenuAccess.HasMenu(CurrentUser, dto.Id) ? dto.LienKet : null });
                 }
                 else if (!string.IsNullOrWhiteSpace(dto.LienKet))
                 {

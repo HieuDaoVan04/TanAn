@@ -4,7 +4,7 @@
 
 Dự án đã có entity `SystemParameter`, bảng `SystemParameters`, API và trang danh mục quản trị. Phần bổ sung dùng chung những thành phần đó, thay vì thêm bảng `THAM_SO_HE_THONG` và các phụ thuộc AIM/S3 không tồn tại trong dự án.
 
-Giữ các ý tưởng phù hợp: tra cứu theo mã, danh mục có kiểu dữ liệu, giá trị mặc định, duyệt/ngừng dùng, cấu hình theo nhóm và ghi nhật ký trước/sau. Chính sách mật khẩu và đăng nhập được đọc tại nơi thực thi; banner/footer dùng văn bản được Razor mã hóa.
+Giữ các ý tưởng phù hợp: tra cứu theo mã, danh mục có kiểu dữ liệu, giá trị mặc định, duyệt/hủy duyệt, cấu hình theo nhóm và ghi nhật ký trước/sau. Chính sách mật khẩu và đăng nhập được đọc tại nơi thực thi; banner/footer dùng văn bản được Razor mã hóa.
 
 Các vấn đề trong mã tham khảo không được mang sang:
 
@@ -48,7 +48,7 @@ Hộp **Đổi mật khẩu** tải chính sách hiện hành, yêu cầu mật 
 
 Giá trị tích hợp chỉ có hiệu lực khi bản ghi được duyệt và vượt qua kiểm tra. Thiếu, chưa duyệt, sai kiểu hoặc trùng mã trong dữ liệu cũ đều dùng mặc định. Mã được trim và chuẩn hóa về mã danh mục, kiểm tra trùng không phân biệt hoa thường ở tầng dịch vụ. Bảng hiện chưa có unique index cho mã: kiểm tra này không thay thế ràng buộc database trong trường hợp nhiều yêu cầu tạo đồng thời. Nếu dữ liệu cũ trùng mã, thao tác lưu cấu hình chung từ chối và yêu cầu xử lý dữ liệu trước.
 
-Không cho đổi mã hoặc xóa tham số tích hợp. Có thể ngừng dùng để quay về mặc định. Tham số tùy chỉnh vẫn là văn bản và chỉ có tác dụng khi có nghiệp vụ đọc nó; không trả qua API công khai, giá trị được ẩn khỏi audit. Không lưu API key/bí mật triển khai trong cấu hình hiển thị; giữ chúng ở cấu hình môi trường hiện có.
+Không cho đổi mã hoặc xóa tham số tích hợp. Có thể hủy duyệt để quay về mặc định. Tham số tùy chỉnh vẫn là văn bản và chỉ có tác dụng khi có nghiệp vụ đọc nó; không trả qua API công khai, giá trị được ẩn khỏi audit. Không lưu API key/bí mật triển khai trong cấu hình hiển thị; giữ chúng ở cấu hình môi trường hiện có.
 
 Header/footer tải lại ngay trong phiên giao diện vừa lưu; các phiên giao diện khác nhận giá trị khi tải lại trang. Nghiệp vụ mật khẩu/đăng nhập đọc giá trị mới trong mỗi thao tác.
 

@@ -1,0 +1,12 @@
+<DataDialog Title="Chi tiết tạm vắng" Close="Close">
+    <dl>
+        <dt>Nhân khẩu</dt><dd>@Record.HoTenNhanKhau</dd>
+        <dt>CCCD</dt><dd>@Record.CCCDNhanKhau</dd>
+        <dt>Loại biến động</dt><dd>@BusinessCreateDialog.Label(Record.LoaiBienDong.ToString())</dd>
+        <dt>Ngày phát sinh</dt><dd>@Record.NgayPhatSinh.ToString("dd/MM/yyyy")</dd>
+        <dt>Nơi đi / đến</dt><dd>@Record.NoiDenOrDi</dd>
+        <dt>Lý do</dt><dd>@Record.LyDo</dd>
+        <dt>Cán bộ ghi nhận</dt><dd>@Record.CanBoGhiNhan</dd>
+    </dl>
+    <div class="dialog-actions"><FluentButton OnClick="Close">Đóng</FluentButton></div>
+</DataDialog>

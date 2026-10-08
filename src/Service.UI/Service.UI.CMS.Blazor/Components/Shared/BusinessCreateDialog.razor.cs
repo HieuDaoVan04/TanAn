@@ -12,6 +12,7 @@ public partial class BusinessCreateDialog
     [Inject] public NavigationManager Navigation { get; set; } = default!;
     [Parameter] public string Kind { get; set; } = "household";
     [Parameter] public DoiTuongAnSinhEnum? Category { get; set; }
+    [Parameter] public LoaiBienDongEnum? ChangeType { get; set; }
     [Parameter] public Guid TargetId { get; set; }
     [Parameter] public string TargetName { get; set; } = "";
     [Parameter] public decimal Amount { get; set; }
@@ -26,7 +27,7 @@ public partial class BusinessCreateDialog
     private CreateAnSinhForm welfare = new() { LoaiDoiTuong = DoiTuongAnSinhEnum.HoNgheo, NgayBatDauHuong = DateTime.Today };
     private CreateTroCapForm payout = new();
     private object Model => Kind switch { "household" => household, "change" => change, "payout" => payout, _ => welfare };
-    private string Title => Kind switch { "household" => "Thêm mới hộ gia đình", "change" => "Đăng ký biến động dân cư", "payout" => "Ghi nhận chi trả trợ cấp", _ => "Thêm đối tượng an sinh" };
+    private string Title => Kind switch { "household" => "Thêm mới hộ gia đình", "change" => ChangeType.HasValue ? $"Đăng ký {Label(ChangeType.Value.ToString()).ToLowerInvariant()}" : "Đăng ký biến động dân cư", "payout" => "Ghi nhận chi trả trợ cấp", _ => "Thêm đối tượng an sinh" };
     private List<string> villageNames = new();
     protected override async Task OnInitializedAsync()
     {
@@ -37,6 +38,7 @@ public partial class BusinessCreateDialog
         villageNames = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(query.OrderBy(x=>x.Ten).Select(x=>x.Ten));
         if(villageNames.Count==1) household.ApThon = villageNames[0];
         welfare.LoaiDoiTuong = Category ?? DoiTuongAnSinhEnum.HoNgheo;
+        if (ChangeType.HasValue) change.LoaiBienDong = ChangeType.Value;
         payout = new() { DoiTuongAnSinhId = TargetId, SoTien = Amount, ThangNam = DateTime.Today.ToString("MM/yyyy") };
     }
     private async Task FindPeople()
@@ -82,6 +84,8 @@ public partial class BusinessCreateDialog
                 if (personId == Guid.Empty) throw new InvalidOperationException("Vui lòng tìm và chọn nhân khẩu.");
                 if (Kind == "change")
                 {
+                    if (!ChangeType.HasValue || !Enum.IsDefined(ChangeType.Value)) throw new InvalidOperationException("Hãy chọn menu của loại biến động để thêm mới.");
+                    change.LoaiBienDong = ChangeType.Value;
                     if (string.IsNullOrWhiteSpace(change.LyDo)) throw new InvalidOperationException("Vui lòng nhập lý do biến động.");
                     change.NhanKhauId = personId;
                     Ensure(await population.CreateBienDongAsync(change, user.UserName));

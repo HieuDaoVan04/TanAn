@@ -68,7 +68,13 @@
 
                     <label class="check"><InputCheckbox @bind-Value="form.Active" /> Đã duyệt / đang sử dụng</label>
 
-                        <h3>Menu được phép truy cập</h3>
+                        <div class="assignment-heading">
+                            <h3>Menu được phép truy cập</h3>
+                            @if (!viewOnly)
+                            {
+                                <FluentButton Type="ButtonType.Button" Appearance="Appearance.Outline" OnClick="SelectAllAssignments" Disabled="@(busy || assignmentOptions.Count == 0 || AllAssignmentsSelected)">Chọn tất cả</FluentButton>
+                            }
+                        </div>
                         <div class="assignments">
                             @foreach (var option in assignmentOptions)
                             {

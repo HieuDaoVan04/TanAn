@@ -194,7 +194,7 @@ namespace Service.TanAn.Application.Services.Core
 
             var beforeChange = JsonSerializer.Serialize(itemUpdate);
 
-            itemUpdate.ModerationStatus = moderationStatus;
+            itemUpdate.ModerationStatus = moderationStatus == ModerationStatus.Approved ? ModerationStatus.Approved : ModerationStatus.Pending;
             _UnitOfWork.PermissionRepository.Update(itemUpdate);
             var result = await _UnitOfWork.CompleteAsync();
 

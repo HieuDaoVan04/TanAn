@@ -9,22 +9,22 @@ namespace Service.Shared.Commons.Model.SQL
         [Description("Đã duyệt")]
         Approved = 0,
 
-        [Description("Chờ duyệt")]
+        [Description("Chưa duyệt")]
         Pending = 1,
 
-        [Description("Từ chối")]
+        [Description("Chưa duyệt")]
         Rejected = 2,
 
-        [Description("Chờ xem xét")]
+        [Description("Chưa duyệt")]
         PendingReview = 3,
 
-        [Description("Chờ phê duyệt")]
+        [Description("Chưa duyệt")]
         PendingApproval = 4,
 
-        [Description("Nháp")]
+        [Description("Chưa duyệt")]
         Draft = 5,
 
-        [Description("Hủy hoặc Xóa")]
+        [Description("Chưa duyệt")]
         Cancelled = 6
     }
 }

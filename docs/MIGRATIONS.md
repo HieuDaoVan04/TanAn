@@ -1,5 +1,23 @@
 # EF Core Migrations — Tân An
 
+## Dùng ModerationStatus cho khai sinh — 07/10/2026
+
+Migration `20261007110402_UseBirthModerationStatus` thay cờ `DaDuyet` bằng enum chung `ModerationStatus`. Trước khi bỏ cờ cũ, sao chép true → Approved (0), false → Pending (1); người/ngày duyệt giữ nguyên. Hồ sơ mới mặc định Pending và DB chỉ chấp nhận 0/1. Không sửa migration đã tạo trước đó, chưa áp dụng lên DB đang dùng. Lệnh cập nhật mới nhất tại [KHAI_SINH_APPROVAL.md](KHAI_SINH_APPROVAL.md); SQL riêng từ nền `AddBirthApproval`: `docs/sql/20261007_birth_moderation_status.sql`.
+
+## Duyệt khai sinh — 07/10/2026
+
+Migration `20261007105518_AddBirthApproval` thêm trạng thái/người/thời gian duyệt vào `HoSoKhaiSinhs`; các hồ sơ cũ mặc định chưa duyệt. Đã sinh và kiểm tra; chưa áp dụng lên DB đang dùng. SQL riêng từ nền `AddBirthDrafts`: `docs/sql/20261007_birth_approval.sql`. Lệnh cập nhật và cấu hình cấp quyền Chủ tịch xã: [KHAI_SINH_APPROVAL.md](KHAI_SINH_APPROVAL.md).
+
+## Hồ sơ khai sinh nháp — bước 1
+
+Migration `20261005150646_AddBirthDrafts` thêm bảng `HoSoKhaiSinhs`, các khóa ngoại và chỉ mục; không thay dữ liệu hộ/nhân khẩu/biến động cũ. Đã sinh và kiểm tra model/SQL; **chưa áp dụng lên DB đang dùng** trong lượt triển khai bước 1. SQL nâng cấp riêng: `docs/sql/20261005_birth_drafts.sql`. Lệnh cập nhật và cách sử dụng: [KHAI_SINH_STEP_1.md](KHAI_SINH_STEP_1.md).
+
+## Khai sinh ngày 05 10 2026
+
+Migration `20261005080355_AddBirthDeclarationSnapshot` thêm cột nullable `HoSoKhaiSinhJson` vào `BienDongDanCus`. Đã áp dụng trên database chung được cấu hình trong API/Blazor, kiểm tra số lượng hộ, nhân khẩu và biến động giữ nguyên. Database này hiện có 7 migration đã áp dụng. SQL chỉ cho bước nâng cấp này tại `docs/sql/20261005_birth_declaration_snapshot.sql`; chi tiết màn hình tại `docs/KHAI_SINH.md`.
+
+Các môi trường khác cần cập nhật migration trước khi chạy bản mới. Ứng dụng vẫn chỉ kiểm tra schema khi khởi động.
+
 ## Trạng thái sau khi làm lại DB thử nghiệm
 
 Database `neondb` được cấu hình chung cho API/Blazor đã được làm lại theo yêu cầu người dùng:

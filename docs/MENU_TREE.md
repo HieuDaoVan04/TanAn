@@ -8,7 +8,7 @@
 2. Quản trị viên thêm/sửa menu và nhập đường dẫn của trang tại `/quan-tri-he-thong/quan-tri-menu`.
 3. Gán menu cho vai trò tại `/quan-tri-he-thong/vai-tro`, rồi gán vai trò cho tài khoản tại `/quan-tri-he-thong/nguoi-dung`.
 4. `AccountService` đọc `UserRoles → Roles → RoleModules` để lấy `MenusActive`. Loại tài khoản Admin không tự cấp toàn bộ menu; cán bộ thôn vẫn phải có địa bàn phụ trách.
-5. `MenuTreeService` đọc menu đã duyệt thuộc phân hệ đang hoạt động. `NavMenu` lọc theo quyền và dựng cây theo cha/con, thứ tự, icon và liên kết đã lưu. Không trộn menu từ registry hoặc thay đường dẫn lúc đọc.
+5. `MenuTreeService` đọc menu đã duyệt thuộc phân hệ đã duyệt. `NavMenu` lọc theo quyền và dựng cây theo cha/con, thứ tự, icon và liên kết đã lưu. Không trộn menu từ registry hoặc thay đường dẫn lúc đọc.
 
 Tân An tiếp tục sử dụng các bảng hiện có: `Module` lưu menu (tương ứng `MenuQuanTri` của LGSP), `PhanHe` lưu phân hệ. Không đổi tên bảng hay ID và không cần migration schema cho thay đổi này. Blazor Server gọi service trong scope riêng; không thay toàn bộ hạ tầng thành API của LGSP.
 

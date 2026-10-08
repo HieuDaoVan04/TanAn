@@ -187,7 +187,7 @@ namespace Service.UI.CMS.Blazor.Components.Pages.QuanTriHeThong.Group
                 if (SelectedGroup.ModerationStatus == ModerationStatus.Approved)
                     CanReject = true;
 
-                if (SelectedGroup.ModerationStatus == ModerationStatus.Rejected)
+                if (SelectedGroup.ModerationStatus != ModerationStatus.Approved)
                     CanEditOrDelete = true;
 
                 if (SelectedGroup.UnitType == OrganizationUnitType.PhongBan)
@@ -440,9 +440,7 @@ namespace Service.UI.CMS.Blazor.Components.Pages.QuanTriHeThong.Group
             {
                 bool isPhongBan = x.UnitType == OrganizationUnitType.PhongBan;
 
-                string text = x.ModerationStatus == ModerationStatus.Rejected
-                    ? $"<span style='color:red;text-decoration:line-through'>{x.Name}</span>"
-                    : x.Name;
+                string text = x.Name;
 
                 var groupItem = new TreeViewItemDTO
                 {

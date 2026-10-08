@@ -2,13 +2,14 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Service.TanAn.Application.Interfaces;
+using Service.TanAn.Domain.Enums;
 using Service.Shared.Commons.Interfaces;
 using Service.Shared.Commons.Models;
 using Service.Shared.Contracts.DTOs;
 using Service.UI.CMS.Blazor.Applications;
 using Service.UI.CMS.Blazor.Components.Shared;
 
-namespace Service.UI.CMS.Blazor.Components.Pages.BienDong;
+namespace Service.UI.CMS.Blazor.Components.Pages.BienDong.BienDongDanCu;
 
 public partial class Index
 {
@@ -20,38 +21,56 @@ public partial class Index
     private IQueryable<BienDongDto>? bienDongQuery;
     private PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
 
-    private bool showCreate;
-    private string searchKeyword = "";
-    private BienDongDto? detail;
+    private LoaiBienDongEnum? ChangeType => null;
 
-    protected override Task OnInitializedAsync() => LoadData();
+    private string TypeLabel => ChangeType.HasValue ? BusinessCreateDialog.Label(ChangeType.Value.ToString()) : "Biến động dân cư";
+    private string Title => ChangeType.HasValue ? $"Danh sách {TypeLabel.ToLowerInvariant()}" : "Danh sách biến động dân cư";
+    private int loadVersion;
+
+    private string searchKeyword = "";
+    private int? selectedType;
+    private int? FilterType => ChangeType.HasValue ? (int)ChangeType.Value : selectedType;
+    private DateTime? fromDate;
+    private DateTime? toDate;
+    private string? filterError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        selectedType = ChangeType.HasValue ? (int)ChangeType.Value : null;
+        await LoadData();
+    }
+
+    private BienDongDto? selectedRecord;
+    private void OpenView(BienDongDto record) => selectedRecord = record;
+    private void CloseView() => selectedRecord = null;
 
     private async Task LoadData()
     {
-        var res = await PopulationService.GetBienDongsAsync(searchKeyword, 1, 200);
+        var version = ++loadVersion;
+        bienDongQuery = Array.Empty<BienDongDto>().AsQueryable();
+        filterError = null;
+        var res = await PopulationService.GetBienDongsAsync(searchKeyword, 1, int.MaxValue, FilterType, fromDate, toDate);
+        if (version != loadVersion) return;
         if (res.Success && res.Data != null)
         {
             bienDongQuery = res.Data.Items.AsQueryable();
             await pagination.SetCurrentPageIndexAsync(0);
         }
+        else filterError = res.Message ?? "Không thể tải danh sách biến động.";
     }
 
     private async Task ClearSearch()
     {
         searchKeyword = "";
+        selectedType = ChangeType.HasValue ? (int)ChangeType.Value : null;
+        fromDate = null;
+        toDate = null;
         await LoadData();
     }
 
     private async Task RefreshData(int pageSize)
     {
         await LoadData();
-    }
-
-    private async Task Created()
-    {
-        showCreate = false;
-        await LoadData();
-        await pagination.SetCurrentPageIndexAsync(0);
     }
 
     private async Task ExportExcel() => await XuatExcel();
@@ -66,11 +85,14 @@ public partial class Index
                 Endpoint = "/BienDong/xuat-excel"
             };
 
-            var baseQuery = new BaseQuery
+            var baseQuery = new BienDongQuery
             {
                 draw = 1,
                 SearchIn = new List<string> { "HoTenNhanKhau", "CCCDNhanKhau" },
-                Keyword = searchKeyword?.ToLower()
+                Keyword = searchKeyword,
+                LoaiBienDong = FilterType,
+                TuNgay = fromDate,
+                DenNgay = toDate
             };
 
             var result = await CallService.PostForFile(apiRequest, baseQuery);
@@ -80,7 +102,8 @@ public partial class Index
                 return;
             }
 
-            var fileName = $"BienDongDanCu_XaTanAn_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            var fileType = FilterType.HasValue ? ((LoaiBienDongEnum)FilterType.Value).ToString() : "TatCa";
+            var fileName = $"BienDongDanCu_{fileType}_XaTanAn_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
             await DownloadFileFromBytes(result.Data, fileName, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             ToastService.ShowSuccess("Xuất Excel thành công!");
         }

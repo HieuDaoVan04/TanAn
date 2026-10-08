@@ -16,6 +16,8 @@ public partial class VillageNotifications
     [Inject] public IUserService Users { get; set; } = default!;
     [Inject] public IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
     private CurrentUserDto user = new();
+    private bool HasCtxRole => user.IsAuthenticated && user.RoleCodes.Any(code =>
+        string.Equals(code.Trim(), Service.Shared.Commons.Enums.RoleCodes.ChuTichXa, StringComparison.OrdinalIgnoreCase));
     private List<ThongBaoThon> notices = new();
     private List<ApThon> villages = new();
     private string title="",body="",error="";
@@ -28,7 +30,7 @@ public partial class VillageNotifications
         busy=true;error="";
         try {
             user=await Users.GetCurrentUserAsync();
-            if(!user.IsAuthenticated) {notices.Clear();return;}
+            if(!user.IsAuthenticated || HasCtxRole) {notices.Clear();villages.Clear();unread=0;return;}
             using var scope=Scopes.CreateScope(); var db=scope.ServiceProvider.GetRequiredService<ITanAnDbContext>();
             notices=await db.ThongBaoThons.AsNoTracking().Include(x=>x.Thon).OrderByDescending(x=>x.NgayTao).Take(100).ToListAsync();
             unread=await db.ThongBaoThons.CountAsync(x=>x.DaDocLuc==null);
@@ -53,7 +55,7 @@ public partial class VillageNotifications
             if(villageId==Guid.Empty || string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(body)) throw new ArgumentException("Hãy chọn thôn và nhập tiêu đề, nội dung.");
             using var scope=Scopes.CreateScope();var db=scope.ServiceProvider.GetRequiredService<ITanAnDbContext>();
             var recipients=await db.PhuTrachThons.Where(x=>x.ApThonId==villageId && x.User.Role==RoleEnum.CanBoThon && x.User.ModerationStatus==ModerationStatus.Approved).Select(x=>x.UserId).ToListAsync();
-            if(recipients.Count==0) throw new ArgumentException("Thôn chưa có tài khoản phụ trách đang hoạt động.");
+            if(recipients.Count==0) throw new ArgumentException("Thôn chưa có tài khoản phụ trách đã duyệt.");
             db.ThongBaoThons.AddRange(recipients.Select(id=>new ThongBaoThon{NguoiNhanId=id,ApThonId=villageId,TieuDe=title.Trim(),NoiDung=body.Trim(),NguoiTaoId=user.UserId}));
             db.AuditLogs.Add(new AuditLog
             {

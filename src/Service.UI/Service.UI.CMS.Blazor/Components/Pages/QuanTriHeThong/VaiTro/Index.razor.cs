@@ -55,6 +55,12 @@ public partial class Index
     }
     private void Close() { if (busy) return; form = null; viewOnly = false; error = ""; }
     private void SetAssignment(Guid id, bool selected) { if (selected && !form!.AssignedIds.Contains(id)) form.AssignedIds.Add(id); else if (!selected) form!.AssignedIds.Remove(id); }
+    private bool AllAssignmentsSelected => form != null && assignmentOptions.All(option => form.AssignedIds.Contains(option.Id));
+    private void SelectAllAssignments()
+    {
+        if (busy || viewOnly || form == null) return;
+        form.AssignedIds = form.AssignedIds.Concat(assignmentOptions.Select(option => option.Id)).Distinct().ToList();
+    }
     private async Task Save()
     {
         if (busy || viewOnly || form == null) return;

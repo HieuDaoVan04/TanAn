@@ -1,4 +1,6 @@
 @using Service.TanAn.Domain.Entities
+@if (!HasCtxRole)
+{
 <h3>Thông báo theo thôn</h3>
 @if (!string.IsNullOrEmpty(error)) { <p role="alert">@error</p> }
 <FluentButton Disabled="busy" OnClick="Load">Làm mới</FluentButton>
@@ -21,3 +23,4 @@
     </article>
 }
 @if(notices.Count == 0) { <p>Chưa có thông báo trong các thôn được giao.</p> }
+}

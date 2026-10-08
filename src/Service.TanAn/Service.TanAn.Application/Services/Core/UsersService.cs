@@ -260,7 +260,7 @@ namespace Service.TanAn.Application.Services.Core
                 OldStatus = itemUpdate.ModerationStatus
             });
 
-            itemUpdate.ModerationStatus = moderationStatus;
+            itemUpdate.ModerationStatus = moderationStatus == ModerationStatus.Approved ? ModerationStatus.Approved : ModerationStatus.Pending;
             _UnitOfWork.UserRepository.Update(itemUpdate);
             var result = await _UnitOfWork.CompleteAsync();
 

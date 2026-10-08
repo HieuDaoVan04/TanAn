@@ -5,6 +5,7 @@
 @using System.Text.Json
 @using Service.Shared.Commons.Models
 @using Service.Shared.Contracts.DTOs
+@using Service.Shared.Commons.Model.SQL
 @using Service.UI.CMS.Blazor.Applications
 @using Microsoft.FluentUI.AspNetCore.Components
 
@@ -28,7 +29,7 @@
             </div>
             <div class="toolbar-filters">
                 <FluentSearch Placeholder="Nhập vào từ khóa" aria-label="Tìm kiếm" @bind-Value="search" @bind-Value:after="ResetPage" />
-                <select aria-label="Lọc trạng thái" @bind="status" @bind:after="ResetPage"><option value="all">Tất cả trạng thái</option><option value="active">Đã duyệt / đang sử dụng</option><option value="inactive">Chưa duyệt / ngừng dùng</option></select>
+                <select aria-label="Lọc trạng thái" @bind="status" @bind:after="ResetPage"><option value="all">Tất cả trạng thái</option><option value="active">Đã duyệt</option><option value="inactive">Chưa duyệt</option></select>
             </div>
         </div>
 
@@ -46,7 +47,7 @@
                          <PropertyColumn Property="@(x => x.Path)" Title="Giá trị" /> 
                         <PropertyColumn Property="@(x => x.Description)" Title="Mô tả" />
 
-                    <TemplateColumn Title="Trạng thái">@if(context.ModerationStatus.HasValue) { <ModerationView Status="context.ModerationStatus.Value" /> } else { <span class="badge @(context.Active ? "active" : "inactive")">@(context.Active ? "Đang sử dụng" : "Ngừng sử dụng")</span> }</TemplateColumn>
+                    <TemplateColumn Title="Trạng thái"><ModerationView Status="@(context.Active ? ModerationStatus.Approved : ModerationStatus.Pending)" /></TemplateColumn>
                     <TemplateColumn Title="Thao tác"><div class="actions"><AdminRowActions Item="context" Kind="AdminCatalog.Parameters" Busy="busy" OnView="View" OnEdit="Edit" OnStatus="ChangeStatus" OnDelete="@(record => pendingDelete = record)" /></div></TemplateColumn>
                     </ChildContent>
                     <EmptyContent><p class="empty-state">Không có bản ghi phù hợp.</p></EmptyContent>
@@ -69,7 +70,7 @@
                          <label>Giá trị<ParameterValueEditor Definition="SystemParameterCatalog.Find(form.Code)" @bind-Value="form.Path" /></label>
                         <label>Mô tả<InputTextArea @bind-Value="form.Description" /></label>
 
-                    <label class="check"><InputCheckbox @bind-Value="form.Active" /> Đã duyệt / đang sử dụng</label>
+                    <label>Trạng thái<InputSelect @bind-Value="form.Active"><option value="true">Đã duyệt</option><option value="false">Chưa duyệt</option></InputSelect></label>
 
                     </fieldset><div class="editor-actions">@if (!viewOnly) { <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Disabled="busy" IconStart="@(new Icons.Regular.Size20.Save())">Lưu</FluentButton> }<FluentButton Type="ButtonType.Button" Disabled="busy" OnClick="Close">@(viewOnly ? "Đóng" : "Hủy")</FluentButton></div></EditForm>
             </section></FluentDialog>

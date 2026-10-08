@@ -41,7 +41,7 @@
             <FluentGridItem md="12">
                 <div class="row-info">
                     <label>Trạng thái:</label>
-                    <div>@(Item.ModerationStatus != 0 ? "Chưa phê duyệt" : "Đã duyệt")</div>
+                    <div>@(Item.ModerationStatus != 0 ? "Chưa duyệt" : "Đã duyệt")</div>
                 </div>
             </FluentGridItem>
         </FluentGrid>

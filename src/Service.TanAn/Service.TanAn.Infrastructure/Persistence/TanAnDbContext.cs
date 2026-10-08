@@ -28,6 +28,7 @@ namespace Service.TanAn.Infrastructure.Persistence
         public DbSet<HoGiaDinh> HoGiaDinhs { get; set; } = null!;
         public DbSet<NhanKhau> NhanKhaus { get; set; } = null!;
         public DbSet<BienDongDanCu> BienDongDanCus { get; set; } = null!;
+        public DbSet<HoSoKhaiSinh> HoSoKhaiSinhs { get; set; } = null!;
         public DbSet<DoiTuongAnSinh> DoiTuongAnSinhs { get; set; } = null!;
         public DbSet<LichSuTroCap> LichSuTroCaps { get; set; } = null!;
         public DbSet<YeuCauNguoiDan> YeuCauNguoiDans { get; set; } = null!;

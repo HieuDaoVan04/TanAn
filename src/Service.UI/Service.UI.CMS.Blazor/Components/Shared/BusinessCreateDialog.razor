@@ -29,7 +29,7 @@
             <label class="wide">Nhân khẩu *<InputSelect @bind-Value="personId" required><option value="@Guid.Empty">— Chọn nhân khẩu —</option>@foreach (var person in people) { <option value="@person.Id">@person.HoTen — @person.CCCD — @person.MaSoHo</option> }</InputSelect></label>
             @if (Kind == "change")
             {
-                <label>Loại biến động<InputSelect @bind-Value="change.LoaiBienDong">@foreach(var type in Enum.GetValues<LoaiBienDongEnum>()) { <option value="@type">@Label(type.ToString())</option> }</InputSelect></label>
+                <label>Loại biến động<InputSelect @bind-Value="change.LoaiBienDong" disabled="true">@foreach(var type in Enum.GetValues<LoaiBienDongEnum>()) { <option value="@type">@Label(type.ToString())</option> }</InputSelect></label>
                 <label>Ngày phát sinh *<InputDate @bind-Value="change.NgayPhatSinh" required /></label>
                 <label class="wide">Nơi đi / đến<InputText @bind-Value="change.NoiDenOrDi" /></label>
                 <label class="wide">Lý do *<InputTextArea @bind-Value="change.LyDo" required /></label>

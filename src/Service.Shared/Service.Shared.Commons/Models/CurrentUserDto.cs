@@ -17,6 +17,8 @@ namespace Service.Shared.Commons.Models
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        /// <summary>Mã các vai trò đã duyệt được gán cho tài khoản.</summary>
+        public List<string> RoleCodes { get; set; } = new();
         public List<Guid> VillageIds { get; set; } = new();
         public string ApThon { get; set; } = string.Empty;
         public Guid? DepartmentId { get; set; }

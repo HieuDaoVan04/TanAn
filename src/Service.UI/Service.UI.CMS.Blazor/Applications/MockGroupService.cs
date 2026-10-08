@@ -192,7 +192,7 @@ namespace Service.UI.CMS.Blazor.Applications
             var item = GetGroups().FirstOrDefault(x => x.Id == id);
             if (item != null)
             {
-                item.ModerationStatus = status;
+                item.ModerationStatus = status == ModerationStatus.Approved ? ModerationStatus.Approved : ModerationStatus.Pending;
             }
         }
 

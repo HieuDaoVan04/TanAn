@@ -58,19 +58,21 @@ try
     Check(db.Modules.Count() == 3, "menu reads do not add records");
     var staffPrincipal = await accounts.SignInAsync("staff-test", "staff-password", null, null) ?? throw new Exception("Staff failed");
     Check((await accounts.GetCurrentAsync(staffPrincipal)).MenusActive.Count == 0, "unassigned user has no grants");
-    var role = new Role { RoleName = "Staff", RoleCode = "TEST" };
+    var role = new Role { RoleName = "Staff", RoleCode = "CTX" };
     db.Roles.Add(role);
     db.UserRoles.Add(new UserRole { RoleId = role.Id, UserId = staff.Id });
     
     db.RoleModules.Add(new RoleModule { RoleId = role.Id, ModuleId = menu.Id });
     await db.SaveChangesAsync();
     Check((await accounts.GetCurrentAsync(staffPrincipal)).MenusActive.Single().Id == menu.Id, "grants loaded from database");
+    Check((await accounts.GetCurrentAsync(staffPrincipal)).RoleCodes.SequenceEqual(new[] { "ctx" }), "assigned approved ctx role code loaded and normalized from database");
     db.UserRoles.Add(new UserRole { RoleId = role.Id, UserId = admin.Id });
     await db.SaveChangesAsync();
     Check((await accounts.GetCurrentAsync(principal)).MenusActive.Single().Id == menu.Id, "admin menu also follows stored role assignments");
     role.ModerationStatus = ModerationStatus.Pending;
     await db.SaveChangesAsync();
     Check((await accounts.GetCurrentAsync(staffPrincipal)).MenusActive.Count == 0, "unapproved role does not grant menus");
+    Check((await accounts.GetCurrentAsync(staffPrincipal)).RoleCodes.Count == 0, "unapproved ctx role is removed from current user immediately");
     role.ModerationStatus = ModerationStatus.Approved;
     menu.ModerationStatus = ModerationStatus.Pending;
     await db.SaveChangesAsync();

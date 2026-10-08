@@ -4,6 +4,7 @@
 @using System.Text.Json
 @using Service.Shared.Commons.Models
 @using Service.Shared.Contracts.DTOs
+@using Service.Shared.Commons.Model.SQL
 @using Service.UI.CMS.Blazor.Applications
 @using Microsoft.FluentUI.AspNetCore.Components
 
@@ -29,7 +30,7 @@
             </div>
             <div class="toolbar-filters">
                 <FluentSearch Placeholder="Nhập vào từ khóa" aria-label="Tìm kiếm" @bind-Value="search" @bind-Value:after="ResetPage" />
-                <select aria-label="Lọc trạng thái" @bind="status" @bind:after="ResetPage"><option value="all">Tất cả trạng thái</option><option value="active">Đã duyệt / đang sử dụng</option><option value="inactive">Chưa duyệt / ngừng dùng</option></select>
+                <select aria-label="Lọc trạng thái" @bind="status" @bind:after="ResetPage"><option value="all">Tất cả trạng thái</option><option value="active">Đã duyệt</option><option value="inactive">Chưa duyệt</option></select>
             </div>
         </div>
 
@@ -53,8 +54,7 @@
                             <FluentIcon Value="@(hasChildren ? (Icon)new Icons.Regular.Size20.Folder() : new Icons.Regular.Size20.Document())" />
                             <button class="text-button @(hasChildren ? "parent-name" : "")" @onclick="() => selectedId = item.Id">@item.Name</button>
                             <span class="tree-path">@item.Path</span>
-                            @if (item.ModerationStatus.HasValue) { <ModerationView Status="item.ModerationStatus.Value" /> }
-                            else if (!item.Active) { <span class="badge inactive">Ngừng sử dụng</span> }
+                            <ModerationView Status="@(item.Active ? ModerationStatus.Approved : ModerationStatus.Pending)" />
                         </div>
                         @if (selectedId == item.Id) { <div class="actions"><AdminRowActions Item="item" Kind="AdminCatalog.Groups" Busy="busy" OnView="View" OnPopulation="@(row => populationUnit = row)" OnEdit="Edit" OnStatus="ChangeStatus" OnDelete="@(record => pendingDelete = record)" /></div> }
                     </div>
@@ -75,7 +75,7 @@
                         <TemplateColumn Title="Loại">@(context.UnitType == 0 ? "Đơn vị" : "Hệ thống")</TemplateColumn>
                         <PropertyColumn Property="@(x => x.Description)" Title="Mô tả" />
 
-                    <TemplateColumn Title="Trạng thái">@if(context.ModerationStatus.HasValue) { <ModerationView Status="context.ModerationStatus.Value" /> } else { <span class="badge @(context.Active ? "active" : "inactive")">@(context.Active ? "Đang sử dụng" : "Ngừng sử dụng")</span> }</TemplateColumn>
+                    <TemplateColumn Title="Trạng thái"><ModerationView Status="@(context.Active ? ModerationStatus.Approved : ModerationStatus.Pending)" /></TemplateColumn>
                     <TemplateColumn Title="Thao tác"><div class="actions"><AdminRowActions Item="context" Kind="AdminCatalog.Groups" Busy="busy" OnView="View" OnPopulation="@(row => populationUnit = row)" OnEdit="Edit" OnStatus="ChangeStatus" OnDelete="@(record => pendingDelete = record)" /></div></TemplateColumn>
                     </ChildContent>
                     <EmptyContent><p class="empty-state">Không có bản ghi phù hợp.</p></EmptyContent>
@@ -103,7 +103,7 @@
 
                         <label>Mô tả<InputTextArea @bind-Value="form.Description" /></label>
 
-                    <label class="check"><InputCheckbox @bind-Value="form.Active" /> Đã duyệt / đang sử dụng</label>
+                    <label>Trạng thái<InputSelect @bind-Value="form.Active"><option value="true">Đã duyệt</option><option value="false">Chưa duyệt</option></InputSelect></label>
 
                     </fieldset><div class="editor-actions">@if (!viewOnly) { <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Disabled="busy" IconStart="@(new Icons.Regular.Size20.Save())">Lưu</FluentButton> }<FluentButton Type="ButtonType.Button" Disabled="busy" OnClick="Close">@(viewOnly ? "Đóng" : "Hủy")</FluentButton></div></EditForm>
             </section></FluentDialog>

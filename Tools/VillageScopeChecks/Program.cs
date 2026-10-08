@@ -19,6 +19,7 @@ await using(var seed = new TanAnDbContext(options)) {
  seed.PhuTrachThons.Add(new(){User=user,Thon=a});
  seed.YeuCauNguoiDans.AddRange(new(){MaYeuCau="Y1",Thon=a},new(){MaYeuCau="Y2",Thon=b});
  seed.DoiTuongAnSinhs.AddRange(new(){NhanKhau=n1},new(){NhanKhau=n2}); await seed.SaveChangesAsync();
+ seed.BienDongDanCus.Add(new(){NhanKhau=n2,LoaiBienDong=LoaiBienDongEnum.KhaiSinh,NgayPhatSinh=new(2024,1,1)});await seed.SaveChangesAsync();
 }
 var actor = new DataActor(new HttpContextAccessor());
 actor.Principal = new ClaimsPrincipal(new ClaimsIdentity(new[]{new Claim(ClaimTypes.NameIdentifier,user.Id.ToString())},"test"));
@@ -37,6 +38,19 @@ await using(var db = new TanAnDbContext(options,actor)) {
  if(await db.ThanhVienHos.CountAsync(x=>x.HoGiaDinhId==newId && x.LaChuHo && x.DenNgay==null)!=1) throw new Exception("New head missing");
  var member=await service.CreateNhanKhauAsync(new(){MaHoGiaDinh=newId,HoTen="Trần Thị Mai",CCCD="TEST4",NgaySinh=new DateTime(1985,1,1),QuanHeVoiChuHo="Vợ"},user.UserName);
  if(!member.Success) throw new Exception(member.Message);
+ var wrongHouse = await service.GetHoGiaDinhByCodeAsync("H2");
+ if(wrongHouse.Success) throw new Exception("Birth household lookup leaked another village");
+ var scopedBirth = new Service.Shared.Contracts.DTOs.KhaiSinhForm {
+  HoGiaDinhId=newId,HoTen="Trẻ thuộc thôn A",NgaySinh=new(2024,1,1),NoiSinh="Trạm y tế",QueQuan=a.Ten,ThuongTru=a.Ten,
+  QuanHeVoiChuHo="Con",HoTenNguoiYeuCau="Nguyễn Văn Nam",SoGiayTo="TEST3",NoiCuTruNguoiYeuCau=a.Ten,QuanHeVoiTre="Cha"
+ };
+ var wrongBirth = await service.CreateKhaiSinhAsync(new(){HoGiaDinhId=h2.Id,HoTen="Outside",NgaySinh=new(2024,1,1),NoiSinh="Test",QueQuan="Test",ThuongTru="Test",QuanHeVoiChuHo="Con",HoTenNguoiYeuCau="Test",SoGiayTo="Test",NoiCuTruNguoiYeuCau="Test",QuanHeVoiTre="Cha"},user.UserName);
+ if(wrongBirth.Success) throw new Exception("Cross-village birth accepted");
+ var birth = await service.CreateKhaiSinhAsync(scopedBirth,user.UserName);
+ if(!birth.Success || birth.Data?.HoSoKhaiSinh?.HoGiaDinhId!=newId) throw new Exception("Own-village atomic birth failed: "+birth.Message);
+ var ownVillageChanges = await service.GetBienDongsAsync(null,1,10,(int)LoaiBienDongEnum.KhaiSinh,apThonId:a.Id);
+ var outsideVillageChanges = await service.GetBienDongsAsync(null,1,10,(int)LoaiBienDongEnum.KhaiSinh,apThonId:b.Id);
+ if(ownVillageChanges.Data?.TotalCount!=1 || outsideVillageChanges.Data?.TotalCount!=0) throw new Exception("Village change filter bypassed assigned scope");
  await service.SetChuHoAsync(newId,member.Data!.Id,user.UserName);
  if(await db.ThanhVienHos.CountAsync(x=>x.HoGiaDinhId==newId && x.LaChuHo && x.DenNgay==null)!=1 || (await db.HoGiaDinhs.SingleAsync(x=>x.Id==newId)).TenChuHo!="Trần Thị Mai") throw new Exception("Head change inconsistent");
  try {await service.SetChuHoAsync(newId,n2.Id,user.UserName);throw new Exception("Cross-house head allowed");}catch(ArgumentException) {}

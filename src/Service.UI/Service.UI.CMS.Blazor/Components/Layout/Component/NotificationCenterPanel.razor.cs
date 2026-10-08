@@ -32,6 +32,8 @@ namespace Service.UI.CMS.Blazor.Components.Layout.Component;
 
 public partial class NotificationCenterPanel
 {
+    [CascadingParameter] public FluentDialog? Dialog { get; set; }
+    private async Task CloseForApproval() { if (Dialog != null) await Dialog.CloseAsync(); }
     [Parameter]
     public GlobalState Content { get; set; } = default!;
 }

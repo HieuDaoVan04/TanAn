@@ -64,6 +64,9 @@ public sealed class AccountService(IServiceScopeFactory scopes, ILoginSessionSto
         var menus = await db.Modules.AsNoTracking().Where(x => x.ModerationStatus == ModerationStatus.Approved
             && (x.PhanHeId == null || x.PhanHe!.HoatDong)).ToListAsync();
         var villageIds = await db.PhuTrachThons.Where(p => p.UserId == user.Id && p.Thon.DangHoatDong).Select(p => p.ApThonId).ToListAsync();
+        var roleCodes = await (from ur in db.UserRoles join role in db.Roles on ur.RoleId equals role.Id
+            where ur.UserId == user.Id && role.ModerationStatus == ModerationStatus.Approved
+            select role.RoleCode).Distinct().ToListAsync();
         // Menu truy cập lấy từ vai trò đã gán, không suy ra từ loại tài khoản hoặc URL.
         var grants = await (from ur in db.UserRoles join role in db.Roles on ur.RoleId equals role.Id
             join rm in db.RoleModules on role.Id equals rm.RoleId
@@ -74,6 +77,7 @@ public sealed class AccountService(IServiceScopeFactory scopes, ILoginSessionSto
         return new CurrentUserDto {
             UserId = user.Id, UserName = user.UserName, FullName = user.FullName, Email = user.Email,
             VillageIds = villageIds, Role = user.Role.ToString(), IsAuthenticated = true, ApThon = user.ApThon ?? "",
+            RoleCodes = roleCodes.Select(code => code.Trim().ToLowerInvariant()).Distinct().ToList(),
             MenusActive = menus.Select(x => new MenuItemDto { Id = x.Id, Title = x.TenModule,
                 Path = x.LienKet ?? "", Icon = x.Icon, Order = x.ViTri }).ToList()
         };

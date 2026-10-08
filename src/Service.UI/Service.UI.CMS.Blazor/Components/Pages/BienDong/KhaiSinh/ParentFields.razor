@@ -1,0 +1,15 @@
+@using Service.Shared.Contracts.DTOs
+
+<div class="parent-fields">
+    <label class="wide">Chọn @ParentLabel trong hộ
+        <InputSelect @bind-Value="Form.NhanKhauId" @bind-Value:after="FillPerson">
+            <option value="">— Nhập thông tin thủ công —</option>
+            @foreach (var person in Members) { <option value="@person.Id">@person.HoTen — @person.NgaySinh.ToString("dd/MM/yyyy") — @person.CCCD</option> }
+        </InputSelect>
+    </label>
+    <label>Họ tên @ParentLabel<InputText @bind-Value="Form.HoTen" maxlength="200" /></label>
+    <label>Ngày sinh @ParentLabel<InputDate @bind-Value="Form.NgaySinh" max="@DateTime.Today.ToString("yyyy-MM-dd")" /></label>
+    <label>Dân tộc<InputText @bind-Value="Form.DanToc" maxlength="100" /></label>
+    <label>Quốc tịch<InputText @bind-Value="Form.QuocTich" maxlength="100" /></label>
+    <label class="wide">Nơi cư trú<InputText @bind-Value="Form.NoiCuTru" maxlength="500" /></label>
+</div>

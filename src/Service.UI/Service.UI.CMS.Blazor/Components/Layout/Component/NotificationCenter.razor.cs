@@ -35,6 +35,7 @@ public partial class NotificationCenter
     [Inject] public IServiceScopeFactory Scopes { get; set; } = default!;
     [Inject] public IUserService Users { get; set; } = default!;
     private int villageUnread;
+    private int pendingApprovals;
     private readonly CancellationTokenSource stopPolling = new();
     protected override async Task OnInitializedAsync() { await RefreshUnread(); _ = PollUnread(); }
     private async Task PollUnread()
@@ -47,10 +48,17 @@ public partial class NotificationCenter
     {
         try {
             var user = await Users.GetCurrentUserAsync();
+            pendingApprovals = 0;
             if(!user.IsAuthenticated) {villageUnread=0;return;}
             using var scope=Scopes.CreateScope();
-            villageUnread=await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.CountAsync(scope.ServiceProvider.GetRequiredService<ITanAnDbContext>().ThongBaoThons.Where(x=>x.DaDocLuc==null));
-        } catch { villageUnread=0; }
+            var hasCtxRole = user.RoleCodes.Any(code => string.Equals(code.Trim(), Service.Shared.Commons.Enums.RoleCodes.ChuTichXa, StringComparison.OrdinalIgnoreCase));
+            villageUnread=hasCtxRole ? 0 : await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.CountAsync(scope.ServiceProvider.GetRequiredService<ITanAnDbContext>().ThongBaoThons.Where(x=>x.DaDocLuc==null));
+            if (hasCtxRole)
+            {
+                var result = await scope.ServiceProvider.GetRequiredService<IPopulationService>().GetKhaiSinhApprovalNotificationsAsync(user.UserName, 1);
+                pendingApprovals = result.Success ? result.Data?.TotalCount ?? 0 : 0;
+            }
+        } catch { villageUnread=0; pendingApprovals=0; }
     }
     private IDialogReference? _dialog;
    

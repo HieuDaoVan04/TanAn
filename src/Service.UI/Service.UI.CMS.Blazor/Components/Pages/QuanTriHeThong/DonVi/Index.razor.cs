@@ -159,13 +159,7 @@ namespace Service.UI.Blazor.Components.Pages.QuanTriHeThong.DonVi
 
         private string GetTextStyle(int status)
         {
-            return (ModerationStatus)status switch
-            {
-                ModerationStatus.Approved => "",
-                ModerationStatus.Rejected => "text-decoration: line-through; color: #888; font-style: italic;",
-                ModerationStatus.Pending => "color: #e67e22;",
-                _ => ""
-            };
+            return (ModerationStatus)status == ModerationStatus.Approved ? "" : "color: #e67e22;";
         }
 
         private void ExpandAll()

@@ -1,5 +1,5 @@
 @using Microsoft.FluentUI.AspNetCore.Components
-<FluentDialog Hidden="false" Modal="true" TrapFocus="true" Style="--dialog-width:min(800px,calc(100vw - 32px));--dialog-height:auto;" AriaLabel="@Title">
+<FluentDialog Hidden="false" Modal="true" TrapFocus="true" Style="@($"--dialog-width:min({Width},calc(100vw - 32px));--dialog-height:auto;")" AriaLabel="@Title">
     <section class="data-dialog">
         <header><h3>@Title</h3><FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size20.Dismiss())" Title="Đóng" aria-label="Đóng" OnClick="Close" Disabled="Busy" /></header>
         @ChildContent

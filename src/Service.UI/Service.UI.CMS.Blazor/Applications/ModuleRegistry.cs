@@ -231,7 +231,12 @@ namespace Service.UI.CMS.Blazor.Applications
                 {
                     var popService = _serviceProvider.GetRequiredService<IPopulationService>();
                     string? keyword = GetStringProp(body, "Keyword", "SearchKeyword", "Search");
-                    var res = await popService.GetBienDongsAsync(keyword, 1, 100000);
+                    var changeType = GetIntProp(body, "LoaiBienDong");
+                    var fromDate = GetDateTimeProp(body, "TuNgay");
+                    var toDate = GetDateTimeProp(body, "DenNgay");
+                    Guid? villageId = Guid.TryParse(GetStringProp(body, "ApThonId"), out var parsedVillageId) ? parsedVillageId : null;
+                    var res = await popService.GetBienDongsAsync(keyword, 1, int.MaxValue, changeType, fromDate, toDate, villageId);
+                    if (!res.Success) return new ResultAPI<byte[]> { Success = false, Status = StatusCode.BadRequest, Message = res.Message };
                     var list = res.Data?.Items ?? new List<BienDongDto>();
 
                     var columns = new List<ExcelColumn<BienDongDto>>
@@ -384,6 +389,12 @@ namespace Service.UI.CMS.Blazor.Applications
                 }
             }
             return null;
+        }
+
+        private static DateTime? GetDateTimeProp(object? obj, string propName)
+        {
+            var prop = obj?.GetType().GetProperty(propName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.IgnoreCase);
+            return prop?.GetValue(obj) is DateTime date ? date : null;
         }
 
         private static int? GetIntProp(object? obj, params string[] propNames)

@@ -4,6 +4,7 @@
 @using System.Text.Json
 @using Service.Shared.Commons.Models
 @using Service.Shared.Contracts.DTOs
+@using Service.Shared.Commons.Model.SQL
 @using Service.UI.CMS.Blazor.Applications
 @using Microsoft.FluentUI.AspNetCore.Components
 
@@ -25,7 +26,7 @@
             </div>
             <div class="toolbar-filters">
                 <FluentSearch Placeholder="Nhập vào từ khóa" aria-label="Tìm kiếm" @bind-Value="search" @bind-Value:after="ResetPage" />
-                <select aria-label="Lọc trạng thái" @bind="status" @bind:after="ResetPage"><option value="all">Tất cả trạng thái</option><option value="active">Đã duyệt / đang sử dụng</option><option value="inactive">Chưa duyệt / ngừng dùng</option></select>
+                <select aria-label="Lọc trạng thái" @bind="status" @bind:after="ResetPage"><option value="all">Tất cả trạng thái</option><option value="active">Đã duyệt</option><option value="inactive">Chưa duyệt</option></select>
             </div>
         </div>
 
@@ -44,7 +45,7 @@
                         <PropertyColumn Property="@(x => x.Phone)" Title="Số điện thoại" />
                         <TemplateColumn Title="Vai trò">@foreach (var id in context.AssignedIds) { <span class="role-badge">@RoleName(id)</span> }</TemplateColumn>
 
-                    <TemplateColumn Title="Trạng thái">@if(context.ModerationStatus.HasValue) { <ModerationView Status="context.ModerationStatus.Value" /> } else { <span class="badge @(context.Active ? "active" : "inactive")">@(context.Active ? "Đang sử dụng" : "Ngừng sử dụng")</span> }</TemplateColumn>
+                    <TemplateColumn Title="Trạng thái"><ModerationView Status="@(context.Active ? ModerationStatus.Approved : ModerationStatus.Pending)" /></TemplateColumn>
                     <TemplateColumn Title="Thao tác"><div class="actions"><AdminRowActions Item="context" Kind="AdminCatalog.Users" Busy="busy" OnView="View" OnEdit="Edit" OnStatus="ChangeStatus" OnDelete="@(record => pendingDelete = record)" /></div></TemplateColumn>
                     </ChildContent>
                     <EmptyContent><p class="empty-state">Không có bản ghi phù hợp.</p></EmptyContent>
@@ -64,7 +65,7 @@
                 <EditForm Model="form" OnSubmit="Save"><fieldset disabled="@(busy || viewOnly)" class="form-grid">
                      <label>Tên tài khoản *<InputText @bind-Value="form.Code" /></label> 
 
-                        <label>Cấp quyền<InputSelect @bind-Value="form.AccountRole"><option value="Admin">Quản trị xã</option><option value="CanBoXa">Cán bộ xã</option><option value="CanBoThon">Phụ trách thôn</option><option value="NguoiDan">Người dân</option></InputSelect></label>
+                        <label>Cấp quyền<InputSelect @bind-Value="form.AccountRole"><option value="Admin">Quản trị xã</option><option value="CanBoXa">Cán bộ xã</option><option value="ChuTichXa">Chủ tịch xã</option><option value="CanBoThon">Phụ trách thôn</option><option value="NguoiDan">Người dân</option></InputSelect></label>
                         @if (form.AccountRole == Service.TanAn.Domain.Enums.RoleEnum.CanBoThon)
                         {
                             <div class="full-width"><strong>Thôn được giao quản lý</strong><p>Có quyền nghiệp vụ dân cư, an sinh và hồ sơ trong các thôn được chọn.</p>
@@ -78,7 +79,7 @@
                         <label>Số điện thoại<InputText @bind-Value="form.Phone" /></label>
                         <label>@(form.Id == Guid.Empty ? "Mật khẩu (theo chính sách hệ thống)" : "Mật khẩu mới (để trống nếu giữ nguyên)")<InputText @bind-Value="form.Password" type="password" autocomplete="new-password" /></label>
 
-                    <label class="check"><InputCheckbox @bind-Value="form.Active" /> Đã duyệt / đang sử dụng</label>
+                    <label>Trạng thái<InputSelect @bind-Value="form.Active"><option value="true">Đã duyệt</option><option value="false">Chưa duyệt</option></InputSelect></label>
 
                         <h3>Vai trò được gán</h3>
                         <div class="assignments">

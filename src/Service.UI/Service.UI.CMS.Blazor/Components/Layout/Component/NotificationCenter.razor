@@ -5,9 +5,9 @@
 @inject IMessageService MessageService
 
 <FluentButton Appearance="Appearance.Stealth" OnClick="OpenNotificationCenterAsync" Title="Thông báo">
-    @if ((villageUnread + MessageService.Count(AppRoutes.MESSAGES_NOTIFICATION_CENTER)) > 0)
+    @if ((villageUnread + pendingApprovals + MessageService.Count(AppRoutes.MESSAGES_NOTIFICATION_CENTER)) > 0)
     {
-        <FluentCounterBadge Count="@(villageUnread + MessageService.Count(AppRoutes.MESSAGES_NOTIFICATION_CENTER))"
+        <FluentCounterBadge Count="@(villageUnread + pendingApprovals + MessageService.Count(AppRoutes.MESSAGES_NOTIFICATION_CENTER))"
                             Max="9"
                             ShowOverflow="true"
                             BackgroundColor="@Color.Error"

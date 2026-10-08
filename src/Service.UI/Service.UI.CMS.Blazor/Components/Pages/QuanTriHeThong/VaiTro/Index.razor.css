@@ -28,6 +28,8 @@ select { padding:7px 10px; border:1px solid var(--neutral-stroke-rest); border-r
 .editor ::deep .assignments,.editor ::deep h3 { grid-column:1 / -1; }
 .assignments { max-height:260px; overflow:auto; padding:12px; border:1px solid var(--neutral-stroke-rest); display:grid; gap:10px; }
 .assignments small { opacity:.65; overflow-wrap:anywhere; }
+.editor ::deep .assignment-heading { grid-column:1 / -1; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.assignment-heading h3 { margin:0; }
 .editor-actions { justify-content:flex-end; border-top:1px solid var(--neutral-stroke-rest); padding-top:16px; }
 @media(max-width:700px) { .editor ::deep .form-grid { grid-template-columns:1fr; } .editor { padding:16px; } .tree-path { display:none; } .tree-row { flex-wrap:wrap; } .grid-footer { flex-wrap:wrap; } }
 

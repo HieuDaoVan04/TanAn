@@ -73,6 +73,7 @@ namespace Service.Shared.Contracts.DTOs
 
     public class BienDongDto
     {
+        public KhaiSinhForm? HoSoKhaiSinh { get; set; }
         public Guid Id { get; set; }
         public LoaiBienDongEnum LoaiBienDong { get; set; }
         public Guid NhanKhauId { get; set; }

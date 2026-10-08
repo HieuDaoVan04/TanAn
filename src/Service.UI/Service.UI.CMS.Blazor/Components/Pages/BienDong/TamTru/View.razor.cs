@@ -1,0 +1,12 @@
+using Microsoft.AspNetCore.Components;
+using Service.Shared.Contracts.DTOs;
+using Service.TanAn.Domain.Enums;
+
+namespace Service.UI.CMS.Blazor.Components.Pages.BienDong.TamTru;
+
+public partial class View
+{
+    [Parameter, EditorRequired] public BienDongDto Record { get; set; } = default!;
+    [Parameter] public EventCallback Close { get; set; }
+
+}

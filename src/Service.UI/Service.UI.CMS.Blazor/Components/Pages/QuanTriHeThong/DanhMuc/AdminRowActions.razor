@@ -7,7 +7,7 @@
 {
     <FluentButton Appearance="Appearance.Outline" Title="@(Kind == AdminCatalog.Users ? "Gán vai trò" : "Gán menu")" aria-label="@(Kind == AdminCatalog.Users ? "Gán vai trò" : "Gán menu")" Disabled="Busy" IconStart="@(new Icons.Regular.Size20.PersonKey())" OnClick="@(() => OnEdit.InvokeAsync(Item))" />
 }
-<FluentButton Appearance="Appearance.Outline" Title="@(Item.Active ? (Item.ModerationStatus.HasValue ? "Hủy duyệt" : "Ngừng sử dụng") : (Item.ModerationStatus.HasValue ? "Duyệt" : "Sử dụng"))" aria-label="@(Item.Active ? (Item.ModerationStatus.HasValue ? "Hủy duyệt" : "Ngừng sử dụng") : (Item.ModerationStatus.HasValue ? "Duyệt" : "Sử dụng"))" Disabled="Busy" IconStart="@(Item.Active ? (Icon)new Icons.Regular.Size16.Prohibited() : new Icons.Regular.Size16.CheckmarkCircle())" OnClick="@(() => OnStatus.InvokeAsync(Item))" />
+<FluentButton Appearance="Appearance.Outline" Title="@(Item.Active ? "Hủy duyệt" : "Duyệt")" aria-label="@(Item.Active ? "Hủy duyệt" : "Duyệt")" Disabled="Busy" IconStart="@(Item.Active ? (Icon)new Icons.Regular.Size16.Prohibited() : new Icons.Regular.Size16.CheckmarkCircle())" OnClick="@(() => OnStatus.InvokeAsync(Item))" />
 @if (!Item.Active && (Kind is (AdminCatalog.Modules or AdminCatalog.Menus or AdminCatalog.Roles)
     || Kind == AdminCatalog.Parameters && SystemParameterCatalog.Find(Item.Code) == null))
 {

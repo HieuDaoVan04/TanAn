@@ -138,7 +138,7 @@ namespace Service.TanAn.API.Controllers.v1.Core
         }
 
         /// <summary>
-        /// Từ chối theo ID
+        /// Hủy duyệt theo ID
         /// </summary>
         [HttpPut("{id}/reject")]
         public async Task<IActionResult> Reject(Guid id)
@@ -150,7 +150,7 @@ namespace Service.TanAn.API.Controllers.v1.Core
         }
 
         /// <summary>
-        /// Chờ xem xét theo ID
+        /// Chuyển về chưa duyệt (tương thích endpoint cũ)
         /// </summary>
         [HttpPut("{id}/pending-review")]
         public async Task<IActionResult> PendingReview(Guid id)
@@ -162,7 +162,7 @@ namespace Service.TanAn.API.Controllers.v1.Core
         }
 
         /// <summary>
-        /// Chờ phê duyệt theo ID
+        /// Chuyển về chưa duyệt (tương thích endpoint cũ)
         /// </summary>
         [HttpPut("{id}/pending-approval")]
         public async Task<IActionResult> PendingApproval(Guid id)

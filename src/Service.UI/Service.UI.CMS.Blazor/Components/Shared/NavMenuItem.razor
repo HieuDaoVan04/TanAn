@@ -5,7 +5,7 @@
 @switch (Value)
 {
     case NavGroup group:
-        <FluentNavGroup @bind-Expanded="@group.Expanded" Gap="@group.Gap" Icon="@group.Icon">
+        <FluentNavGroup @bind-Expanded="@group.Expanded" Gap="@group.Gap" Icon="@group.Icon" Href="@group.Href" Match="@group.Match">
             <TitleTemplate>
                 <span class="menu-group-title">@group.Title</span>
             </TitleTemplate>

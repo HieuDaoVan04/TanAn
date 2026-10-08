@@ -8,7 +8,7 @@ public partial class TanAnDbContext
 {
     private Guid ActorId => actor?.UserId ?? Guid.Empty;
     // Standalone migration/seed tools explicitly construct a context without an HTTP actor.
-    private bool FullVillageAccess => actor == null || Users.AsNoTracking().Any(u => u.Id == ActorId && u.ModerationStatus == ModerationStatus.Approved && (u.LockoutEnd == null || u.LockoutEnd <= DateTime.UtcNow) && (u.Role == RoleEnum.Admin || u.Role == RoleEnum.CanBoXa));
+    private bool FullVillageAccess => actor == null || Users.AsNoTracking().Any(u => u.Id == ActorId && u.ModerationStatus == ModerationStatus.Approved && (u.LockoutEnd == null || u.LockoutEnd <= DateTime.UtcNow) && (u.Role == RoleEnum.Admin || u.Role == RoleEnum.CanBoXa || u.Role == RoleEnum.ChuTichXa));
     private Guid[] AllowedVillageIds => actor == null ? [] : PhuTrachThons.AsNoTracking()
         .Where(p => p.UserId == ActorId && p.User.Role == RoleEnum.CanBoThon && p.User.ModerationStatus == ModerationStatus.Approved && (p.User.LockoutEnd == null || p.User.LockoutEnd <= DateTime.UtcNow) && p.Thon.DangHoatDong)
         .Select(p => p.ApThonId).ToArray();
@@ -19,6 +19,7 @@ public partial class TanAnDbContext
         b.Entity<ThanhVienHo>().HasQueryFilter(x => FullVillageAccess || HoGiaDinhs.Any(h => h.Id == x.HoGiaDinhId));
         b.Entity<PhanLoaiHo>().HasQueryFilter(x => FullVillageAccess || HoGiaDinhs.Any(h => h.Id == x.HoGiaDinhId));
         b.Entity<BienDongDanCu>().HasQueryFilter(x => FullVillageAccess || NhanKhaus.Any(n => n.Id == x.NhanKhauId));
+        b.Entity<HoSoKhaiSinh>().HasQueryFilter(x => FullVillageAccess || (x.ApThonId.HasValue && Enumerable.Contains(AllowedVillageIds, x.ApThonId.Value)) || (x.ApThonId == null && x.NguoiTaoId == ActorId));
         b.Entity<DoiTuongAnSinh>().HasQueryFilter(x => FullVillageAccess || NhanKhaus.Any(n => n.Id == x.NhanKhauId));
         b.Entity<LichSuTroCap>().HasQueryFilter(x => FullVillageAccess || DoiTuongAnSinhs.Any(n => n.Id == x.DoiTuongAnSinhId));
         b.Entity<YeuCauNguoiDan>().HasQueryFilter(x => FullVillageAccess || (x.ApThonId.HasValue && Enumerable.Contains(AllowedVillageIds, x.ApThonId.Value)));
@@ -26,7 +27,7 @@ public partial class TanAnDbContext
         b.Entity<TepDinhKem>().HasQueryFilter(x => FullVillageAccess || YeuCauNguoiDans.Any(n => n.Id == x.YeuCauId));
         b.Entity<ThongBaoThon>().HasQueryFilter(x => actor == null || (x.NguoiNhanId == ActorId && Enumerable.Contains(AllowedVillageIds, x.ApThonId)));
     }
-    private static bool Business(object x) => x is HoGiaDinh or NhanKhau or ThanhVienHo or PhanLoaiHo or BienDongDanCu or DoiTuongAnSinh or LichSuTroCap or YeuCauNguoiDan or LichSuXuLyHoSo or TepDinhKem;
+    private static bool Business(object x) => x is HoGiaDinh or NhanKhau or ThanhVienHo or PhanLoaiHo or BienDongDanCu or HoSoKhaiSinh or DoiTuongAnSinh or LichSuTroCap or YeuCauNguoiDan or LichSuXuLyHoSo or TepDinhKem;
     private async Task<bool> OwnsValues(object entity, PropertyValues values, Guid[] allowed, CancellationToken ct)
     {
         Guid Id(string key) => values.GetValue<Guid>(key);
@@ -38,6 +39,8 @@ public partial class TanAnDbContext
         var benefitId = entity is LichSuTroCap ? Id("DoiTuongAnSinhId") : Guid.Empty;
         var requestId = entity is LichSuXuLyHoSo or TepDinhKem ? Id("YeuCauId") : Guid.Empty;
         return entity switch {
+            HoSoKhaiSinh => (NullableId("ApThonId") is Guid v && allowed.Contains(v) || NullableId("ApThonId") == null && NullableId("NguoiTaoId") == ActorId)
+                && (NullableId("HoGiaDinhId") is not Guid h || await OwnsHouse(h)),
             HoGiaDinh or YeuCauNguoiDan => NullableId("ApThonId") is Guid t && allowed.Contains(t),
             NhanKhau => await OwnsHouse(Id("MaHoGiaDinh")),
             ThanhVienHo => await OwnsHouse(Id("HoGiaDinhId")) && (await NhanKhaus.AsNoTracking().AnyAsync(n=>n.Id==personId && n.MaHoGiaDinh==houseId,ct) || ChangeTracker.Entries<NhanKhau>().Any(e=>e.State==EntityState.Added && e.Entity.Id==personId && e.Entity.MaHoGiaDinh==houseId)),

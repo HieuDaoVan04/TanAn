@@ -27,6 +27,7 @@ namespace Service.TanAn.Application.Interfaces
         DbSet<HoGiaDinh> HoGiaDinhs { get; set; }
         DbSet<NhanKhau> NhanKhaus { get; set; }
         DbSet<BienDongDanCu> BienDongDanCus { get; set; }
+        DbSet<HoSoKhaiSinh> HoSoKhaiSinhs { get; set; }
         DbSet<DoiTuongAnSinh> DoiTuongAnSinhs { get; set; }
         DbSet<LichSuTroCap> LichSuTroCaps { get; set; }
         DbSet<YeuCauNguoiDan> YeuCauNguoiDans { get; set; }

@@ -13,7 +13,7 @@ using Service.Shared.Contracts.DTOs;
 
 namespace Service.TanAn.Application.Services
 {
-    public class PopulationService : IPopulationService
+    public partial class PopulationService : IPopulationService
     {
         private readonly ITanAnDbContext _db;
         private readonly IAuditLogService _auditLog;
@@ -124,6 +124,10 @@ namespace Service.TanAn.Application.Services
                     GioiTinh = n.GioiTinh,
                     QuanHeVoiChuHo = n.QuanHeVoiChuHo,
                     NgheNghiep = n.NgheNghiep,
+                    DanToc = n.DanToc,
+                    ThuongTru = n.ThuongTru,
+                    QueQuan = n.QueQuan,
+                    TrangThai = n.TrangThai,
                     TamTru = n.TamTru,
                     MaHoGiaDinh = n.MaHoGiaDinh
                 }).ToList() ?? new()
@@ -387,13 +391,33 @@ namespace Service.TanAn.Application.Services
             });
         }
 
-        public async Task<ApiResult<PagedResult<BienDongDto>>> GetBienDongsAsync(string? keyword, int pageIndex, int pageSize)
+        public async Task<ApiResult<PagedResult<BienDongDto>>> GetBienDongsAsync(string? keyword, int pageIndex, int pageSize, int? loaiBienDong = null, DateTime? tuNgay = null, DateTime? denNgay = null, Guid? apThonId = null)
         {
+            if (pageIndex < 1 || pageSize < 1) return ApiResult<PagedResult<BienDongDto>>.Fail("Phân trang không hợp lệ.");
+            if (loaiBienDong.HasValue && !Enum.IsDefined(typeof(LoaiBienDongEnum), loaiBienDong.Value))
+                return ApiResult<PagedResult<BienDongDto>>.Fail("Loại biến động không hợp lệ.");
+            if (tuNgay.HasValue && denNgay.HasValue && tuNgay.Value.Date > denNgay.Value.Date)
+                return ApiResult<PagedResult<BienDongDto>>.Fail("Từ ngày phải nhỏ hơn hoặc bằng đến ngày.");
             var query = _db.BienDongDanCus.Include(b => b.NhanKhau).AsQueryable();
+            if (loaiBienDong.HasValue) query = query.Where(b => b.LoaiBienDong == (LoaiBienDongEnum)loaiBienDong.Value);
+            if (apThonId.HasValue)
+                query = query.Where(b => b.NhanKhau != null && b.NhanKhau.HoGiaDinh != null && b.NhanKhau.HoGiaDinh.ApThonId == apThonId.Value);
+            if (tuNgay.HasValue)
+            {
+                var fromDate = tuNgay.Value.Date;
+                query = query.Where(b => b.NgayPhatSinh >= fromDate);
+            }
+            if (denNgay.HasValue && denNgay.Value.Date < DateTime.MaxValue.Date)
+            {
+                // Include the whole end date, even records with a time component.
+                var endExclusive = denNgay.Value.Date.AddDays(1);
+                query = query.Where(b => b.NgayPhatSinh < endExclusive);
+            }
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                query = query.Where(b => b.LyDo.Contains(keyword) || (b.NhanKhau != null && b.NhanKhau.HoTen.Contains(keyword)));
+                query = query.Where(b => b.LyDo.Contains(keyword) || (b.NoiDenOrDi != null && b.NoiDenOrDi.Contains(keyword))
+                    || (b.NhanKhau != null && (b.NhanKhau.HoTen.Contains(keyword) || b.NhanKhau.CCCD.Contains(keyword))));
             }
 
             int totalCount = await query.CountAsync();
@@ -411,7 +435,8 @@ namespace Service.TanAn.Application.Services
                     NoiDenOrDi = b.NoiDenOrDi,
                     LyDo = b.LyDo,
                     CanBoGhiNhan = b.CanBoGhiNhan,
-                    NgayTao = b.NgayTao
+                    NgayTao = b.NgayTao,
+                    HoSoKhaiSinh = b.HoSoKhaiSinhJson == null ? null : ReadBirthSnapshot(b.HoSoKhaiSinhJson)
                 })
                 .ToListAsync();
 
@@ -420,6 +445,8 @@ namespace Service.TanAn.Application.Services
 
         public async Task<ApiResult<BienDongDto>> CreateBienDongAsync(CreateBienDongForm form, string username)
         {
+            if (!Enum.IsDefined(form.LoaiBienDong)) return ApiResult<BienDongDto>.Fail("Loại biến động không hợp lệ.");
+            if (form.LoaiBienDong == LoaiBienDongEnum.KhaiSinh) return ApiResult<BienDongDto>.Fail("Khai sinh cần nhập hồ sơ nháp; chưa ghi nhận biến động tại bước nhập hồ sơ.");
             var bd = new BienDongDanCu
             {
                 NhanKhauId = form.NhanKhauId,
@@ -469,5 +496,3 @@ namespace Service.TanAn.Application.Services
         }
     }
 }
-
-

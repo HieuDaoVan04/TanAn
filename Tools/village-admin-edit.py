@@ -9,7 +9,7 @@ edit(p,'                var old = await db.UserRoles.Where(r => r.UserId == id).
                 var villages = form.VillageIds.Distinct().ToList();
                 if (form.AccountRole != Service.TanAn.Domain.Enums.RoleEnum.CanBoThon) villages.Clear();
                 if (form.AccountRole == Service.TanAn.Domain.Enums.RoleEnum.CanBoThon && villages.Count == 0) throw new ArgumentException("Hãy chọn ít nhất một thôn phụ trách.");
-                if (await db.ApThons.CountAsync(t => villages.Contains(t.Id) && t.DangHoatDong && t.XaId != null) != villages.Count) throw new ArgumentException("Thôn không tồn tại, chưa thuộc xã hoặc đã ngừng hoạt động.");
+                if (await db.ApThons.CountAsync(t => villages.Contains(t.Id) && t.DangHoatDong && t.XaId != null) != villages.Count) throw new ArgumentException("Thôn không tồn tại, chưa thuộc xã hoặc chưa duyệt.");
                 x.Role = form.AccountRole;
                 var oldVillages = await db.PhuTrachThons.Where(p => p.UserId == id).ToListAsync();
                 db.PhuTrachThons.RemoveRange(oldVillages.Where(p => !villages.Contains(p.ApThonId)));

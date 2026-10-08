@@ -43,7 +43,8 @@ namespace Service.TanAn.Domain.Enums
         Admin = 1,
         CanBoXa = 2,
         CanBoThon = 3,
-        NguoiDan = 4
+        NguoiDan = 4,
+        ChuTichXa = 5
     }
 
     public enum TrangThaiNhanKhauEnum

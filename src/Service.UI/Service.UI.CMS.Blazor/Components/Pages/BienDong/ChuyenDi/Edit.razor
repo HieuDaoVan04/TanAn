@@ -1,0 +1,35 @@
+<DataDialog Title="@Title" Close="Cancel" Busy="busy">
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <p class="error" role="alert">@error</p>
+    }
+    <EditForm Model="change" OnSubmit="Save">
+        <fieldset class="data-form" disabled="@busy">
+            <div class="wide">
+                <label>Tìm nhân khẩu theo họ tên hoặc CCCD<input @bind="keyword" /></label>
+                <FluentButton Type="ButtonType.Button" OnClick="FindPeople" Disabled="busy">Tìm nhân khẩu</FluentButton>
+            </div>
+            <label class="wide">Nhân khẩu *
+                <InputSelect @bind-Value="personId" required>
+                    <option value="@Guid.Empty">— Chọn nhân khẩu —</option>
+                    @foreach (var person in people)
+                    {
+                        <option value="@person.Id">@person.HoTen — @person.CCCD — @person.MaSoHo</option>
+                    }
+                </InputSelect>
+            </label>
+            <label>Loại biến động
+                <InputSelect @bind-Value="change.LoaiBienDong" disabled="true">
+                    <option value="@ScreenType">@BusinessCreateDialog.Label(ScreenType.ToString())</option>
+                </InputSelect>
+            </label>
+            <label>Ngày phát sinh *<InputDate @bind-Value="change.NgayPhatSinh" required /></label>
+            <label class="wide">Nơi đi / đến<InputText @bind-Value="change.NoiDenOrDi" /></label>
+            <label class="wide">Lý do *<InputTextArea @bind-Value="change.LyDo" required /></label>
+        </fieldset>
+        <div class="dialog-actions">
+            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.Save())" Disabled="busy">Lưu</FluentButton>
+            <FluentButton Type="ButtonType.Button" OnClick="Cancel" Disabled="busy">Hủy</FluentButton>
+        </div>
+    </EditForm>
+</DataDialog>

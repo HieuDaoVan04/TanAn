@@ -108,7 +108,7 @@
                             <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" />
                         </FluentButton>
                     }
-                    else if (context.ModerationStatus == ModerationStatus.Rejected || context.ModerationStatus ==ModerationStatus.Pending)
+                    else
                     {
                         
                         <FluentButton Title="Duyệt" Appearance="Appearance.Neutral" OnClick="@(() => ApproveAsync(context.Id))">
@@ -187,7 +187,7 @@
 												<FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" />
 											</FluentButton>
 										}
-										else if (modStatus == ModerationStatus.Rejected || modStatus == ModerationStatus.Pending)
+										else
 										{
 											<FluentButton Title="Duyệt" Appearance="Appearance.Neutral" Style="display: inline-block;" OnClick="() => ApproveAsync(Guid.Parse(treeView.Id))">
 												<FluentIcon Value="@(new Icons.Regular.Size16.Checkmark())" />

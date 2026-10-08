@@ -116,7 +116,7 @@ public sealed class SystemConfigurationService(ITanAnDbContext db, IHttpContextA
         if (row == null) { row = new SystemParameter(); db.SystemParameters.Add(row); }
         row.Code = code; row.Value = value; row.Description = form.Description?.Trim();
         row.IsSync = SystemParameterCatalog.Find(code) != null;
-        row.ModerationStatus = status ?? row.ModerationStatus; row.LastModified = DateTime.UtcNow;
+        row.ModerationStatus = (status ?? row.ModerationStatus) == ModerationStatus.Approved ? ModerationStatus.Approved : ModerationStatus.Pending; row.LastModified = DateTime.UtcNow;
         Audit(actor, before == null ? "Tạo tham số hệ thống" : "Cập nhật tham số hệ thống", row, before);
         await db.SaveChangesAsync();
         return row.Id;
@@ -130,8 +130,8 @@ public sealed class SystemConfigurationService(ITanAnDbContext db, IHttpContextA
         if (row == null) return false;
         if (status == ModerationStatus.Approved) SystemParameterCatalog.NormalizeValue(SystemParameterCatalog.NormalizeCode(row.Code), row.Value);
         var before = Snapshot(row);
-        row.ModerationStatus = status; row.LastModified = DateTime.UtcNow;
-        Audit(actor, status == ModerationStatus.Approved ? "Duyệt tham số hệ thống" : "Ngừng dùng tham số hệ thống", row, before);
+        row.ModerationStatus = status == ModerationStatus.Approved ? ModerationStatus.Approved : ModerationStatus.Pending; row.LastModified = DateTime.UtcNow;
+        Audit(actor, status == ModerationStatus.Approved ? "Duyệt tham số hệ thống" : "Hủy duyệt tham số hệ thống", row, before);
         await db.SaveChangesAsync();
         return true;
     }
@@ -141,7 +141,7 @@ public sealed class SystemConfigurationService(ITanAnDbContext db, IHttpContextA
         RequireAdmin(actor);
         var row = await db.SystemParameters.FindAsync(id);
         if (row == null) return false;
-        if (SystemParameterCatalog.Find(row.Code) != null) throw new InvalidOperationException("Không được xóa tham số hệ thống đã định nghĩa. Có thể ngừng dùng để trở về giá trị mặc định.");
+        if (SystemParameterCatalog.Find(row.Code) != null) throw new InvalidOperationException("Không được xóa tham số hệ thống đã định nghĩa. Có thể hủy duyệt để trở về giá trị mặc định.");
         var before = Snapshot(row);
         db.SystemParameters.Remove(row);
         Audit(actor, "Xóa tham số hệ thống", row, before, deleted: true);
