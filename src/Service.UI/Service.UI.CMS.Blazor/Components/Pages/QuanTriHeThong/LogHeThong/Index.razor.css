@@ -1,0 +1,137 @@
+.monitor-header {
+    padding: 2px 2px 0;
+}
+
+.monitor-header h2 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.monitor-header p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.monitor-filter-card {
+    padding: 16px;
+}
+
+.monitor-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(300px, 1.7fr) 180px 180px auto;
+    gap: 14px;
+    align-items: end;
+}
+
+.monitor-filter-grid label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+}
+
+.monitor-filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding-bottom: 1px;
+}
+
+.monitor-table-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.monitor-table-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid #ececec;
+}
+
+.monitor-table-heading h3 {
+    margin: 0 0 3px;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.monitor-table-heading span {
+    color: #777;
+    font-size: 13px;
+}
+
+.monitor-grid-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.cell-center,
+.cell-main,
+.cell-user,
+.cell-ip,
+.cell-code {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+}
+
+.cell-center {
+    justify-content: center;
+}
+
+.cell-user {
+    font-weight: 600;
+}
+
+.cell-code {
+    word-break: break-word;
+    color: #555;
+    font-size: 13px;
+}
+
+.cell-ip {
+    font-family: Consolas, monospace;
+    font-size: 13px;
+}
+
+.monitor-empty {
+    padding: 28px 20px;
+    text-align: center;
+    color: #777;
+}
+
+.monitor-pagination {
+    padding: 10px 16px 14px;
+    border-top: 1px solid #ececec;
+}
+
+@media (max-width: 1050px) {
+    .monitor-filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .monitor-search,
+    .monitor-filter-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .monitor-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .monitor-search,
+    .monitor-filter-actions {
+        grid-column: auto;
+    }
+
+    .monitor-filter-actions {
+        flex-wrap: wrap;
+    }
+}

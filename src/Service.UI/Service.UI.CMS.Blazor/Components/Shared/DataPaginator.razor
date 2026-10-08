@@ -1,0 +1,11 @@
+<div class="data-pagination">
+    <label>Số dòng/trang <select value="@State.ItemsPerPage" @onchange="ChangeSize"><option value="10">10</option><option value="20">20</option><option value="50">50</option></select></label>
+    <span>@(State.TotalItemCount ?? 0) bản ghi</span>
+    <div class="page-buttons">
+        <button title="Trang đầu" disabled="@(State.CurrentPageIndex == 0)" @onclick="@(() => Go(0))">«</button>
+        <button title="Trang trước" disabled="@(State.CurrentPageIndex == 0)" @onclick="@(() => Go(State.CurrentPageIndex - 1))">‹</button>
+        <span>Trang @(State.CurrentPageIndex + 1) / @Pages</span>
+        <button title="Trang sau" disabled="@(State.CurrentPageIndex >= Pages - 1)" @onclick="@(() => Go(State.CurrentPageIndex + 1))">›</button>
+        <button title="Trang cuối" disabled="@(State.CurrentPageIndex >= Pages - 1)" @onclick="@(() => Go(Pages - 1))">»</button>
+    </div>
+</div>

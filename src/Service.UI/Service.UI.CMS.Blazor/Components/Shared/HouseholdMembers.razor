@@ -1,0 +1,26 @@
+@using Service.Shared.Contracts.DTOs
+@using Service.TanAn.Domain.Enums
+<FluentButton OnClick="New" Disabled="busy">Thêm nhân khẩu vào hộ</FluentButton>
+@if(!string.IsNullOrEmpty(error)) { <p role="alert">@error</p> }
+<FluentDataGrid Items="Members.AsQueryable()" TGridItem="NhanKhauDto" RowSize="DataGridRowSize.Large">
+    <PropertyColumn Property="@(x=>x.HoTen)" Title="Họ tên" />
+    <PropertyColumn Property="@(x=>x.CCCD)" Title="CCCD" />
+    <PropertyColumn Property="@(x=>x.QuanHeVoiChuHo)" Title="Quan hệ" />
+    <TemplateColumn Title="Thao tác"><FluentButton Disabled="busy" OnClick="@(() => Edit(context))">Sửa</FluentButton></TemplateColumn>
+</FluentDataGrid>
+@if(form != null)
+{
+    <EditForm Model="form" OnSubmit="Save">
+        <fieldset disabled="busy" class="data-form">
+            <legend>@(editingId==null ? "Thêm nhân khẩu" : "Sửa nhân khẩu")</legend>
+            <label>Họ tên *<InputText @bind-Value="form.HoTen" required /></label>
+            <label>CCCD<InputText @bind-Value="form.CCCD" maxlength="12" /></label>
+            <label>Ngày sinh *<InputDate @bind-Value="form.NgaySinh" required /></label>
+            <label>Giới tính<InputSelect @bind-Value="form.GioiTinh">@foreach(var gender in Enum.GetValues<GioiTinhEnum>()) { <option value="@gender">@gender</option> }</InputSelect></label>
+            <label>Quan hệ với chủ hộ<InputText @bind-Value="form.QuanHeVoiChuHo" required disabled="@(form.QuanHeVoiChuHo == "Chủ hộ")" /></label>
+            <label>Nghề nghiệp<InputText @bind-Value="form.NgheNghiep" /></label>
+            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Lưu nhân khẩu</FluentButton>
+            <FluentButton Type="ButtonType.Button" OnClick="@(() => form=null)">Hủy</FluentButton>
+        </fieldset>
+    </EditForm>
+}

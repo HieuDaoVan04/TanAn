@@ -1,0 +1,11 @@
+<div class="floating-assistant">
+    @if (!isOpen)
+    { <button type="button" class="floating-toggle" @onclick="ToggleChat" aria-label="Mở trợ lý AI" aria-expanded="false">AI <span>Trợ lý Tân An</span></button> }
+    @if (hasOpened)
+    {
+        <div class="floating-window" style="display:@(isOpen ? "block" : "none")" role="region" aria-label="Trợ lý AI Tân An">
+            <div class="floating-toolbar"><a href="/ai-chatbot">Mở trang trợ lý ↗</a><button type="button" @onclick="ToggleChat" aria-label="Thu nhỏ trợ lý AI">✕</button></div>
+            <div class="floating-content"><AssistantChat /></div>
+        </div>
+    }
+</div>

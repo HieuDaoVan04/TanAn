@@ -1,0 +1,80 @@
+@namespace Service.UI.CMS.Blazor.Components.Shares.Cards
+@using Microsoft.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<FluentCard Class="@($"surface-card {Class}")" Style="@Style">
+    @if (HeaderContent is not null || HeaderActions is not null)
+    {
+        <div class="surface-card-header">
+            <div class="surface-card-title">
+                @HeaderContent
+            </div>
+            @if (HeaderActions is not null)
+            {
+                <div class="surface-card-actions">
+                    @HeaderActions
+                </div>
+            }
+        </div>
+    }
+
+    @if (ChildContent is not null)
+    {
+        <div class="surface-card-body">
+            @ChildContent
+        </div>
+    }
+
+    @if (FooterContent is not null)
+    {
+        <div class="surface-card-footer">
+            @FooterContent
+        </div>
+    }
+</FluentCard>
+
+<style>
+    .surface-card,
+    fluent-card.surface-card {
+        padding: 16px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        margin-bottom: 16px;
+        overflow: visible !important;
+        contain: none !important;
+    }
+
+    .surface-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .surface-card-title h2 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .surface-card-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .surface-card-body {
+        width: 100%;
+    }
+
+    .surface-card-footer {
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid #f1f5f9;
+    }
+</style>

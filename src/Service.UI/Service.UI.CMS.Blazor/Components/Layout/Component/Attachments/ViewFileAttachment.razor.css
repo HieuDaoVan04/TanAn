@@ -1,0 +1,150 @@
+.file-attachment-container {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+    width: 100%;
+}
+
+.file-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-title {
+    margin: 0;
+    font-weight: 600;
+    color: #333;
+}
+
+.file-count {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.file-content {
+    padding: 16px 20px;
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    gap: 12px;
+}
+
+    .file-item:hover {
+        border-color: #0d6efd;
+        background: #f0f7ff;
+        box-shadow: 0 2px 4px rgba(13, 110, 253, 0.1);
+    }
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.file-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background: #eef3ff;
+    color: #0d6efd;
+    font-size: 18px;
+}
+
+.file-details {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.file-name {
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.file-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: #6c757d;
+    flex-wrap: wrap;
+}
+
+.file-extension {
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 2px 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    color: #495057;
+}
+
+.file-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 5px;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 48px;
+    color: #adb5bd;
+    margin-bottom: 16px;
+}
+
+.empty-text h6 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-weight: 600;
+}
+
+.empty-text p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+}

@@ -1,0 +1,9 @@
+.session-workspace { padding:8px 4px; color:var(--neutral-foreground-rest); }
+h2 { font-size:1.4rem; margin:0 0 18px; font-weight:600; }
+.session-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:16px 0; }
+.table-scroll { overflow-x:auto; } .table-scroll ::deep fluent-data-grid { min-width:800px; }
+.text-button { color:var(--accent-foreground-rest); background:transparent; border:0; font:inherit; cursor:pointer; }
+.hint { opacity:.65; font-size:.85rem; margin-top:16px; }
+.type-badge { padding:3px 8px; border-radius:4px; background:var(--neutral-fill-stealth-hover); }
+.dialog-content { padding:24px; } .dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
+dt { font-weight:600; } dd { margin:4px 0 16px; overflow-wrap:anywhere; }

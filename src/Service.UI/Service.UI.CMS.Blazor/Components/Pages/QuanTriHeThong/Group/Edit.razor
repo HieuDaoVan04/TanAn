@@ -1,0 +1,190 @@
+@* "Một sản phẩm của HieuDV" *@
+
+@using Service.Shared.Commons.Extensions
+@using Service.Shared.Commons.Interfaces
+@using Service.Shared.Commons.Models
+@using Service.Shared.Commons.Model.SQL
+@using Service.Shared.Contracts.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
+@using System.Globalization
+@using Service.UI.CMS.Blazor.Applications.Dtos
+
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersGroupDto>
+
+@if (!IsLoading)
+{
+    <FluentDialogHeader ShowDismiss="true">
+        <FluentStack VerticalAlignment="VerticalAlignment.Center">
+            <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" />
+            <FluentLabel Typo="Typography.PaneHeader">
+                @Dialog.Instance.Parameters.Title
+            </FluentLabel>
+        </FluentStack>
+    </FluentDialogHeader>
+    <FluentDialogBody>
+        <EditForm Model="@GroupsForm" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+
+            <FluentGrid Class="s-form-view" Spacing="2" AdaptiveRendering="true" Justify="JustifyContent.FlexStart" Style="padding:4px;">
+
+                <!-- Tên đơn vị -->
+                <FluentGridItem md="6">
+                    <FluentTextField @bind-Value="GroupsForm.Name"
+                                     Label="Tên đơn vị"
+                                     Placeholder="Nhập tên đơn vị"
+                                     Required="true"
+                                     Style="width: 100%;" />
+                    <ValidationMessage For="@(() => GroupsForm.Name)" Style="color:red;" />
+                </FluentGridItem>
+
+                <!-- Tên viết tắt -->
+                <FluentGridItem md="6">
+                    <FluentTextField @bind-Value="GroupsForm.ShortName"
+                                     Label="Tên viết tắt"
+                                     Placeholder="Nhập tên viết tắt"
+                                     Style="width: 100%;" />
+                    <ValidationMessage For="@(() => GroupsForm.ShortName)" Style="color:red;" />
+                </FluentGridItem>
+
+                <!-- Mã định danh -->
+                <FluentGridItem md="6">
+                    <FluentTextField @bind-Value="GroupsForm.IdentifierCode"
+                                     Label="Mã định danh"
+                                     Placeholder="Nhập mã định danh"
+                                     Style="width: 100%;" />
+                    <ValidationMessage For="@(() => GroupsForm.IdentifierCode)" Style="color:red;" />
+                </FluentGridItem>
+
+                <!-- Thứ tự sắp xếp -->
+                <FluentGridItem md="6">
+                    <FluentNumberField @bind-Value="GroupsForm.SortOrder"
+                                       Label="Thứ tự sắp xếp"
+                                       Min="1" Max="999"
+                                       Style="width: 100%;" />
+                    <ValidationMessage For="@(() => GroupsForm.SortOrder)" Style="color:red;" />
+                </FluentGridItem>
+
+                <!-- Đơn vị trực thuộc -->
+                <FluentGridItem md="6">
+                    <FluentAutocomplete TOption="GroupsDto"
+                                        ImmediateDelay="250"
+                                        AutoComplete="off"
+                                        Label="Đơn vị trực thuộc"
+                                        OnOptionsSearch="OnSearchSelect"
+                                        Placeholder="Chọn đơn vị"
+                                        Multiple="false"
+                                        Position="SelectPosition.Below"
+                                        OptionText="@(item => item.Name)"
+                                        @bind-SelectedOption="@DonViDaChon" />
+                </FluentGridItem>
+                @if (!Content.IsAddGroup)
+                {
+                    <FluentGridItem md="6">
+                        <FluentSelect @bind-Value="SelectedUnitType"
+                                      @bind-Value:after="OnUnitTypeChanged"
+                                      Label="Phân loại đơn vị"
+                                      Items="@UnitTypeOptions"
+                                      Position="SelectPosition.Below"
+                                      OptionText="@(item => item.Text)"
+                                      OptionValue="@(item => item.Value.ToString())"
+                                      Style="width: 100%;" />
+                    </FluentGridItem>
+                    <!-- Địa chỉ -->
+                    <FluentGridItem md="12">
+                        <FluentTextField @bind-Value="GroupsForm.Address"
+                                         Label="Địa chỉ"
+                                         Placeholder="Nhập địa chỉ"
+                                         Style="width: 100%;" />
+                        <ValidationMessage For="@(() => GroupsForm.Address)" Style="color:red;" />
+                    </FluentGridItem>
+                }
+                else
+                {
+                    <!-- Địa chỉ -->
+                    <FluentGridItem md="6">
+                        <FluentTextField @bind-Value="GroupsForm.Address"
+                                         Label="Địa chỉ"
+                                         Placeholder="Nhập địa chỉ"
+                                         Style="width: 100%;" />
+                        <ValidationMessage For="@(() => GroupsForm.Address)" Style="color:red;" />
+                    </FluentGridItem>
+                }
+
+                <!-- Mô tả -->
+                <FluentGridItem md="12">
+                    <FluentTextArea @bind-Value="GroupsForm.Description"
+                                    Label="Mô tả"
+                                    Placeholder="Nhập mô tả"
+                                    Rows="3"
+                                    Resize="TextAreaResize.Both"
+                                    Style="width: 100%;" />
+                    <ValidationMessage For="@(() => GroupsForm.Description)" Style="color:red;" />
+                </FluentGridItem>
+
+                <FluentGridItem md="6">
+                    <FluentSelect @bind-Value="SelectedUnitGroup"
+                                  @bind-Value:after="OnUnitGroupChanged"
+                                  Label="Nhóm đơn vị"
+                                  Items="@UnitGroupOptions"
+                                  OptionText="@(item => item.Text)"
+                                  OptionValue="@(item => item.Value.ToString())"
+                                  Style="width: 100%;" />
+                </FluentGridItem>
+
+                <!-- Email -->
+                <FluentGridItem md="6">
+                    <FluentTextField @bind-Value="GroupsForm.Email"
+                                     Label="Email"
+                                     Placeholder="Nhập email"
+                                     TextFieldType="TextFieldType.Email"
+                                     Style="width: 100%;" />
+                    <ValidationMessage For="@(() => GroupsForm.Email)" Style="color:red;" />
+                </FluentGridItem>
+
+                <!-- Số điện thoại -->
+                <FluentGridItem md="6">
+                    <FluentTextField @bind-Value="GroupsForm.Phone"
+                                     Label="Số điện thoại"
+                                     Placeholder="Nhập số điện thoại"
+                                     TextFieldType="TextFieldType.Tel"
+                                     Style="width: 100%;" />
+                    <ValidationMessage For="@(() => GroupsForm.Phone)" Style="color:red;" />
+                </FluentGridItem>
+
+                <!-- Avatar -->
+                <FluentGridItem md="6">
+                    <FluentTextField @bind-Value="GroupsForm.Avartar"
+                                     Label="Avatar (URL)"
+                                     Placeholder="Nhập URL hình ảnh avatar"
+                                     Style="width: 100%;" />
+                    <ValidationMessage For="@(() => GroupsForm.Avartar)" Style="color:red;" />
+                </FluentGridItem>
+            </FluentGrid>
+
+            <!-- Footer -->
+            <FluentDialogFooter>
+                <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync" Disabled="@IsSaving">Hủy</FluentButton>
+                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@IsSaving">
+                    @(IsSaving ? "Đang lưu..." : "Lưu")
+                </FluentButton>
+            </FluentDialogFooter>
+        </EditForm>
+    </FluentDialogBody>
+}
+else if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <FluentDialogBody>
+        <FluentGridItem md="12">@ErrorMessage</FluentGridItem>
+    </FluentDialogBody>
+    <FluentDialogFooter>
+        <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync">Đóng</FluentButton>
+    </FluentDialogFooter>
+}
+else
+{
+    <FluentDialogBody>
+        <FluentProgressRing />
+    </FluentDialogBody>
+}

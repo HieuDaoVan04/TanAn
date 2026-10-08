@@ -1,0 +1,69 @@
+@namespace Service.UI.CMS.Blazor.Components.Pages.QuanTriHeThong.Permission
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@using Service.Shared.Commons.Model.SQL
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+@if (!IsLoading)
+{
+    <FluentDialogHeader ShowDismiss="true">
+        <FluentStack VerticalAlignment="VerticalAlignment.Center">
+            <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" />
+            <FluentLabel Typo="Typography.PaneHeader">
+                @Dialog.Instance.Parameters.Title
+            </FluentLabel>
+        </FluentStack>
+    </FluentDialogHeader>
+    <FluentDialogBody>
+        <EditForm Model="@PermissionForm" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+            <FluentGridItem md="6">
+                <FluentTextField @bind-Value="PermissionForm.PermissionName" Label="Tên quyền" Required="true" Style="width: 100%;" />
+                <ValidationMessage For="@(() => PermissionForm.PermissionName)" Style="color: red;" />
+            </FluentGridItem>
+
+            <FluentGridItem md="6">
+                <FluentTextField Value="@PermissionForm.PermissionCode.ToString()"
+                                 ValueChanged="@((string val) => { if (Enum.TryParse<EnumPermissions>(val, out var res)) PermissionForm.PermissionCode = res; })"
+                                 Label="Mã quyền"
+                                 Style="width: 100%;"
+                                 ReadOnly="@PermissionForm.IsSync" Required />
+            </FluentGridItem>
+
+            <FluentGridItem md="12">
+                <FluentTextArea @bind-Value="PermissionForm.Description" Label="Mô tả" Rows="3" Resize="TextAreaResize.Both" Style="width: 100%;" />
+            </FluentGridItem>
+
+            <FluentDialogFooter>
+                <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync" Disabled="@IsSaving">Hủy</FluentButton>
+                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@IsSaving">
+                    @if (IsSaving)
+                    {
+                        <span style="margin-left: 8px;">Đang lưu...</span>
+                    }
+                    else
+                    {
+                        <span>Lưu</span>
+                    }
+                </FluentButton>
+            </FluentDialogFooter>
+        </EditForm>
+    </FluentDialogBody>
+}
+else if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <FluentDialogBody>
+        <FluentGridItem md="12">@ErrorMessage</FluentGridItem>
+    </FluentDialogBody>
+    <FluentDialogFooter>
+        <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync">Đóng</FluentButton>
+    </FluentDialogFooter>
+}
+else
+{
+    <FluentDialogBody>
+        <FluentProgressRing />
+    </FluentDialogBody>
+}

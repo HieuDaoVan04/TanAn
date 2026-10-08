@@ -1,0 +1,13 @@
+h4 { margin: 12px 0 0; font-size: 1rem; font-weight: 600; }
+.draft-note { margin:0; padding:12px; background:#eef6ff; border-radius:6px; line-height:1.6; }
+.household-lookup { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.household-lookup > label { flex: 1; min-width: 200px; }
+.household-summary { margin: 0; line-height: 1.6; }
+.parent-section { display: flex; flex-direction: column; gap: 12px; }
+.parent-section ::deep .parent-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.parent-section label.parent-toggle { flex-direction: row; align-items: center; }
+.parent-section ::deep .parent-toggle input { width: 16px; height: 16px; margin: 0; }
+@media (max-width: 650px) {
+    .parent-section ::deep .parent-fields { grid-template-columns: minmax(0,1fr); }
+    .household-lookup > label { min-width: 0; flex-basis: 100%; }
+}

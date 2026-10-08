@@ -1,0 +1,40 @@
+@namespace Service.UI.CMS.Blazor.Components.Shared
+@using Microsoft.FluentUI.AspNetCore.Components
+<FluentPaginator State="@PaginationState" Style="@(string.IsNullOrEmpty(Style) ? "width:100%;" : Style)" Class="@($"adaptive-paginator {Class}")">
+    <SummaryTemplate>
+        <FluentStack Orientation="Orientation.Horizontal"
+                     Style="justify-content: space-between; align-items: center; width: 100%; padding: 5px 0; gap:12px; flex-wrap:wrap;">
+            <div style="display: flex; align-items: center; gap: 7px;">
+                <div>Hiển thị</div>
+                <FluentSelect Width="70px"
+                              TOption="Option<int>"
+                              Items="@itemsPerPageOptions"
+                              OptionText="@(i => i.Text)"
+                              OptionValue="@(i => i.Value.ToString())"
+                              @bind-Value="SelectedPageSize"
+                              @bind-Value:after="() => OnPageSizeChanged(SelectedPageSize)" />
+                <div>bản ghi</div>
+            </div>
+
+            @{
+                var startItem = PaginationState.CurrentPageIndex * PaginationState.ItemsPerPage + 1;
+                var endItem = Math.Min(startItem + (int)PaginationState.ItemsPerPage - 1, (int)(PaginationState.TotalItemCount ?? 0));
+
+                if (PaginationState.TotalItemCount == 0)
+                {
+                    startItem = 0;
+                    endItem = 0;
+                }
+            }
+            <div>
+                Hiển thị @startItem đến @endItem của @PaginationState.TotalItemCount bản ghi
+            </div>
+        </FluentStack>
+    </SummaryTemplate>
+    <PaginationTextTemplate>
+        <div style="display: flex; align-items: center; padding: 0 10px;">
+            Trang @(PaginationState.CurrentPageIndex + 1) / @(PaginationState.LastPageIndex + 1)
+        </div>
+    </PaginationTextTemplate>
+</FluentPaginator>
+

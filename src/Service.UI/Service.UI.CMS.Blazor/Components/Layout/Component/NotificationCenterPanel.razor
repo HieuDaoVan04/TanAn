@@ -1,0 +1,20 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Service.UI.CMS.Blazor.Applications
+@implements IDialogContentComponent<GlobalState>
+@inject IMessageService MessageService
+
+<div>
+    <FluentStack>
+        <FluentSpacer />
+        <FluentAnchor Appearance="@Appearance.Hypertext" Href="" OnClick="@(e => MessageService.Clear(AppRoutes.MESSAGES_NOTIFICATION_CENTER) )">
+            Dismiss all
+        </FluentAnchor>
+    </FluentStack>
+
+    <br />
+
+    <FluentMessageBarProvider Section="@AppRoutes.MESSAGES_NOTIFICATION_CENTER" MaxMessageCount="-1" Type="@MessageType.Notification" />
+</div>
+
+<Service.UI.CMS.Blazor.Components.Shared.ApprovalNotifications Opening="CloseForApproval" />
+<Service.UI.CMS.Blazor.Components.Shared.VillageNotifications />

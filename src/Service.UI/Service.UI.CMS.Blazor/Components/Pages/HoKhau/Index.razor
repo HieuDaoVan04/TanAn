@@ -1,0 +1,92 @@
+@page "/ho-khau"
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Service.UI.CMS.Blazor.Components.Shares.Filter
+
+<PageTitle>Quản Lý Sổ Hộ Khẩu - Xã Tân An</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="width:100%">
+    <h2>Danh sách hộ gia đình và nhân khẩu</h2>
+
+    <FluentStack Orientation="Orientation.Horizontal"
+                 Class="data-toolbar"
+                 Style="display:flex; align-items:center; width:100%; flex-wrap:nowrap; gap:16px;">
+        <FluentStack Orientation="Orientation.Horizontal"
+                     HorizontalGap="10"
+                     Class="data-toolbar-actions"
+                     Style="display:flex; align-items:center; flex-wrap:nowrap;">
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.AddCircle())" OnClick="OpenAddModal">Thêm mới</FluentButton>
+            <FluentButton OnClick="ExportExcel" Appearance="Appearance.Accent" Class="ms-2">
+                <i class="fa-solid fa-file-excel me-1"></i> Xuất Excel
+            </FluentButton>
+        </FluentStack>
+
+        <FluentStack Orientation="Orientation.Horizontal"
+                     HorizontalGap="10"
+                     Class="data-toolbar-filters"
+                     Style="display:flex; align-items:center; flex-wrap:nowrap; margin-left:auto; justify-content:flex-end;">
+            <FluentSelect Items="@apThonList"
+                          TOption="string"
+                          OptionText="i => i"
+                          OptionValue="i => i"
+                          @bind-Value="selectedApThon"
+                          @bind-Value:after="LoadData"
+                          Style="width: 220px;"
+                          Position="SelectPosition.Below" />
+
+            <FluentSearch Placeholder="Nhập vào từ khóa (Tên chủ hộ, CCCD...)"
+                          @bind-Value="searchKeyword"
+                          @bind-Value:after="LoadData"
+                          Style="width: 320px;" />
+        </FluentStack>
+    </FluentStack>
+
+    <div class="data-grid-scroll">
+        <FluentDataGrid @ref="grid" ItemsProvider="LoadHouseholds"
+                        TGridItem="HoGiaDinhDto"
+                        Pagination="@pagination"
+                        ShowHover="true"
+                        MultiLine="true"
+                        RowSize="DataGridRowSize.Large"
+                        GridTemplateColumns="50px 110px minmax(120px,1fr) 130px 150px minmax(150px,1.5fr) 100px"
+                        Style="width:100%;"
+                        RowStyle="@(item => "min-height: 60px;")">
+            <ChildContent>
+                <TemplateColumn Title="#" Sortable="false" Style="display: flex;align-items: center;">
+                    @(householdsQuery?.ToList().IndexOf(context) + 1)
+                </TemplateColumn>
+                <PropertyColumn Property="@(p => p.MaSoHo)" Title="Mã Sổ Hộ" Sortable="false" Align="Align.Start" />
+                <TemplateColumn Title="Họ tên chủ hộ" Sortable="false" Style="display: flex;align-items: center;">
+                    <span @onclick="@(() => View(context))" style="cursor: pointer; color: dodgerblue; font-weight: 500;">
+                        @context.TenChuHo
+                    </span>
+                </TemplateColumn>
+                <PropertyColumn Property="@(p => p.CCCDChuHo)" Title="Số CCCD" />
+                <PropertyColumn Property="@(p => p.ApThon)" Title="Thôn" Sortable="false" />
+                <PropertyColumn Property="@(p => p.DiaChi)" Title="Địa Chỉ Cư Trú" />
+    <TemplateColumn Title="Số Thành Viên" Align="Align.Center">
+        <ChildContent Context="context">
+            <div style="display: flex; align-items: center; justify-content: center; width: 100%;">
+                @context.SoThanhVien
+            </div>
+        </ChildContent>
+    </TemplateColumn>
+            </ChildContent>
+            <EmptyContent><p style="padding:20px">Không có dữ liệu phù hợp.</p></EmptyContent>
+        </FluentDataGrid>
+    </div>
+
+    <Paginator PaginationState="@pagination" SelectedPageSizeChanged="RefreshData" />
+</FluentStack>
+
+@if(showCreate) { <BusinessCreateDialog Kind="household" Saved="Created" Cancel="@(() => showCreate = false)" /> }
+@if(detail != null)
+{
+    <DataDialog Title="Chi tiết hộ gia đình" Close="@(() => detail = null)">
+        <dl><dt>Mã sổ hộ</dt><dd>@detail.MaSoHo</dd><dt>Chủ hộ</dt><dd>@detail.TenChuHo</dd><dt>CCCD</dt><dd>@detail.CCCDChuHo</dd><dt>Địa chỉ</dt><dd>@detail.DiaChi — @detail.ApThon</dd><dt>Ghi chú</dt><dd>@detail.GhiChu</dd></dl>
+        <h4>Thành viên trong hộ</h4>
+        <label>Chủ hộ<select @bind="selectedHead" disabled="headBusy"><option value="@Guid.Empty">— Chọn thành viên —</option>@foreach(var member in detail.ThanhVien ?? new()) { <option value="@member.Id">@member.HoTen — @member.CCCD</option> }</select></label>
+        <FluentButton OnClick="SaveHead" Disabled="@(headBusy || selectedHead == Guid.Empty)">Lưu chủ hộ</FluentButton>
+        <HouseholdMembers HouseholdId="detail.Id" Members="@(detail.ThanhVien ?? new())" Changed="@(() => View(detail))" />
+        <div class="dialog-actions"><FluentButton OnClick="@(() => detail = null)">Đóng</FluentButton></div>
+    </DataDialog>
+}

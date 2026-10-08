@@ -1,0 +1,123 @@
+@namespace Service.UI.CMS.Blazor.Components.Layout.Component.Attachments
+@using Microsoft.Extensions.Configuration
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Service.Shared.Commons.Model.Commons
+@using Service.Shared.Contracts.DTOs.File
+@using System.Text.Json
+@using TooltipPosition = Microsoft.FluentUI.AspNetCore.Components.TooltipPosition
+
+<div class="file-attachment-container">
+    <div class="file-header">
+        <div class="header-left">
+            <i class="fa-solid fa-paperclip me-2"></i>
+            <h6 class="header-title">Danh sách file đính kèm</h6>
+            <span class="file-count">(@(Value?.Count ?? 0) file)</span>
+            @if (!AllowMultiple)
+            {
+                <span class="single-file-indicator">(Chỉ cho phép 1 file)</span>
+            }
+        </div>
+        <FluentInputFile @ref="@myFileUploader"
+                         DragDropZoneVisible="false"
+                         Mode="InputFileMode.SaveToTemporaryFolder"
+                         Multiple="@AllowMultiple"
+                         MaximumFileCount="@MaxFile"
+                         MaximumFileSize="@MaxFileSizeByte"
+                         Accept="@FilterFile"
+                         AnchorId="BtnUploadFile"
+                         Disabled="@(Disabled || (!AllowMultiple && Value?.Count >= 1))"
+                         OnCompleted="@OnCompleted">
+        </FluentInputFile>
+        <div>
+            <FluentButton Id="BtnUploadFile"
+                          IconStart="@(new Icons.Regular.Size20.Add())"
+                          Appearance="Appearance.Accent"
+                          Disabled="@(Disabled || (!AllowMultiple && Value?.Count >= 1))">
+                @if (AllowMultiple)
+                {
+                    <text>Thêm file</text>
+                }
+                else
+                {
+                    <text>@(Value?.Count > 0 ? "Thay đổi file" : "Chọn file")</text>
+                }
+            </FluentButton>
+        </div>
+    </div>
+
+    <div class="file-content">
+        @if (Value?.Any() == true)
+        {
+            <div class="file-list">
+                @foreach (var file in Value)
+                {
+                    var rowId = file.Id != Guid.Empty ? file.Id.ToString("N") : Guid.NewGuid().ToString("N");
+
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-icon">
+                                <FluentIcon Value="@GetFileIcon(file.FileName)" />
+                            </div>
+                            <div class="file-details">
+                                <div class="file-name" title="@file.FileName">
+                                    @file.FileName
+                                </div>
+                                <div class="file-meta">
+                                    <span class="file-extension">@GetFileExtension(file.FileName)</span>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="file-actions">
+                            @* <FluentButton IconStart="new Icons.Regular.Size20.Eye()"
+                                          Id="@($"btnViewFile_{rowId}")"
+                                          @onclick="async () => await HandleViewAsync(file)" />
+
+                            <FluentTooltip Anchor="@($"btnViewFile_{rowId}")"
+                                           HideTooltipOnCursorLeave="true"
+                                           Position="TooltipPosition.Top"
+                                           Delay="100">
+                                Xem file
+                            </FluentTooltip> *@
+
+                            <FluentButton IconStart="new Icons.Regular.Size20.ArrowDownload()"
+                                          Id="@($"btnDownloadFile_{rowId}")"
+                                          @onclick="async () => await HandleDownloadAsync(file)" />
+
+                            <FluentTooltip Anchor="@($"btnDownloadFile_{rowId}")"
+                                           HideTooltipOnCursorLeave="true"
+                                           Position="TooltipPosition.Top"
+                                           Delay="100">
+                                Tải file
+                            </FluentTooltip>
+
+
+                            <FluentButton IconStart="new Icons.Regular.Size20.Delete()"
+                                          Id="@($"btnDeleteFile_{rowId}")"
+                                          Disabled="@Disabled"
+                                          @onclick="async () => await RemoveFile(file)" />
+
+                            <FluentTooltip Anchor="@($"btnDeleteFile_{rowId}")"
+                                           HideTooltipOnCursorLeave="true"
+                                           Position="TooltipPosition.Top"
+                                           Delay="100">
+                                Xóa file
+                            </FluentTooltip>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fa-solid fa-file-plus empty-icon"></i>
+                <div class="empty-text">
+                    <h6>Chưa có file đính kèm</h6>
+                    <p>Nhấn "@(AllowMultiple ? "Thêm file" : "Chọn file")" để đính kèm tài liệu</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

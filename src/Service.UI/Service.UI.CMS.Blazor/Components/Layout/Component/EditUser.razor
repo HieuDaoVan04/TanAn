@@ -1,0 +1,159 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Service.Shared.Commons.Models
+@using Service.Shared.Contracts.DTOs
+@using Service.UI.CMS.Blazor.Applications.Dtos
+
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentIcon Value="@(new Icons.Regular.Size24.Key())" />
+        <FluentLabel Typo="Typography.PaneHeader">
+            @Dialog.Instance.Parameters.Title
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
+
+@if (editContext is not null)
+{
+    <EditForm EditContext="@editContext" OnSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <FluentDialogBody>
+            <FluentGrid Class="s-form-view"
+                        Spacing="2"
+                        AdaptiveRendering="true"
+                        Justify="JustifyContent.FlexStart"
+                        Style="padding: 4px;">
+                
+                <FluentGridItem md="12">
+                    <div class="row-info">
+                        <label>Tài khoản:</label>
+                        <FluentTextField Value="@UserForm.UserName" ReadOnly="true" Style="width: 100%;" />
+                    </div>
+                </FluentGridItem>
+
+                <FluentGridItem md="12">
+                    <div class="row-info">
+                        <label>Mật khẩu hiện tại:</label>
+                        <FluentTextField @bind-Value="CurrentPassword" TextFieldType="TextFieldType.Password" Style="width: 100%;" />
+                    </div>
+                    <ValidationMessage For="@(() => CurrentPassword)" Style="color:red; font-size:12px;" />
+                </FluentGridItem>
+                <FluentGridItem md="12">
+                    <div class="row-info">
+                        <label>Mật khẩu mới:</label>
+                        <FluentTextField @bind-Value="UserForm.PasswordMoi"
+                                         Immediate="true"
+                                         TextFieldType="TextFieldType.Password"
+                                         Placeholder="Nhập mật khẩu mới"
+                                         Style="width: 100%;" />
+                    </div>
+                    <ValidationMessage For="@(() => UserForm.PasswordMoi)" Style="color:red; font-size: 12px; margin-top: 4px;" />
+                </FluentGridItem>
+
+                <FluentGridItem md="12">
+                    <div style="margin: 8px 0 4px 0; font-weight: 500;">Yêu cầu mật khẩu:</div>
+                    <div class="password-requirements">
+                        <span class="@PasswordRuleClass(HasMinLength(UserForm.PasswordMoi))">Từ @Policy.MinLength đến 128 ký tự</span>
+                        @if (Policy.RequireUppercase) { <span class="@PasswordRuleClass(HasUppercase(UserForm.PasswordMoi))">Chữ hoa</span> }
+                        @if (Policy.RequireLowercase) { <span class="@PasswordRuleClass(HasLowercase(UserForm.PasswordMoi))">Chữ thường</span> }
+                        @if (Policy.RequireDigit) { <span class="@PasswordRuleClass(HasNumber(UserForm.PasswordMoi))">Số</span> }
+                        @if (Policy.RequireSpecialChar) { <span class="@PasswordRuleClass(HasSpecialCharacter(UserForm.PasswordMoi))">Ký tự đặc biệt</span> }
+                    </div>
+                </FluentGridItem>
+
+                <FluentGridItem md="12">
+                    <div class="row-info">
+                        <label>Xác nhận mật khẩu:</label>
+                        <FluentTextField @bind-Value="ConfirmPassword"
+                                         Immediate="true"
+                                         TextFieldType="TextFieldType.Password"
+                                         Placeholder="Nhập lại mật khẩu mới"
+                                         Style="width: 100%;" />
+                    </div>
+                    <ValidationMessage For="@(() => ConfirmPassword)" Style="color:red; font-size: 12px; margin-top: 4px;" />
+                </FluentGridItem>
+
+            </FluentGrid>
+        </FluentDialogBody>
+
+        <div class="dialog-actions">
+            <FluentButton Appearance="Appearance.Accent"
+                          Disabled="@(IsSaving || !PolicyLoaded)"
+                          Type="ButtonType.Submit">
+                @if (IsSaving)
+                {
+                    <span>Đang lưu...</span>
+                }
+                else
+                {
+                    <span>Lưu</span>
+                }
+            </FluentButton>
+
+            <FluentButton Appearance="Appearance.Neutral"
+                          Disabled="@IsSaving"
+                          Type="ButtonType.Button"
+                          OnClick="@CancelAsync">
+                Hủy
+            </FluentButton>
+        </div>
+    </EditForm>
+}
+
+<style>
+    .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 16px 0 0;
+    }
+
+    .row-info {
+        display: grid;
+        grid-template-columns: 40% 60%;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 0;
+    }
+
+    .row-info label {
+        font-weight: 500;
+    }
+
+    .password-requirements {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 6px;
+    }
+
+    .password-rule {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 16px;
+        background: #f3f6f8;
+        color: #555;
+        font-size: 13px;
+    }
+
+    .password-rule::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #6b7280;
+    }
+
+    .password-rule.active {
+        color: #107c10;
+        font-weight: 500;
+        background: #dff6dd;
+    }
+
+    .password-rule.active::before {
+        background: #107c10;
+    }
+</style>

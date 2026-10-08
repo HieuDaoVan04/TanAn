@@ -1,0 +1,60 @@
+<DataDialog Title="Chi tiết biến động dân cư" Close="Close">
+    @if (Record.LoaiBienDong == LoaiBienDongEnum.KhaiSinh && Record.HoSoKhaiSinh != null)
+    {
+        <h4>Thông tin khai sinh</h4>
+        <dl>
+            <dt>Hộ gia đình</dt><dd>@Form.MaSoHo — @Form.TenChuHo</dd>
+            <dt>Họ tên trẻ</dt><dd>@Form.HoTen</dd>
+            <dt>Ngày sinh</dt><dd>@Date(Form.NgaySinh)<br />@Form.NgaySinhBangChu</dd>
+            <dt>Giới tính</dt><dd>@GenderLabel(Form.GioiTinh)</dd>
+            <dt>Số định danh</dt><dd>@Text(Form.SoDinhDanh)</dd>
+            <dt>Nơi sinh</dt><dd>@Form.NoiSinh</dd>
+            <dt>Dân tộc / Quốc tịch</dt><dd>@Form.DanToc / @Form.QuocTich</dd>
+            <dt>Quê quán</dt><dd>@Form.QueQuan</dd>
+            <dt>Thường trú</dt><dd>@Form.ThuongTru</dd>
+            <dt>Quan hệ với chủ hộ</dt><dd>@Form.QuanHeVoiChuHo</dd>
+            <dt>Giấy chứng sinh</dt><dd>@Text(Form.SoGiayChungSinh)</dd>
+        </dl>
+        <h4>Người yêu cầu</h4>
+        <dl>
+            <dt>Họ tên</dt><dd>@Form.HoTenNguoiYeuCau</dd>
+            <dt>Quan hệ với trẻ</dt><dd>@Form.QuanHeVoiTre</dd>
+            <dt>Giấy tờ</dt><dd>@Form.LoaiGiayTo — @Form.SoGiayTo</dd>
+            <dt>Ngày / Nơi cấp</dt><dd>@Date(Form.NgayCapGiayTo) / @Text(Form.NoiCapGiayTo)</dd>
+            <dt>Nơi cư trú</dt><dd>@Form.NoiCuTruNguoiYeuCau</dd>
+        </dl>
+        @foreach (var item in new[] { (Label: "Mẹ", Parent: Form.Me), (Label: "Cha", Parent: Form.Cha) })
+        {
+            <h4>@item.Label</h4>
+            @if (item.Parent == null) { <p>Chưa khai thông tin.</p> }
+            else
+            {
+                <dl>
+                    <dt>Họ tên</dt><dd>@item.Parent.HoTen</dd>
+                    <dt>Ngày sinh</dt><dd>@Date(item.Parent.NgaySinh)</dd>
+                    <dt>Dân tộc / Quốc tịch</dt><dd>@Text(item.Parent.DanToc) / @Text(item.Parent.QuocTich)</dd>
+                    <dt>Nơi cư trú</dt><dd>@Text(item.Parent.NoiCuTru)</dd>
+                </dl>
+            }
+        }
+        <h4>Đăng ký</h4>
+        <dl>
+            <dt>Cơ quan đăng ký</dt><dd>@Form.CoQuanDangKy</dd>
+            <dt>Ngày đăng ký</dt><dd>@Date(Form.NgayDangKy)</dd>
+            <dt>Ghi chú</dt><dd>@Text(Form.GhiChu)</dd>
+        </dl>
+    }
+    else
+    {
+        <dl>
+            <dt>Nhân khẩu</dt><dd>@Record.HoTenNhanKhau</dd>
+            <dt>CCCD</dt><dd>@Record.CCCDNhanKhau</dd>
+            <dt>Loại biến động</dt><dd>@BusinessCreateDialog.Label(Record.LoaiBienDong.ToString())</dd>
+            <dt>Ngày phát sinh</dt><dd>@Record.NgayPhatSinh.ToString("dd/MM/yyyy")</dd>
+            <dt>Nơi đi / đến</dt><dd>@Record.NoiDenOrDi</dd>
+            <dt>Lý do</dt><dd>@Record.LyDo</dd>
+            <dt>Cán bộ ghi nhận</dt><dd>@Record.CanBoGhiNhan</dd>
+        </dl>
+    }
+    <div class="dialog-actions"><FluentButton OnClick="Close">Đóng</FluentButton></div>
+</DataDialog>

@@ -1,0 +1,16 @@
+@namespace Service.UI.Blazor.Components.Shares
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Service.UI.CMS.Blazor.Components.Shared
+
+<Service.UI.CMS.Blazor.Components.Shared.Paginator
+    PaginationState="@PaginationState"
+    SelectedPageSizeChanged="@SelectedPageSizeChanged"
+    Class="@Class"
+    Style="@Style" />
+
+@code {
+    [Parameter, EditorRequired] public PaginationState PaginationState { get; set; } = default!;
+    [Parameter] public EventCallback<int> SelectedPageSizeChanged { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+}

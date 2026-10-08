@@ -1,0 +1,1 @@
+.notice-form{display:grid;gap:12px;margin:16px 0}.notice-form label{display:grid;gap:6px}.notice{border-bottom:1px solid var(--neutral-stroke-rest);padding:14px 8px}.notice.unread{border-left:3px solid var(--accent-fill-rest)}.notice p{white-space:pre-wrap}

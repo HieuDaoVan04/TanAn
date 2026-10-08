@@ -1,0 +1,38 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+
+@if (visible)
+{
+    <section class="approval-notifications" aria-label="Việc cần duyệt">
+        <div class="approval-heading">
+            <h3>Việc cần duyệt</h3>
+            <FluentButton Appearance="Appearance.Outline" Disabled="busy" OnClick="Load">Làm mới</FluentButton>
+        </div>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <p role="alert">@error</p>
+        }
+        else
+        {
+            <p class="approval-summary" role="status"><strong>@pendingCount</strong> hồ sơ khai sinh chờ duyệt</p>
+            @foreach (var item in pending)
+            {
+                <article class="approval-notice">
+                    <div>
+                        <strong>Khai sinh — @(string.IsNullOrWhiteSpace(item.HoTenTre) ? "Chưa nhập tên trẻ" : item.HoTenTre)</strong>
+                        <p>Mã hồ sơ: @item.MaHoSo</p>
+                        <small>@item.NgayTao.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                    <FluentButton Appearance="Appearance.Accent" Disabled="busy" OnClick="() => Open(item.Id)">Xem hồ sơ</FluentButton>
+                </article>
+            }
+            @if (pendingCount == 0)
+            {
+                <p>Không có hồ sơ khai sinh chờ duyệt.</p>
+            }
+            else
+            {
+                <FluentButton Appearance="Appearance.Outline" Disabled="busy" OnClick="() => Open(null)">Xem tất cả hồ sơ chờ duyệt (@pendingCount)</FluentButton>
+            }
+        }
+    </section>
+}

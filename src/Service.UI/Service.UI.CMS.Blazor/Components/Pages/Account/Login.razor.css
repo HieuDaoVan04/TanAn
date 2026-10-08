@@ -1,0 +1,5 @@
+.login-card { width: min(440px, 100%); padding: 36px; border: 1px solid #d8e2ec; border-radius: 12px; background: white; color: #182c40; }
+h1 { margin: 0 0 12px; } label { display: block; margin: 20px 0; }
+input { display: block; width: 100%; box-sizing: border-box; padding: 10px; margin-top: 8px; border: 1px solid #9cafbf; border-radius: 4px; }
+button { width: 100%; padding: 12px; background: #0067b9; color: white; border: none; border-radius: 4px; cursor: pointer; }
+[role=alert] { color: #b42318; }

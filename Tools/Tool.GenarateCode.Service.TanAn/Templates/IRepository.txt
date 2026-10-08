@@ -1,0 +1,22 @@
+// "Một sản phẩm của HieuDV"
+
+@cmt1@
+using Service.Portal.Domain.Entities;
+using Service.Shared.Commons.Interfaces.SQL;
+using Service.Shared.Commons.Querys.ModalQuery;
+using Service.Shared.Contracts.Portal.DTOs;
+
+namespace Service.Portal.Domain.Interfaces.MSSQL
+{
+    public interface I@Entity@Repository : IRepository<@Entity@>
+    {
+        /// <summary>
+        /// Trả về bộ đôi (Items, Total) đã paged + mapped thành DTO
+        /// </summary>
+        Task<(List<@Entity@Dto> Items, int Total)> GetPagedDtoAsync(BaseQuery query);
+    }
+
+}
+
+
+@cmt2@

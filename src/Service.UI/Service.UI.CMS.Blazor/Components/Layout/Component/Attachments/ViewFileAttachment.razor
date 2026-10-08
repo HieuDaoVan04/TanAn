@@ -1,0 +1,197 @@
+@namespace Service.UI.CMS.Blazor.Components.Layout.Component.Attachments
+@using System.IO
+@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Service.Shared.Commons.Enums
+@using Service.Shared.Commons.Extensions
+@using Service.Shared.Contracts.DTOs
+@using Service.Shared.Contracts.DTOs.File
+@using TooltipPosition = Microsoft.FluentUI.AspNetCore.Components.TooltipPosition
+
+<div class="file-attachment-container">
+    @if (ShowHeader)
+    {
+        <div class="file-header">
+            <div class="header-left">
+                <i class="fa-solid fa-paperclip me-2"></i>
+                <h6 class="header-title">@Title</h6>
+                <span class="file-count">(@(Value?.Count ?? 0) file)</span>
+            </div>
+        </div>
+    }
+
+    <div class="file-content">
+        @if (Value?.Any() == true)
+        {
+            <div class="file-list">
+                @for (var i = 0; i < Value.Count; i++)
+                {
+                    var file = Value[i];
+                    var rowId = $"file_{i}";
+
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-icon">
+                                <FluentIcon Value="@GetFileIcon(file.FileName)" />
+                            </div>
+
+                            <div class="file-details">
+                                <div class="file-name" title="@file.FileName">
+                                    @file.FileName
+                                </div>
+
+                                <div class="file-meta">
+                                    <span class="file-extension">@GetFileExtension(file.FileName)</span>
+                                    @if (ShowFileSize)
+                                    {
+                                        <span>@FormatFileSize(file.FileSize)</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="file-actions">
+                            @if (AllowView)
+                            {
+                                <FluentButton IconStart="new Icons.Regular.Size20.Eye()"
+                                              Id="@($"btnViewFile_{rowId}")"
+                                              @onclick="async () => await HandleViewAsync(file)" />
+
+                                <FluentTooltip Anchor="@($"btnViewFile_{rowId}")"
+                                               HideTooltipOnCursorLeave="true"
+                                               Position="TooltipPosition.Top"
+                                               Delay="100">
+                                    Xem file
+                                </FluentTooltip>
+                            }
+
+                            @if (AllowDownload)
+                            {
+                                <FluentButton IconStart="new Icons.Regular.Size20.ArrowDownload()"
+                                              Id="@($"btnDownloadFile_{rowId}")"
+                                              @onclick="async () => await HandleDownloadAsync(file)" />
+
+                                <FluentTooltip Anchor="@($"btnDownloadFile_{rowId}")"
+                                               HideTooltipOnCursorLeave="true"
+                                               Position="TooltipPosition.Top"
+                                               Delay="100">
+                                    Tải file
+                                </FluentTooltip>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fa-solid fa-file-plus empty-icon"></i>
+                <div class="empty-text">
+                    <h6>Chưa có file đính kèm</h6>
+                    <p>@EmptyMessage</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code{
+    [Inject] private IToastService ToastService { get; set; } = default!;
+    [Inject] private IFileActionService _fileActionService { get; set; } = default!;
+
+    [Parameter]
+    public IReadOnlyList<FileDinhKemDto> Value { get; set; } = Array.Empty<FileDinhKemDto>();
+
+    [Parameter]
+    public string Title { get; set; } = "Danh sách file đính kèm";
+
+    [Parameter]
+    public string EmptyMessage { get; set; } = "Bản ghi này hiện chưa có file đính kèm";
+
+    [Parameter]
+    public bool ShowHeader { get; set; } = true;
+
+    [Parameter]
+    public bool ShowFileSize { get; set; } = true;
+
+    [Parameter]
+    public bool AllowView { get; set; } = false;
+
+    [Parameter]
+    public bool AllowDownload { get; set; } = true;
+
+
+    private string GetFileExtension(string? fileName)
+    {
+        return Path.GetExtension(fileName ?? string.Empty)
+            .TrimStart('.')
+            .ToUpperInvariant();
+    }
+
+    private static string FormatFileSize(long fileSize)
+    {
+        if (fileSize < 1024)
+            return $"{fileSize} B";
+
+        if (fileSize < 1024 * 1024)
+            return $"{fileSize / 1024.0:F1} KB";
+
+        if (fileSize < 1024 * 1024 * 1024)
+            return $"{fileSize / 1024.0 / 1024.0:F1} MB";
+
+        return $"{fileSize / 1024.0 / 1024.0 / 1024.0:F1} GB";
+    }
+
+    private async Task HandleViewAsync(FileDinhKemDto file)
+    {
+        try
+        {
+            if (file == null || string.IsNullOrWhiteSpace(file.PathServer))
+            {
+                ToastService.ShowWarning("Không tìm thấy thông tin file.");
+                return;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Không xem được file. {ex.Message}");
+        }
+    }
+
+    private async Task HandleDownloadAsync(FileDinhKemDto file)
+    {
+        try
+        {
+            if (file == null || string.IsNullOrWhiteSpace(file.PathServer))
+            {
+                ToastService.ShowWarning("Không tìm thấy thông tin file.");
+                return;
+            }
+            await _fileActionService.DownloadAsync(file);
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Không tải được file. {ex.Message}");
+        }
+    }
+    private Icon GetFileIcon(string? fileName)
+    {
+        var ext = Path.GetExtension(fileName ?? string.Empty).ToLowerInvariant();
+
+        return ext switch
+        {
+            ".pdf" => new Icons.Regular.Size20.DocumentPdf(),
+            ".doc" or ".docx" => new Icons.Regular.Size20.DocumentText(),
+            ".xls" or ".xlsx" => new Icons.Regular.Size20.DocumentTable(),
+            ".ppt" or ".pptx" => new Icons.Regular.Size20.Document(),
+            ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp" => new Icons.Regular.Size20.Image(),
+            ".zip" or ".rar" or ".7z" => new Icons.Regular.Size20.FolderZip(),
+            ".txt" => new Icons.Regular.Size20.DocumentText(),
+            ".csv" => new Icons.Regular.Size20.DocumentTable(),
+            _ => new Icons.Regular.Size20.Document()
+        };
+    }
+}

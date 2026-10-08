@@ -1,0 +1,141 @@
+@page "/dich-vu-cong"
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Service.UI.CMS.Blazor.Components.Shares.Filter
+@inject ICitizenRequestService RequestService
+@inject IToastService ToastService
+
+<PageTitle>Cổng Dịch Vụ Công Điện Tử - Xã Tân An</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="width:100%">
+    <h2>Danh sách hồ sơ dịch vụ công</h2>
+
+    <SearchPanel Title="Bộ lọc hồ sơ dịch vụ công">
+        <BasicFields>
+            <FluentSearch aria-label="Tìm kiếm"
+                          Placeholder="Nhập vào từ khóa (Mã hồ sơ, người yêu cầu, CCCD...)"
+                          @bind-Value="searchKeyword"
+                          @bind-Value:after="LoadData"
+                          Style="width: 100%;" />
+        </BasicFields>
+        <Actions>
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.Search())" OnClick="LoadData">Tìm kiếm</FluentButton>
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.ArrowSync())" OnClick="ClearSearch">Tải lại</FluentButton>
+        </Actions>
+    </SearchPanel>
+
+    <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between; align-items:center;" Class="page-toolbar">
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" Class="page-toolbar">
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.AddCircle())" OnClick="OpenCreate">Thêm mới</FluentButton>
+            <FluentButton OnClick="ExportExcel" Appearance="Appearance.Accent" Class="ms-2">
+                <i class="fa-solid fa-file-excel me-1"></i> Xuất Excel
+            </FluentButton>
+        </FluentStack>
+    </FluentStack>
+
+    <div class="data-grid-scroll">
+        <FluentDataGrid Items="@requestsQuery"
+                        TGridItem="YeuCauDto"
+                        Pagination="@pagination"
+                        ShowHover="true"
+                        MultiLine="true"
+                        RowSize="DataGridRowSize.Large"
+                        GridTemplateColumns="50px 120px minmax(130px,1.2fr) 110px minmax(130px,1fr) minmax(150px,1.5fr) 130px 100px"
+                        Style="width:100%;"
+                        RowStyle="@(item => "min-height:60px;")">
+            <ChildContent>
+                <TemplateColumn Title="#" Sortable="false" Style="display: flex;align-items: center;">
+                    @(requestsQuery?.ToList().IndexOf(context) + 1)
+                </TemplateColumn>
+                <TemplateColumn Title="Mã hồ sơ" Sortable="true" Style="display: flex;align-items: center;">
+                    <span @onclick="@(() => detail = context)" style="cursor: pointer; color: dodgerblue; font-weight: 500;">
+                        @context.MaYeuCau
+                    </span>
+                </TemplateColumn>
+                <PropertyColumn Property="@(r => r.HoTenNguoiYeuCau)" Title="Người Yêu Cầu" Sortable="true" />
+                <PropertyColumn Property="@(r => r.SoDienThoai)" Title="Số Điện Thoại" />
+                <PropertyColumn Property="@(r => r.LoaiYeuCau)" Title="Loại Thủ Tục" Sortable="true" />
+                <PropertyColumn Property="@(r => r.NoiDung)" Title="Nội Dung" />
+                <TemplateColumn Title="Trạng Thái" Sortable="true" Style="display: flex;align-items: center;">
+                    @if (context.TrangThai == TrangThaiHoSoEnum.DaPheDuyet)
+                    {
+                        <FluentBadge Appearance="Appearance.Accent" Style="background-color: #16a34a; color: white;">@StatusLabel(context.TrangThai)</FluentBadge>
+                    }
+                    else if (context.TrangThai == TrangThaiHoSoEnum.TuChoi)
+                    {
+                        <FluentBadge Appearance="Appearance.Accent" Style="background-color: #dc2626; color: white;">@StatusLabel(context.TrangThai)</FluentBadge>
+                    }
+                    else if (context.TrangThai == TrangThaiHoSoEnum.DangXuLy)
+                    {
+                        <FluentBadge Appearance="Appearance.Accent" Style="background-color: #d97706; color: white;">@StatusLabel(context.TrangThai)</FluentBadge>
+                    }
+                    else
+                    {
+                        <FluentBadge Appearance="Appearance.Neutral">@StatusLabel(context.TrangThai)</FluentBadge>
+                    }
+                </TemplateColumn>
+                <TemplateColumn Title="Thao tác" Style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    @if(context.TrangThai != TrangThaiHoSoEnum.DaPheDuyet)
+                    {
+                        <FluentButton Appearance="Appearance.Outline" Title="Duyệt" aria-label="Duyệt" Disabled="busy" IconStart="@(new Icons.Regular.Size16.Checkmark())" OnClick="@(() => ConfirmStatus(context.Id, TrangThaiHoSoEnum.DaPheDuyet))" />
+                    }
+                    @if(context.TrangThai != TrangThaiHoSoEnum.TuChoi)
+                    {
+                        <FluentButton Appearance="Appearance.Outline" Title="Từ chối" aria-label="Từ chối" Disabled="busy" IconStart="@(new Icons.Regular.Size16.Dismiss())" OnClick="@(() => ConfirmStatus(context.Id, TrangThaiHoSoEnum.TuChoi))" />
+                    }
+                </TemplateColumn>
+            </ChildContent>
+            <EmptyContent><p style="padding:20px">Không có dữ liệu phù hợp.</p></EmptyContent>
+        </FluentDataGrid>
+    </div>
+
+    <Paginator PaginationState="@pagination" SelectedPageSizeChanged="RefreshData" />
+</FluentStack>
+
+@if (showModal)
+{
+    <FluentDialog Hidden="false" Modal="true" TrapFocus="true" Style="--dialog-width:min(760px,calc(100vw - 32px));--dialog-height:auto;">
+        <FluentDialogHeader Title="Nộp Hồ Sơ Dịch Vụ Công Trực Tuyến" />
+        <FluentDialogBody>
+            @if(!string.IsNullOrEmpty(error)) { <p role="alert" style="color:#b42318">@error</p> }
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="10">
+                <label>Thôn tiếp nhận *<select @bind="form.ApThonId"><option value="">— Chọn thôn —</option>@foreach(var village in villages) { <option value="@village.Id">@village.Ten</option> }</select></label>
+                <FluentTextField Label="Họ Tên Người Nộp" @bind-Value="form.HoTenNguoiYeuCau" Required="true" />
+                <FluentTextField Label="Số CCCD" @bind-Value="form.CCCDNguoiYeuCau" Required="true" />
+                <FluentTextField Label="Số Điện Thoại" @bind-Value="form.SoDienThoai" Required="true" />
+                <FluentSelect Label="Loại Thủ Tục" @bind-Value="form.LoaiYeuCau" Items="@loaiList" OptionText="i => i" OptionValue="i => i" TOption="string" />
+                <FluentTextArea Label="Nội Dung Yêu Cầu" @bind-Value="form.NoiDung" Rows="3" Style="width:100%;" />
+            </FluentStack>
+        </FluentDialogBody>
+        <FluentDialogFooter>
+            <FluentButton Appearance="Appearance.Neutral" OnClick="() => showModal = false" Disabled="busy">Hủy</FluentButton>
+            <FluentButton Appearance="Appearance.Accent" OnClick="SubmitForm" Disabled="busy">Nộp Hồ Sơ</FluentButton>
+        </FluentDialogFooter>
+    </FluentDialog>
+}
+
+@if(detail != null)
+{
+    <DataDialog Title="Chi tiết hồ sơ dịch vụ công" Close="@(() => detail = null)">
+        <dl>
+            <dt>Mã hồ sơ</dt><dd>@detail.MaYeuCau</dd>
+            <dt>Người yêu cầu</dt><dd>@detail.HoTenNguoiYeuCau</dd>
+            <dt>CCCD</dt><dd>@detail.CCCDNguoiYeuCau</dd>
+            <dt>Điện thoại</dt><dd>@detail.SoDienThoai</dd>
+            <dt>Thủ tục</dt><dd>@detail.LoaiYeuCau</dd>
+            <dt>Nội dung</dt><dd>@detail.NoiDung</dd>
+            <dt>Trạng thái</dt><dd>@StatusLabel(detail.TrangThai)</dd>
+            <dt>Cán bộ xử lý</dt><dd>@detail.CanBoXuLy</dd>
+        </dl>
+        <div class="dialog-actions"><FluentButton OnClick="@(() => detail = null)">Đóng</FluentButton></div>
+    </DataDialog>
+}
+@if(pendingId != null)
+{
+    <DataDialog Title="Xác nhận xử lý hồ sơ" Busy="busy" Close="@(() => pendingId = null)">
+        <p>Chuyển hồ sơ sang trạng thái <strong>@StatusLabel(pendingStatus)</strong>?</p>
+        <div class="dialog-actions">
+            <FluentButton Appearance="Appearance.Accent" OnClick="ApplyStatus" Disabled="busy">Xác nhận</FluentButton>
+            <FluentButton OnClick="@(() => pendingId = null)" Disabled="busy">Hủy</FluentButton>
+        </div>
+    </DataDialog>
+}

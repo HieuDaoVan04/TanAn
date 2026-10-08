@@ -1,0 +1,130 @@
+@using Service.UI.CMS.Blazor.Components.Layout.Component
+@using Service.Shared.Commons.Models
+@using Microsoft.FluentUI.AspNetCore.Components
+@implements IDisposable
+
+<style>
+    #module-quan-tri-he-thong,
+    #module-quan-tri-he-thong:hover,
+    #module-quan-tri-he-thong:focus,
+    #module-quan-tri-he-thong:active {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: transparent !important;
+        border: none;
+        box-shadow: none;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    #module-quan-tri-he-thong:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+    }
+
+    .face {
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        border: 1px solid silver;
+    }
+
+    #PopoverUser {
+        font-weight: normal;
+        color: var(--neutral-foreground-rest);
+    }
+
+    .home-link {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+    }
+
+    .home-link__icon {
+        flex-shrink: 0;
+    }
+
+    .home-link__text {
+        text-transform: uppercase;
+        margin-left: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1;
+        color: var(--neutral-foreground-rest);
+    }
+</style>
+
+<a href="/ban-lam-viec" class="home-link" aria-label="Quay về bàn làm việc">
+    <FluentIcon Value="@(new Icons.Filled.Size24.Building())" Class="home-link__icon" />
+    <span class="home-link__mobile">UBND xã Tân An</span>
+    <span class="home-link__text">@Configuration.Value.AppName</span>
+</a>
+@if (Configuration.Value.HeaderEnabled && !string.IsNullOrWhiteSpace(Configuration.Value.HeaderContent))
+{
+    <span class="system-banner" role="status">@Configuration.Value.HeaderContent</span>
+}
+
+<FluentSpacer />
+
+<a id="module-quan-tri-he-thong" href="/quan-tri-he-thong"
+   aria-label="Quản trị hệ thống">
+    <FluentIcon Value="@(new Icons.Regular.Size24.SettingsCogMultiple())" />
+</a>
+<FluentTooltip Anchor="module-quan-tri-he-thong">
+    Di chuyển vào quản trị hệ thống <br />
+   
+</FluentTooltip>
+
+<a href="/ho-khau">
+    <div id="module-nghiep-vu">
+        <FluentButton BackgroundColor="var(--neutral-layer-4)" Title="Nghiệp vụ">
+            <FluentIcon Value="@(new Icons.Regular.Size24.Briefcase())" />
+        </FluentButton>
+    </div>
+    <FluentTooltip Anchor="module-nghiep-vu">
+        Di chuyển vào module nghiệp vụ dân cư
+    </FluentTooltip>
+</a>
+
+<a href="/dich-vu-cong">
+    <div id="module-khac">
+        <FluentButton BackgroundColor="var(--neutral-layer-4)" Title="Khác">
+            <FluentIcon Value="@(new Icons.Regular.Size24.Apps())" />
+        </FluentButton>
+    </div>
+    <FluentTooltip Anchor="module-khac">
+        Di chuyển vào module dịch vụ công
+    </FluentTooltip>
+</a>
+
+<FluentDivider Role="DividerRole.Presentation" Orientation="Orientation.Vertical"></FluentDivider>
+
+<div class="settings">
+    <NotificationCenter />
+    <SiteSettings />
+</div>
+
+<div class="User" style="margin-right:10px">
+    <FluentStack HorizontalAlignment="@HorizontalAlignment.End"
+                 VerticalAlignment="@VerticalAlignment.Center"
+                 Style="height: 48px; background: var(--neutral-layer-4); padding-inline-end: 10px; ">
+        <FluentProfileMenu HeaderButton="Đăng xuất"
+                           OnHeaderButtonClick="@(() => LogoutAction())"
+                           FullName="@CurrentUser.UserName"
+                           EMail="@CurrentUser.Email"
+                           PopoverStyle="min-width: 330px;">
+            <FooterTemplate>
+                <FluentStack>
+                    <FluentSpacer />
+                    <FluentAnchor Appearance="@Appearance.Hypertext" Href="#"
+                                  OnClick="@(() => OpenUserDialog(CurrentUser.UserId))">
+                        Xem tài khoản
+                    </FluentAnchor>
+                </FluentStack>
+            </FooterTemplate>
+        </FluentProfileMenu>
+    </FluentStack>
+</div>

@@ -1,0 +1,278 @@
+@* "Một sản phẩm của HieuDV" *@
+@page "/quan-tri-he-thong/nguoi-dung-va-he-thong/co-cau-to-chuc"
+
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Service.Shared.Commons.Model.SQL
+@using Service.Shared.Contracts.DTOs
+
+<FluentCard MinimalStyle="true" Style="padding: 16px; width:100%;">
+    <h2 style="margin-top:0; margin-bottom:12px;">Quản lý cơ cấu tổ chức</h2>
+    <FluentGrid Class="layout-grid no-gap">
+        <FluentGridItem md="3" xs="12">
+            <div class="DanhSachDonVi unit-container">
+                <FluentGridItem xs="4" style="text-align:left; margin-bottom:10px">
+                    <div class="button-group">
+                        @if (CanCreated)
+                        {
+                            <FluentButton Title="Thêm mới" OnClick="OpenAddModal" Appearance="Appearance.Lightweight">
+                                <FluentIcon Value="@(new Icons.Regular.Size20.Add())" />
+                            </FluentButton>
+                        }
+                        @if (SelectedGroup != null)
+                        {
+                            <FluentButton Appearance="Appearance.Neutral" Title="Xem chi tiết" OnClick="OpenDetailsModal">
+                                <FluentIcon Value="@(new Icons.Regular.Size20.Search())" />
+                            </FluentButton>
+                        }
+                        @if (CanEditOrDelete)
+                        {
+                            <FluentButton Appearance="Appearance.Neutral" Title="Sửa" OnClick="EditAction">
+                                <FluentIcon Value="@(new Icons.Regular.Size20.Edit())" />
+                            </FluentButton>
+
+                            <FluentButton Appearance="Appearance.Neutral" Title="Xoá" OnClick="OpenModalDelete">
+                                <FluentIcon Value="@(new Icons.Regular.Size20.Delete())" />
+                            </FluentButton>
+
+                            <FluentButton Appearance="Appearance.Neutral" Title="Duyệt" OnClick="ApproveAction">
+                                <FluentIcon Value="@(new Icons.Regular.Size20.Checkmark())" />
+                            </FluentButton>
+                        }
+                        @if (CanReject)
+                        {
+                            <FluentButton Appearance="Appearance.Neutral" Title="Hủy duyệt" OnClick="RejectAction">
+                                <FluentIcon Value="@(new Icons.Regular.Size20.Dismiss())" />
+                            </FluentButton>
+                        }
+                    </div>
+                </FluentGridItem>
+                <FluentSearch Placeholder="Nhập vào từ khóa tìm kiếm"
+                              Style="width:100%; margin-bottom: 10px;"
+                              @bind-Value="SearchKeyword"
+                              Immediate="true"
+                              @onkeydown="HandleSearchTreeChanged" />
+                <FluentTreeView Items="@Items"
+                                SelectedItemChanged="SelectChange"
+                                Style="width: 100%; max-height: 75vh; overflow-y: auto;">
+                    <ItemTemplate>
+                        @((MarkupString)context.Text)
+                    </ItemTemplate>
+                </FluentTreeView>
+            </div>
+        </FluentGridItem>
+        <FluentGridItem md="9" xs="12">
+            <div class="DanhSachNguoiDung">
+                <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between" Class="page-toolbar">
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" Class="page-toolbar">
+                        @if (!CanCreated)
+                        {
+                            <FluentButton Appearance="Appearance.Accent"
+                                          IconStart="@(new Icons.Regular.Size20.AddCircle())"
+                                          OnClick="OpenAddUserModal">
+                                Thêm người dùng từ danh sách
+                            </FluentButton>
+                        }
+                        @if (SelectedUsers.Any())
+                        {
+                            <FluentButton Appearance="Appearance.Neutral"
+                                          IconStart="@(new Icons.Regular.Size20.PersonAdd())"
+                                          OnClick="BulkAssignRoles">
+                                Gán vai trò
+                            </FluentButton>
+                        }
+                    </FluentStack>
+                    <FluentSearch style="width:300px"
+                                  Placeholder="Nhập vào từ khóa"
+                                  @bind-Value="@userSearchKeyword"
+                                  Immediate="true"
+                                  @onkeydown="HandleSearchChanged" />
+                </FluentStack>
+                @if (CopiedUser != null)
+                {
+                    <FluentMessageBar Intent="MessageIntent.Info" Style="margin: 10px 0;">
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" VerticalAlignment="VerticalAlignment.Center" Class="page-toolbar">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Copy())" />
+                            <span>Đang copy thông tin của: <strong>@CopiedUser.FullName</strong> (ID: @CopiedUser.Id)</span>
+                            <FluentButton Appearance="Appearance.Lightweight"
+                                          Size="ButtonSize.Small"
+                                          OnClick="ClearCopiedUser"
+                                          Title="Hủy copy">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" />
+                            </FluentButton>
+                        </FluentStack>
+                    </FluentMessageBar>
+                }
+
+                <FluentDataGrid ShowHover="true"
+                                @ref="Grid"
+                                RowSize="DataGridRowSize.Large"
+                                TGridItem="UserDto"
+                                ItemsProvider="LoadDatas"
+                                GridTemplateColumns="5% 5% 25%  23% 15%  10% 15%"
+                                Style="width:100%;" 
+                                MultiLine="true"
+                                Pagination="@pagination">
+                    <TemplateColumn Title="" Style="display: flex;align-items: center; overflow-x:hidden;">
+                        <FluentCheckbox Value="@GetIsSelected(context.Id, context.PhongBanId)"
+                                        ValueChanged="@((bool value) => ToggleUserSelection(context.Id, context.PhongBanId, value))" />
+                    </TemplateColumn>
+                    <TemplateColumn Title="#" Align="Align.Center" Style="display: flex;align-items: center; overflow-x:hidden;">
+                        <span>@context.Index</span>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Tên người dùng" Style="display: flex;align-items: center; overflow-x:hidden;">
+                        <span @onclick="@(() => OpenDetailsModal(context.Id, context.PhongBanId))"
+                              style="cursor: pointer; color: dodgerblue;">
+                            @context.FullName
+                        </span>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Đơn vị" Align="Align.Center" Style="display: flex; align-items: start; flex-wrap: wrap; gap: 4px; white-space: normal; overflow-x:hidden;">
+                        @if (!string.IsNullOrEmpty(context.DonVitxt))
+                        {
+                            foreach (var donVi in context.DonVitxt?.Split(',') ?? Enumerable.Empty<string>())
+                            {
+                                @donVi.Trim()
+                            }
+                        }
+                    </TemplateColumn>
+                    <TemplateColumn Title="Phòng ban" Align="Align.Center" Style="display: flex; align-items: start; flex-wrap: wrap; gap: 4px; white-space: normal; overflow-x:hidden;">
+                        @if (!string.IsNullOrEmpty(context.PhongBanTxt))
+                        {
+                            foreach (var phongBan in context.PhongBanTxt?.Split(',') ?? Enumerable.Empty<string>())
+                            {
+                                @phongBan.Trim()
+                            }
+                        }
+                    </TemplateColumn>
+                    <TemplateColumn Title="Trạng thái" Align="Align.Center" Style="display: flex; align-items: center; overflow-x:hidden;">
+                        @if (context.ModerationStatus == ModerationStatus.Approved)
+                        {
+                            <FluentBadge Appearance="Appearance.Accent" Style="background-color: #16a34a; color: white;">Đã duyệt</FluentBadge>
+                        }
+                        else
+                        {
+                            <FluentBadge Appearance="Appearance.Neutral" Style="background-color: #e2e8f0; color: #475569;">Chưa duyệt</FluentBadge>
+                        }
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Thao tác" Align="Align.Center" Style="display: flex; align-items: center; justify-content:space-between; overflow-x:hidden;">
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="5" Class="page-toolbar">
+                            <FluentButton Title="Xóa"
+                                          Appearance="Appearance.Neutral"   
+                                          OnClick="() => OpenModalXoaNguoiDungKhoiPhongBan(context.Id,context.PhongBanId)">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" />
+                            </FluentButton>
+                            <FluentButton Title="Gán vai trò"
+                                          Appearance="Appearance.Neutral"
+                                          OnClick="() => OpenModalGanVaiTro(context.Id, context.PhongBanId)">
+                                <FluentIcon Value="@(new Icons.Regular.Size20.PersonAdd())" />
+                            </FluentButton>
+                            <FluentButton Title="Copy thông tin"
+                                          Appearance="Appearance.Neutral"
+                                          OnClick="() => CopyUser(context)">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.Copy())" />
+                            </FluentButton>
+                            @if (CopiedUser != null && CopiedUser.Id != context.Id)
+                            {
+                                <FluentButton Title="Gán thông tin từ user đã copy"
+                                              Appearance="Appearance.Neutral"
+                                              OnClick="() => AssignFromCopiedUser(context)">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())" />
+                                    Gán
+                                </FluentButton>
+                            }
+                        </FluentStack>
+                    </TemplateColumn>
+                </FluentDataGrid>
+
+                <div style="margin-top: 12px;">
+                    <Paginator PaginationState="@pagination" />
+                </div>
+            </div>
+        </FluentGridItem>
+    </FluentGrid>
+</FluentCard>
+
+<style>
+    .TitleGroup {
+        padding-bottom: 10px;
+    }
+
+    .tree-item-text {
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .layout-grid.no-gap {
+        display: flex;
+        gap: 0;
+        padding: 8px;
+        box-sizing: border-box;
+        align-items: stretch;
+        width: 100%;
+        height: calc(100vh - 120px);
+        min-height: 500px;
+    }
+
+    fluent-tree-item[selected] {
+        color: blue;
+    }
+
+    .DanhSachDonVi {
+        height: 100%;
+        padding: 12px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .DanhSachNguoiDung {
+        flex: 0 0 66.667%;
+        height: 100%;
+        margin: 0 0 0 6px;
+        padding: 12px;
+        overflow: hidden;
+        border-left: calc(var(--stroke-width) * 1px) solid var(--neutral-stroke-divider-rest);
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .unit-container {
+        flex: 1 1 auto;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .button-group {
+        display: flex;
+        justify-content: flex-start;
+        gap: 8px;
+        align-items: center;
+        white-space: nowrap;
+        flex-wrap: nowrap;
+        padding: 10px 10px 10px 10px;
+        flex-shrink: 0;
+    }
+
+    .button-group .fluent-button,
+    .button-group button {
+        display: inline-flex !important;
+        align-items: center;
+        color: black !important;
+    }
+
+    fluent-tree-view {
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    fluent-data-grid {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+</style>

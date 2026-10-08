@@ -1,0 +1,137 @@
+@namespace Service.UI.Blazor.Components.Pages.QuanTriHeThong.DonVi
+@using Service.Shared.Commons.Extensions
+@using Service.Shared.Commons.Interfaces
+@using Service.Shared.Commons.Interfaces.Extentions
+@using Service.Shared.Commons.Model.Commons
+@using Service.Shared.Commons.Model.ServiceCustomHttpClient
+@using Service.Shared.Contracts.DTOs
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@using Service.Shared.Commons.Enums
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+
+<FluentDialogHeader ShowDismiss="true">
+	<FluentStack VerticalAlignment="VerticalAlignment.Center">
+		<FluentIcon Value="@(new Icons.Regular.Size24.Info())" />
+		<FluentLabel Typo="Typography.PaneHeader">
+			@Dialog.Instance.Parameters.Title
+		</FluentLabel>
+	</FluentStack>
+</FluentDialogHeader>
+
+<FluentDialogBody>
+	<FluentGrid Class="s-form-view" Spacing="2" AdaptiveRendering="true" Justify="JustifyContent.FlexStart" Style="padding: 4px;">
+		<FluentGridItem md="12">
+			<div class="row-info">
+				<label>Tên đơn vị:</label>
+				<div>@Item.Name</div>
+			</div>
+		</FluentGridItem>
+		<FluentGridItem md="12">
+			<div class="row-info">
+				<label>Mã đơn vị:</label>
+				<div>@Item.MaGroup</div>
+			</div>
+		</FluentGridItem>
+		<FluentGridItem md="12">
+			<div class="row-info">
+				<label>Đơn vị trực thuộc:</label>
+				@if (Item.Parent is not null)
+				{
+					<div>@Item.Parent.Name</div>
+				}
+				else
+				{
+					<div>Không có</div>
+				}
+
+			</div>
+		</FluentGridItem>
+		<FluentGridItem md="12">
+			<div class="row-info">
+				<label>Mô tả:</label>
+				<div class="wrap-text">@Item.Description</div>
+			</div>
+		</FluentGridItem>
+		<FluentGridItem md="12">
+			<div class="row-info">
+				<label>Trạng thái:</label>
+				<div>@SIConvert.GetEnumDescription(Item.ModerationStatus)</div>
+			</div>
+		</FluentGridItem>
+		<FluentGridItem md="12">
+			<div class="row-info">
+				<label>Ngày tạo:</label>
+				<div>@Item.Created.ToString("dd/MM/yyyy HH:mm:ss")</div>
+			</div>
+		</FluentGridItem>
+		@if (Item.LastModifiedBy != Guid.Empty)
+		{
+			<FluentGridItem md="12">
+				<div class="row-info">
+					<label>Ngày sửa gần nhất:</label>
+					<div>@Item.LastModified.ToString("dd/MM/yyyy HH:mm:ss")</div>
+				</div>
+			</FluentGridItem>
+		}
+		
+
+
+	</FluentGrid>
+</FluentDialogBody>
+
+<FluentDialogFooter>
+	<FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync">Đóng</FluentButton>
+</FluentDialogFooter>
+
+
+@code {
+	[CascadingParameter]
+	public FluentDialog Dialog { get; set; } = default!;
+	[Inject]
+	private IDialogService DialogService { get; set; } = default!;
+	[Parameter]
+	public EditOrUpdateParametersDto Content { get; set; } = new EditOrUpdateParametersDto();
+	[Inject]
+	private ICallServiceRegistry CallService { get; set; } = default!;
+
+	private GroupDto Item { get; set; } = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		Item = await GetGroupDtoById(Content.Id);
+	}
+
+	private async Task<GroupDto> GetGroupDtoById(Guid id)
+	{
+		try
+		{
+			ApiRequestModel apiRequest = new ApiRequestModel()
+				{
+
+					ApiService = ServicesRegistryEnum.ServiceAIM,
+					Endpoint = $"/Group/{id}"
+
+				};
+
+			var result = await CallService.Get<GroupDto>(apiRequest);
+
+			if (result.Status == StatusCode.OK)
+			{
+				return result.Data as GroupDto ?? throw new Exception("Dữ liệu trả về không đúng định dạng GroupDto.");
+			}
+			else
+			{
+				throw new Exception(result.Message ?? "Lỗi khi lấy thông tin.");
+			}
+		}
+		catch (Exception )
+		{
+			return new GroupDto();
+		}
+	}
+	private async Task CancelAsync()
+	{
+		await Dialog.CancelAsync();
+	}
+}

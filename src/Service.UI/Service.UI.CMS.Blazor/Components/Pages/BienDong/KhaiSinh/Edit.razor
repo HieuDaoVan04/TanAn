@@ -1,0 +1,125 @@
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Service.TanAn.Domain.Enums
+
+<DataDialog Title="Đăng ký khai sinh — Hồ sơ nháp" Width="960px" Close="Cancel" Busy="busy">
+
+    @if (!string.IsNullOrEmpty(error)) { <p class="error" role="alert">@error</p> }
+    <EditForm Model="form" OnSubmit="Save">
+        <ValidationSummary />
+        <fieldset class="data-form" disabled="@(busy || loadFailed)">
+            <p class="wide draft-note">Cán bộ nhập thông tin và lưu hồ sơ nháp. Chủ tịch xã duyệt hồ sơ đã nhập.</p>
+            @if (!string.IsNullOrEmpty(draftCode)) { <p class="wide">Mã hồ sơ: <strong>@draftCode</strong></p> }
+            <label class="wide">Cách nhập
+                <InputSelect @bind-Value="form.KieuNhap" @bind-Value:after="ChangeEntryMode">
+                    <option value="@KieuNhapKhaiSinh.NhapNhanh">Nhập nhanh qua mã hộ</option>
+                    <option value="@KieuNhapKhaiSinh.TuNhap">Tự nhập thông tin</option>
+                </InputSelect>
+            </label>
+            <h4 class="wide">Hộ gia đình</h4>
+            @if (form.KieuNhap == KieuNhapKhaiSinh.NhapNhanh)
+            {
+            <div class="wide household-lookup">
+                <label for="birth-house-keyword">Mã hộ hoặc tên chủ hộ
+                    <input id="birth-house-keyword" @bind="houseKeyword" placeholder="Nhập mã hộ để điền thông tin" maxlength="200" />
+                </label>
+                <FluentButton Type="ButtonType.Button" OnClick="FindHousehold">Tra cứu hộ</FluentButton>
+            </div>
+            @if (houseOptions.Count > 0)
+            {
+                <label class="wide">Chọn hộ gia đình
+                    <InputSelect @bind-Value="chosenHouseId" @bind-Value:after="ChooseHousehold">
+                        <option value="@Guid.Empty">— Chọn hộ —</option>
+                        @foreach (var house in houseOptions) { <option value="@house.Id">@house.MaSoHo — @house.TenChuHo — @house.DiaChi</option> }
+                    </InputSelect>
+                </label>
+            }
+            @if (selectedHouse != null)
+            {
+                <p class="wide household-summary">Hộ: <strong>@selectedHouse.MaSoHo</strong> · Chủ hộ: <strong>@selectedHouse.TenChuHo</strong><br />@selectedHouse.DiaChi — @selectedHouse.ApThon</p>
+            }
+            }
+            else { <p class="wide">Nhập trực tiếp các thông tin bên dưới. Có thể liên kết hộ sau bằng cách chuyển sang nhập nhanh.</p> }
+            @if (form.HoGiaDinhId == Guid.Empty)
+            {
+                <label class="wide">Thôn của hồ sơ
+                    <InputSelect @bind-Value="selectedVillageId">
+                        <option value="">— Chưa xác định —</option>
+                        @foreach (var village in villages) { <option value="@village.Id">@village.Ten</option> }
+                    </InputSelect>
+                </label>
+            }
+            <h4 class="wide">Thông tin trẻ được khai sinh</h4>
+            <label>Họ, chữ đệm, tên trẻ<InputText @bind-Value="form.HoTen" maxlength="200" /></label>
+            <label>Ngày sinh<InputDate @bind-Value="form.NgaySinh" max="@Today" /></label>
+            <label class="wide">Ngày sinh ghi bằng chữ<input value="@form.NgaySinhBangChu" readonly /></label>
+            <label>Giới tính<InputSelect @bind-Value="form.GioiTinh">@foreach (var gender in Enum.GetValues<GioiTinhEnum>()) { <option value="@gender">@GenderLabel(gender)</option> }</InputSelect></label>
+            <label>Số định danh cá nhân<InputText @bind-Value="form.SoDinhDanh" maxlength="12" inputmode="numeric" placeholder="Để trống nếu chưa có" /></label>
+            <label>Dân tộc<InputText @bind-Value="form.DanToc" maxlength="100" /></label>
+            <label>Quốc tịch<InputText @bind-Value="form.QuocTich" maxlength="100" /></label>
+            <label class="wide">Loại nơi sinh<InputSelect @bind-Value="form.LoaiNoiSinh">
+                <option value="@LoaiNoiSinh.ChuaChon">— Chưa chọn —</option>
+                <option value="@LoaiNoiSinh.CoSoYTe">Tại cơ sở y tế</option>
+                <option value="@LoaiNoiSinh.NgoaiCoSoYTe">Ngoài cơ sở y tế</option>
+                <option value="@LoaiNoiSinh.NuocNgoai">Ở nước ngoài</option>
+            </InputSelect></label>
+            @if (form.LoaiNoiSinh == LoaiNoiSinh.CoSoYTe)
+            { <label class="wide">Tên cơ sở y tế<InputText @bind-Value="form.TenCoSoYTe" maxlength="200" /></label> }
+            @if (form.LoaiNoiSinh == LoaiNoiSinh.NuocNgoai)
+            {
+                <label>Quốc gia nơi sinh<InputText @bind-Value="form.QuocGiaNoiSinh" maxlength="100" /></label>
+                <label>Bang / tỉnh<InputText @bind-Value="form.BangTinhNoiSinh" maxlength="200" /></label>
+                <label class="wide">Thành phố nơi sinh<InputText @bind-Value="form.ThanhPhoNoiSinh" maxlength="200" /></label>
+            }
+            <label class="wide">Nơi sinh / địa chỉ nơi sinh<InputText @bind-Value="form.NoiSinh" maxlength="500" placeholder="Địa chỉ cơ sở y tế hoặc địa danh thực tế nơi sinh" /></label>
+            <label class="wide">Quê quán<InputText @bind-Value="form.QueQuan" maxlength="500" /></label>
+            <label>Loại cư trú của trẻ<InputSelect @bind-Value="form.LoaiCuTruTre">
+                <option value="@LoaiCuTruKhaiSinh.ChuaChon">— Chưa xác định —</option><option value="@LoaiCuTruKhaiSinh.ThuongTru">Thường trú</option><option value="@LoaiCuTruKhaiSinh.TamTru">Tạm trú</option><option value="@LoaiCuTruKhaiSinh.DangSinhSong">Nơi đang sinh sống</option><option value="@LoaiCuTruKhaiSinh.NuocNgoai">Cư trú ở nước ngoài</option>
+            </InputSelect></label>
+            <label class="wide">Địa chỉ cư trú của trẻ<InputText @bind-Value="form.ThuongTru" maxlength="500" /></label>
+            <label>Quan hệ với chủ hộ<InputText @bind-Value="form.QuanHeVoiChuHo" maxlength="100" placeholder="Ví dụ: Con, Cháu" /></label>
+            <label>Số giấy chứng sinh<InputText @bind-Value="form.SoGiayChungSinh" maxlength="100" /></label>
+
+            <h4 class="wide">Người yêu cầu đăng ký</h4>
+            <label class="wide">Chọn người yêu cầu trong hộ
+                <InputSelect @bind-Value="form.NguoiYeuCauId" @bind-Value:after="FillApplicant">
+                    <option value="">— Nhập thông tin thủ công —</option>
+                    @foreach (var person in Members) { <option value="@person.Id">@person.HoTen — @person.CCCD</option> }
+                </InputSelect>
+            </label>
+            <label>Họ tên người yêu cầu<InputText @bind-Value="form.HoTenNguoiYeuCau" maxlength="200" /></label>
+            <label>Vai trò người yêu cầu<InputSelect @bind-Value="form.VaiTroNguoiYeuCau" @bind-Value:after="ChangeApplicantRole">
+                <option value="@VaiTroNguoiKhaiSinh.ChuaChon">— Chưa chọn —</option><option value="@VaiTroNguoiKhaiSinh.Cha">Cha</option><option value="@VaiTroNguoiKhaiSinh.Me">Mẹ</option><option value="@VaiTroNguoiKhaiSinh.NguoiKhac">Người khác</option>
+            </InputSelect></label>
+            @if (form.VaiTroNguoiYeuCau == VaiTroNguoiKhaiSinh.NguoiKhac || form.VaiTroNguoiYeuCau == VaiTroNguoiKhaiSinh.ChuaChon)
+            { <label>Quan hệ với trẻ<InputText @bind-Value="form.QuanHeVoiTre" maxlength="100" placeholder="Ví dụ: Ông, Bà, Người giám hộ" /></label> }
+            <label>Loại giấy tờ<InputSelect @bind-Value="form.LoaiGiayTo"><option>CCCD</option><option>Căn cước</option><option>CMND</option><option>Hộ chiếu</option><option>Giấy tờ khác</option></InputSelect></label>
+            @if (form.LoaiGiayTo == "Giấy tờ khác") { <label>Tên giấy tờ<InputText @bind-Value="form.TenGiayToKhac" maxlength="100" /></label> }
+            <label>Số giấy tờ<InputText @bind-Value="form.SoGiayTo" maxlength="100" /></label>
+            <label>Ngày cấp<InputDate @bind-Value="form.NgayCapGiayTo" max="@Today" /></label>
+            <label>Nơi cấp<InputText @bind-Value="form.NoiCapGiayTo" maxlength="200" /></label>
+            <label>Loại cư trú người yêu cầu<InputSelect @bind-Value="form.LoaiCuTruNguoiYeuCau">
+                <option value="@LoaiCuTruKhaiSinh.ChuaChon">— Chưa xác định —</option><option value="@LoaiCuTruKhaiSinh.ThuongTru">Thường trú</option><option value="@LoaiCuTruKhaiSinh.TamTru">Tạm trú</option><option value="@LoaiCuTruKhaiSinh.DangSinhSong">Nơi đang sinh sống</option><option value="@LoaiCuTruKhaiSinh.NuocNgoai">Cư trú ở nước ngoài</option>
+            </InputSelect></label>
+            <label class="wide">Nơi cư trú người yêu cầu<InputText @bind-Value="form.NoiCuTruNguoiYeuCau" maxlength="500" /></label>
+
+            <div class="wide parent-section">
+                <h4>Thông tin mẹ</h4>
+                <label>Thông tin mẹ<InputSelect @bind-Value="form.TinhTrangMe" @bind-Value:after="ChangeMotherState"><option value="@TinhTrangThongTinChaMe.CoThongTin">Nhập thông tin mẹ</option><option value="@TinhTrangThongTinChaMe.ChuaNhap">Chưa nhập</option><option value="@TinhTrangThongTinChaMe.ChuaXacDinh">Chưa xác định mẹ</option></InputSelect></label>
+                @if (hasMother) { <ParentFields Form="mother" Members="Members" HouseholdAddress="@(selectedHouse?.DiaChi ?? "")" ParentLabel="mẹ" /> }
+            </div>
+            <div class="wide parent-section">
+                <h4>Thông tin cha</h4>
+                <label>Thông tin cha<InputSelect @bind-Value="form.TinhTrangCha" @bind-Value:after="ChangeFatherState"><option value="@TinhTrangThongTinChaMe.CoThongTin">Nhập thông tin cha</option><option value="@TinhTrangThongTinChaMe.ChuaNhap">Chưa nhập</option><option value="@TinhTrangThongTinChaMe.ChuaXacDinh">Chưa xác định cha</option></InputSelect></label>
+                @if (hasFather) { <ParentFields Form="father" Members="Members" HouseholdAddress="@(selectedHouse?.DiaChi ?? "")" ParentLabel="cha" /> }
+            </div>
+
+            <h4 class="wide">Thông tin hồ sơ</h4>
+            <label>Cơ quan đăng ký<InputText @bind-Value="form.CoQuanDangKy" maxlength="200" /></label>
+            <label class="wide">Ghi chú<InputTextArea @bind-Value="form.GhiChu" maxlength="2000" /></label>
+        </fieldset>
+        <div class="dialog-actions">
+            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Disabled="@(busy || loadFailed)">@(busy ? "Đang lưu..." : "Lưu nháp")</FluentButton>
+            <FluentButton Type="ButtonType.Button" OnClick="Cancel" Disabled="busy">Hủy</FluentButton>
+        </div>
+    </EditForm>
+</DataDialog>

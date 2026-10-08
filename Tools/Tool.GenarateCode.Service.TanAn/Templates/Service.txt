@@ -1,0 +1,99 @@
+// "Một sản phẩm của HieuDV"
+
+@cmt1@
+using Service.Portal.Application.Interfaces;
+using Service.Portal.Domain.Entities;
+using Service.Portal.Domain.Interfaces;
+using Service.Shared.Commons.Interfaces.Extentions;
+using Service.Shared.Commons.Model.Commons;
+using Service.Shared.Commons.Model.SQL;
+using Service.Shared.Commons.Querys.ModalQuery;
+using Service.Shared.Contracts.Portal.DTOs;
+using Service.Shared.Contracts.Portal.Forms;
+
+namespace Service.Portal.Application.Services
+{
+    public class @Entity@Service : I@Entity@Service
+    {
+        private readonly IUnitOfWork _UnitOfWork;
+        private readonly IRequestContext _RequestContext;
+        public @Entity@Service(IUnitOfWork UnitOfWork, IRequestContext requestContext)
+        {
+            _UnitOfWork = UnitOfWork;
+            _RequestContext = requestContext;
+        }
+
+
+
+        public async Task<Guid> CreateAsync(@Entity@Form item)
+        {
+            var ItemCreate = new @Entity@();
+
+
+            await _UnitOfWork.@Entity@Repository.AddAsync(ItemCreate);
+            await _UnitOfWork.CompleteAsync();
+
+            return ItemCreate.Id;
+        }
+
+        public async Task<bool> DeleteAsync(Guid Id)
+        {
+            var itemDelete = await _UnitOfWork.@Entity@Repository.GetByIdAsync(Id);
+            _UnitOfWork.@Entity@Repository.Delete(itemDelete);
+            await _UnitOfWork.CompleteAsync();
+            return true;
+        }
+
+        public async Task<@Entity@Dto> GetByIdAsync(Guid Id)
+        {
+            @Entity@ entity = await _UnitOfWork.@Entity@Repository.FindAsync(x => x.Id == Id, new[] { "Lst@Entity@API" });
+
+            @Entity@Dto @Entity@Dto = new @Entity@Dto();
+            @Entity@Dto.Id = entity.Id;
+
+
+
+            return @Entity@Dto;
+        }
+
+        public async Task<DataTableJson> GetPaged(BaseQuery searchOption)
+        {
+            var (items, total) = await _UnitOfWork.@Entity@Repository
+                                         .GetPagedDtoAsync(searchOption);
+
+            return new DataTableJson(items,
+                                     searchOption.draw,
+                                     total,
+                                     items.Count);
+        }
+
+        public async Task<bool> UpdateAsync(Guid Id, @Entity@Form item)
+        {
+            var itemUpdate = await _UnitOfWork.@Entity@Repository.GetByIdAsync(Id);
+
+
+            _UnitOfWork.@Entity@Repository.Update(itemUpdate);
+            _UnitOfWork.@Entity@Repository.SaveChanges(_RequestContext.CurrentIdUser);
+
+            return true;
+        }
+
+
+        public async Task<bool> ChangeModerationStatusAsync(Guid id, ModerationStatus moderationStatus)
+        {
+
+            var itemUpdate = await _UnitOfWork.@Entity@Repository.GetByIdAsync(id);
+
+            itemUpdate.ModerationStatus = moderationStatus;
+            _UnitOfWork.@Entity@Repository.Update(itemUpdate);
+            _UnitOfWork.@Entity@Repository.SaveChanges(_RequestContext.CurrentIdUser);
+
+            return true;
+        }
+
+
+    }
+}
+
+
+@cmt2@

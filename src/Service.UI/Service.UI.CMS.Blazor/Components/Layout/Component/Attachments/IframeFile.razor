@@ -1,0 +1,99 @@
+@namespace Service.UI.CMS.Blazor.Components.Layout.Component.Attachments
+@implements IDialogContentComponent<ViewOrEditParametersDto>
+@using Service.Shared.Contracts.DTOs
+@using Service.Shared.Contracts.DTOs.File
+@inject IToastService ToastService
+
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center" HorizontalAlignment="HorizontalAlignment.Left" Gap="8">
+
+        <FluentIcon Value="@HeaderIcon" />
+
+        <FluentStack>
+            <FluentLabel Typo="Typography.PaneHeader">
+                @HeaderTitle
+            </FluentLabel>
+
+            @if (!string.IsNullOrWhiteSpace(FileName))
+            {
+                <FluentLabel Style="font-weight:700;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    max-width: 800px;" Typo="Typography.PaneHeader">
+                    @FileName
+                </FluentLabel>
+            }
+        </FluentStack>
+
+    </FluentStack>
+</FluentDialogHeader>
+
+<FluentDialogBody>
+    <FluentStack Id="view-zone" Style="height:70vh;">
+        <iframe src="@Url"
+                style="width:100%;height:100%;border:none">
+        </iframe>
+    </FluentStack>
+</FluentDialogBody>
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Neutral" OnClick="@CloseDialog">
+        Đóng
+    </FluentButton>
+</FluentDialogFooter>
+
+@code {
+
+    [Parameter]
+    public ViewOrEditParametersDto Content { get; set; } = new();
+
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    [Inject]
+    private IDialogService DialogService { get; set; } = default!;
+
+
+    private FileDinhKemDto File { get; set; } = default!;
+
+    private string Url => Content?.Parameter ?? "";
+
+    private bool IsEdit => Content?.ParameterInt == 2;
+
+    private bool IsViewSign { get; set; } = false;
+
+    private string FileName => Content?.FileName ?? "";
+
+    private Icon HeaderIcon =>
+        IsEdit
+        ? new Icons.Regular.Size24.Edit()
+        : new Icons.Regular.Size24.Document();
+
+    private string HeaderTitle =>
+        IsEdit
+        ? "Chỉnh sửa file"
+        : "Xem file";
+
+    private async Task CloseDialog()
+    {
+        await Dialog.CloseAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                File = Content?.DataObject as FileDinhKemDto ?? new FileDinhKemDto();
+                IsViewSign = string.Equals(Path.GetExtension(FileName), ".pdf", StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Lỗi khi tải dữ liệu: {ex.Message}");
+            }
+            StateHasChanged();
+        }
+    }
+}

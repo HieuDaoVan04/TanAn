@@ -1,0 +1,222 @@
+@using Service.Shared.Commons.Interfaces.Extentions
+@using Service.Shared.Commons.Model.ServiceCustomHttpClient
+@using Service.Shared.Contracts.Portal.Forms
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
+@using System.Globalization
+@using Service.UI.CMS.Blazor.Extensions
+
+@if (!IsLoading)
+{
+    <FluentDialogHeader ShowDismiss="true">
+        <FluentStack VerticalAlignment="VerticalAlignment.Center">
+            <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" />
+            <FluentLabel Typo="Typography.PaneHeader">
+                @Dialog.Instance.Parameters.Title
+            </FluentLabel>
+        </FluentStack>
+    </FluentDialogHeader>
+    <FluentDialogBody>
+        <EditForm Model="@Entity@Form" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+            
+
+            <FluentDialogFooter>
+                <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync" Disabled="@IsSaving">Hủy</FluentButton>
+                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@IsSaving">
+                    @if (IsSaving)
+                    {
+                        <span style="margin-left: 8px;">Đang lưu...</span>
+                    }
+                    else
+                    {
+                        <span>Lưu</span>
+                    }
+                </FluentButton>
+            </FluentDialogFooter>
+        </EditForm>
+    </FluentDialogBody>
+}
+else if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <FluentDialogBody>
+        <FluentGridItem md="12">@ErrorMessage</FluentGridItem>
+    </FluentDialogBody>
+    <FluentDialogFooter>
+        <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync">Đóng</FluentButton>
+    </FluentDialogFooter>
+}
+else
+{
+    <FluentDialogBody>
+        <FluentProgressRing />
+    </FluentDialogBody>
+}
+
+
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+
+@code {
+
+
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    [Parameter]
+    public EditOrUpdateParametersDto Content { get; set; } = new();
+
+    [Inject]
+    private IDialogService DialogService { get; set; } = default!;
+
+    [Inject]
+    private IToastService ToastService { get; set; } = default!;
+
+    [Inject]
+    private ICallServiceRegistry CallService { get; set; } = default!;
+
+    private CultureInfo customCulture = DateTimeHepler.CreateCustomCultureForDatePicker();
+    private string ErrorMessage { get; set; } = string.Empty;
+    private bool IsLoading { get; set; } = true;
+    private bool IsSaving { get; set; } = false;
+    private @Entity@Form @Entity@Form { get; set; } = new();
+
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firtsLoad)
+    {
+        if (firtsLoad)
+        {
+            try
+            {
+                if (Content.IsEditMode && Content.Id != Guid.Empty)
+                {
+                    @Entity@Form = await FetchDataById(Content.Id);
+
+                }
+                else
+                {
+                    @Entity@Form = new();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Lỗi khi tải dữ liệu: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+            StateHasChanged();
+        }
+
+    }
+    private async Task<@Entity@Form> FetchDataById(Guid Id)
+    {
+        ApiRequestModel apiRequest = new ApiRequestModel()
+        {
+
+            ApiService = ServicesRegistryEnum.ServicePortal,
+            Endpoint = $"/@Entity@/{Id}"
+
+        };
+
+        ResultAPI<@Entity@Form> result = await CallService.Get<@Entity@Form>(apiRequest);
+        if (result.Status != StatusCode.OK || result.Data is null)
+        {
+            await ShowErrorMessage("Có lỗi khi gọi api lấy dữ liệu");
+            return new();
+        }
+        return result.Data;
+
+    }
+
+    private async Task Save()
+    {
+        IsSaving = true;
+        try
+        {
+            if(Content.Id == Guid.Empty)//thêm mới
+            {
+                ApiRequestModel apiRequest = new ApiRequestModel()
+                {
+
+                    ApiService = ServicesRegistryEnum.ServicePortal,
+                    Endpoint = $"/@Entity@"
+                };
+                ResultAPI<string> result = await CallService.Post<string>(apiRequest, @Entity@Form);
+
+                if (result.Status != StatusCode.OK)
+                {
+                 ToastService.ShowWarning($"Lỗi: {result.Message ?? "Đã xảy ra lỗi khi thực hiện thao tác"}");
+
+                }
+                else
+                {
+                    ToastService.ShowSuccess("Thêm mới thành công!");
+                    await Dialog.CloseAsync();
+                    await Content.OnRefresh.InvokeAsync();
+                }
+            }
+            else
+            {
+                ApiRequestModel apiRequest = new ApiRequestModel()
+                {
+
+                    ApiService = ServicesRegistryEnum.ServicePortal,
+                    Endpoint = $"/@Entity@/{Content.Id}"
+                };
+                ResultAPI result = await CallService.Put(apiRequest, @Entity@Form);
+
+                if (result.Status != StatusCode.OK)
+                {
+                    ToastService.ShowWarning("Cập nhật thất bại" + result.Message);
+                }
+                else
+                {
+                    ToastService.ShowSuccess("Cập nhật thành công!");
+                    await Dialog.CloseAsync();
+                    await Content.OnRefresh.InvokeAsync();
+                }
+
+            }
+
+
+            
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessage(ex.Message);
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+
+
+    private async Task ShowErrorMessage(string? content)
+    {
+        await DialogService.ShowMessageBoxAsync(new DialogParameters<MessageBoxContent>
+        {
+            Content = new()
+            {
+                Title = "Lỗi",
+                MarkupMessage = new MarkupString($"Có lỗi: {content}"),
+                Icon = new Size24.ErrorCircle(),
+                IconColor = Color.Error,
+            },
+            PrimaryAction = "OK",
+            PrimaryActionEnabled = true,
+        });
+    }
+    private async Task CancelAsync()
+    {
+        await Dialog.CancelAsync();
+    }
+
+}

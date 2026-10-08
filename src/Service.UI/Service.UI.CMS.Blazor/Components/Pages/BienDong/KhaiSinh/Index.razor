@@ -1,0 +1,162 @@
+@using Service.Shared.Commons.Model.SQL
+@page "/bien-dong/khai-sinh"
+
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Service.UI.CMS.Blazor.Components.Shares.Filter
+
+<PageTitle>@Title - Xã Tân An</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="width:100%">
+    <h2>@Title</h2>
+    <FluentTabs @bind-ActiveTabId="activeTabId" @bind-ActiveTabId:after="ChangeTab" Style="width:100%" aria-label="Danh sách khai sinh">
+        <FluentTab Id="drafts" Label="Hồ sơ khai sinh" />
+        <FluentTab Id="recorded" Label="Khai sinh đã ghi nhận" />
+    </FluentTabs>
+
+    <SearchPanel Title="@($"Bộ lọc {TypeLabel.ToLowerInvariant()}")">
+        <BasicFields>
+            <div>
+                <label>Từ khóa</label>
+                <FluentSearch aria-label="Tìm kiếm"
+                          Placeholder="@(showDrafts ? "Mã hồ sơ, tên trẻ, người yêu cầu, mã hộ..." : "Tên nhân khẩu, CCCD, nơi sinh...")"
+                          @bind-Value="searchKeyword"
+                          @bind-Value:after="LoadData"
+                          Style="width: 100%;" />
+            </div>
+            <div>
+                <label for="change-village-filter">Thôn</label>
+                <select id="change-village-filter" class="change-filter-input" @bind="selectedVillageId" @bind:after="LoadData">
+                    <option value="">Tất cả thôn</option>
+                    @foreach (var village in villages)
+                    {
+                        <option value="@village.Id">@village.Ten</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label for="change-from-date">@(showDrafts ? "Từ ngày tạo hồ sơ" : "Từ ngày phát sinh")</label>
+                <input id="change-from-date" class="change-filter-input" type="date" @bind="fromDate" @bind:format="yyyy-MM-dd" @bind:after="LoadData" />
+            </div>
+            <div>
+                <label for="change-to-date">@(showDrafts ? "Đến ngày tạo hồ sơ" : "Đến ngày phát sinh")</label>
+                <input id="change-to-date" class="change-filter-input" type="date" @bind="toDate" @bind:format="yyyy-MM-dd" @bind:after="LoadData" />
+            </div>
+        </BasicFields>
+        <Actions>
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.Search())" OnClick="LoadData">Tìm kiếm</FluentButton>
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.ArrowSync())" OnClick="ClearSearch">Tải lại</FluentButton>
+        </Actions>
+    </SearchPanel>
+    @if (!string.IsNullOrEmpty(filterError))
+    {
+        <p class="filter-error" role="alert">@filterError</p>
+    }
+
+    <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between; align-items:center;" Class="page-toolbar">
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" Class="page-toolbar">
+            @if (showDrafts)
+            {
+                <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.AddCircle())" OnClick="OpenEdit">Thêm mới</FluentButton>
+            }
+            @if (!showDrafts)
+            {
+            <FluentButton OnClick="ExportExcel" Appearance="Appearance.Accent" Class="ms-2">
+                <i class="fa-solid fa-file-excel me-1"></i> Xuất Excel
+            </FluentButton>
+            }
+        </FluentStack>
+    </FluentStack>
+
+    @if (showDrafts)
+    {
+        <div class="data-grid-scroll">
+            <FluentDataGrid @ref="draftGrid"
+                            ItemsProvider="LoadDrafts"
+                            TGridItem="KhaiSinhDraftDto"
+                            Pagination="@draftPagination"
+                            ShowHover="true"
+                            MultiLine="true"
+                            RowSize="DataGridRowSize.Large"
+                            GridTemplateColumns="56px minmax(180px,1fr) minmax(160px,1fr) 120px minmax(160px,1fr) 120px 160px 110px 270px"
+                            Style="width:100%;"
+                            RowStyle="@(item => "min-height:60px;")">
+                <ChildContent>
+                    <TemplateColumn Title="#" Align="Align.Center" HeaderTooltip="Số thứ tự">
+                        <HeaderCellItemTemplate Context="column"><span class="row-number-heading">#</span></HeaderCellItemTemplate>
+                        <ChildContent Context="row">@(draftStartIndex + drafts.IndexOf(row) + 1)</ChildContent>
+                    </TemplateColumn>
+                    <PropertyColumn Property="@(d => d.MaHoSo)" Title="Mã hồ sơ" />
+                    <PropertyColumn Property="@(d => string.IsNullOrWhiteSpace(d.HoTenTre) ? "Chưa nhập" : d.HoTenTre)" Title="Họ tên trẻ" />
+                    <PropertyColumn Property="@(d => d.NgaySinh.HasValue ? d.NgaySinh.Value.ToString("dd/MM/yyyy") : "—")" Title="Ngày sinh" />
+                    <PropertyColumn Property="@(d => d.HoTenNguoiYeuCau)" Title="Người yêu cầu" />
+                    <PropertyColumn Property="@(d => d.MaSoHo)" Title="Mã hộ" />
+                    <PropertyColumn Property="@(d => d.NgayTao.ToLocalTime().ToString("dd/MM/yyyy HH:mm"))" Title="Ngày tạo" />
+                    <TemplateColumn Title="Phê duyệt">@((context.ModerationStatus == ModerationStatus.Approved) ? "Đã duyệt" : "Chưa duyệt")</TemplateColumn>
+                    <TemplateColumn Title="Thao tác" Context="row">
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                            <FluentButton Appearance="Appearance.Outline" OnClick="() => ViewDraft(row)">Xem</FluentButton>
+                            @if (row.ModerationStatus == ModerationStatus.Pending)
+                            {
+                                <FluentButton Appearance="Appearance.Outline" Disabled="@approvalBusy" IconStart="@(new Icons.Regular.Size16.Edit())" OnClick="() => EditDraft(row)">Sửa</FluentButton>
+                                <FluentButton Appearance="Appearance.Accent" BackgroundColor="@(CanApprove(row) ? "#107c10" : null)" Color="@(CanApprove(row) ? "white" : null)"
+                                              Disabled="@(!CanApprove(row))" Title="@(canApproveBirth ? "Duyệt hồ sơ khai sinh" : "Cần vai trò mã ctx và quyền truy cập khai sinh")"
+                                              IconStart="@(new Icons.Regular.Size16.CheckmarkCircle())" OnClick="() => ApproveDraft(row)">Duyệt hồ sơ</FluentButton>
+                            }
+                        </FluentStack>
+                    </TemplateColumn>
+                </ChildContent>
+                <EmptyContent><p style="padding:20px">Không có hồ sơ chưa duyệt phù hợp.</p></EmptyContent>
+            </FluentDataGrid>
+        </div>
+        <Paginator PaginationState="@draftPagination" SelectedPageSizeChanged="RefreshData" />
+    }
+    else
+    {
+    <div class="data-grid-scroll">
+        <FluentDataGrid Items="@bienDongQuery"
+                        TGridItem="BienDongDto"
+                        Pagination="@pagination"
+                        ShowHover="true"
+                        MultiLine="true"
+                        RowSize="DataGridRowSize.Large"
+                        GridTemplateColumns="56px minmax(180px,1fr) minmax(160px,1fr) 140px 170px minmax(160px,1fr) minmax(120px,0.65fr) 140px"
+                        Style="width:100%;"
+                        RowStyle="@(item => "min-height:60px;")">
+            <ChildContent>
+                <TemplateColumn Title="#" Sortable="false" Align="Align.Center" HeaderTooltip="Số thứ tự">
+                    <HeaderCellItemTemplate Context="column"><span class="row-number-heading">#</span></HeaderCellItemTemplate>
+                    <ChildContent Context="row">@(bienDongQuery?.ToList().IndexOf(row) + 1)</ChildContent>
+                </TemplateColumn>
+                <PropertyColumn Property="@(b => BusinessCreateDialog.Label(b.LoaiBienDong.ToString()))" Title="Loại Biến Động" Sortable="true" />
+                <TemplateColumn Title="Họ tên nhân khẩu" Sortable="true">
+                    <span @onclick="@(() => OpenView(context))" style="cursor: pointer; color: dodgerblue; font-weight: 500;">
+                        @context.HoTenNhanKhau
+                    </span>
+                </TemplateColumn>
+                <PropertyColumn Property="@(b => b.CCCDNhanKhau)" Title="Số CCCD" />
+                <PropertyColumn Property="@(b => b.NgayPhatSinh.ToString("dd/MM/yyyy"))" Title="Ngày Phát Sinh" />
+                <PropertyColumn Property="@(b => b.NoiDenOrDi)" Title="@(ChangeType == LoaiBienDongEnum.KhaiSinh ? "Nơi sinh" : "Nơi Đi / Đến")" />
+                <PropertyColumn Property="@(b => b.LyDo)" Title="Lý Do" />
+                <PropertyColumn Property="@(b => b.CanBoGhiNhan)" Title="Cán Bộ Ghi Nhận" />
+            </ChildContent>
+            <EmptyContent><p style="padding:20px">Không có dữ liệu phù hợp.</p></EmptyContent>
+        </FluentDataGrid>
+    </div>
+
+    <Paginator PaginationState="@pagination" SelectedPageSizeChanged="RefreshData" />
+    }
+</FluentStack>
+
+@if (showEdit)
+{
+    <Edit @key="editingDraftId" DraftId="editingDraftId" Saved="OnSaved" Cancel="CloseEdit" />
+}
+@if (selectedDraft != null)
+{
+    <View Draft="selectedDraft" Close="CloseView" ApprovalEnabled="@CanApprove(selectedDraft)" ApprovalError="@filterError" Approve="() => ApproveDraft(selectedDraft)" />
+}
+
+@if (selectedRecord != null)
+{
+    <View Record="selectedRecord" Close="CloseView" />
+}

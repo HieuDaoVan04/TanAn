@@ -1,0 +1,67 @@
+@namespace Service.UI.CMS.Blazor.Components.Pages.QuanTriHeThong.SystemParameter
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersDto>
+@using Service.UI.CMS.Blazor.Applications.Dtos
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+@if (!IsLoading)
+{
+    <FluentDialogHeader ShowDismiss="true">
+        <FluentStack VerticalAlignment="VerticalAlignment.Center">
+            <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" />
+            <FluentLabel Typo="Typography.PaneHeader">
+                @Dialog.Instance.Parameters.Title
+            </FluentLabel>
+        </FluentStack>
+    </FluentDialogHeader>
+    <FluentDialogBody>
+        <EditForm Model="@SystemParameterForm" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+            <FluentGridItem md="12">
+                <FluentTextField @bind-Value="SystemParameterForm.Code"
+                                 Label="Mã tham số"
+                                 Required="true"
+                                 Style="width: 100%;"
+                                 ReadOnly="@SystemParameterForm.IsSync" />
+                <ValidationMessage For="@(() => SystemParameterForm.Value)" Style="color: red;" />
+            </FluentGridItem>
+
+            <FluentGridItem md="12">
+                <FluentTextField @bind-Value="SystemParameterForm.Value" Label="Giá trị" Style="width: 100%;" />
+            </FluentGridItem>
+
+            <FluentGridItem md="12">
+                <FluentTextArea @bind-Value="SystemParameterForm.Description" Label="Mô tả" Rows="3" Resize="TextAreaResize.Both" Style="width: 100%;" ReadOnly="@SystemParameterForm.IsSync" />
+            </FluentGridItem>
+            <FluentDialogFooter>
+                <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync" Disabled="@IsSaving">Hủy</FluentButton>
+                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@IsSaving">
+                    @if (IsSaving)
+                    {
+                        <span style="margin-left: 8px;">Đang lưu...</span>
+                    }
+                    else
+                    {
+                        <span>Lưu</span>
+                    }
+                </FluentButton>
+            </FluentDialogFooter>
+        </EditForm>
+    </FluentDialogBody>
+}
+else if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <FluentDialogBody>
+        <FluentGridItem md="12">@ErrorMessage</FluentGridItem>
+    </FluentDialogBody>
+    <FluentDialogFooter>
+        <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync">Đóng</FluentButton>
+    </FluentDialogFooter>
+}
+else
+{
+    <FluentDialogBody>
+        <FluentProgressRing />
+    </FluentDialogBody>
+}

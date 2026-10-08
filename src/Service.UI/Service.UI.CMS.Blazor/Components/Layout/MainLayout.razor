@@ -1,0 +1,98 @@
+@using System.IdentityModel.Tokens.Jwt
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Service.UI.CMS.Blazor.Applications
+@using Service.Shared.Commons.Extensions
+@using Service.Shared.Commons.Models
+@inherits LayoutComponentBase
+@inject IUserService UserService
+@inject ModuleTypeState MenuState
+@inject SystemConfigurationState Configuration
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<div>
+    @if (IsLoading)
+    {
+        <style>
+            .splash-screen {
+                position: fixed;
+                inset: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background: #fff;
+                z-index: 9999;
+            }
+
+            .splash-logo {
+                width: auto;
+                margin: 30px 0 0 0;
+            }
+
+            .progress-text {
+                margin-top: 8px;
+                font-family: "Segoe UI", sans-serif;
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: #444;
+            }
+        </style>
+        <div class="splash-screen">
+            <div class="splash-logo">
+                <svg width="260" height="140" viewBox="0 0 260 140" xmlns="http://www.w3.org/2000/svg" aria-label="Splash - Lưu trữ điện tử"><style>.s{stroke:#0ea5e9;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;fill:none}.f{fill:#0ea5e9}</style><rect x="20" y="40" width="100" height="70" rx="8" class="s"/><path d="M20 40h100v16H20z" class="s"/><rect x="62" y="64" width="16" height="10" rx="3" class="s"/><rect x="46" y="86" width="48" height="16" rx="3" class="s"/><path d="M52 94h4m4 0h2m4 0h6m4 0h2m4 0h4m74-64h48l22 22v58h-70z" class="s"/><path d="M208 30v22h22m-60 4h48m-48 10h42m-42 12h50m-50 12h46m14-40h10m-10 30h10" class="s"/><circle cx="246" cy="50" r="4" class="f"/><circle cx="246" cy="80" r="4" class="f"/></svg>
+            </div>
+            <FluentProgress Min="0" Max="100" Value="@Progress" Style="--stroke-width:4; width:200px; margin-top:16px;" />
+            <div class="progress-text">@Progress%</div>
+        </div>
+    }
+    else if (CurrentUser is not null && !string.IsNullOrEmpty(CurrentUser.UserName))
+    {
+        <CascadingValue Value="CurrentUser">
+            <FluentLayout Class="app-shell">
+                <FluentHeader Class="siteheader">
+                    <Header />
+                </FluentHeader>
+                <FluentStack Class="body-stack" Orientation="Orientation.Horizontal" Width="100%" HorizontalGap="0">
+                    <NavMenu />
+                    <FluentBodyContent id="body-content" Class="workspace-body">
+                        <div class="content">
+                            <article id="article">
+                                @if (CanAccessPage) { @Body }
+                                else { <p role="alert">Bạn chưa được cấp quyền truy cập chức năng này.</p> }
+                            </article>
+                            <FluentToastProvider MaxToastCount="10" Position="ToastPosition.TopRight" />
+                            <FluentDialogProvider />
+                            <FluentTooltipProvider />
+                            <FluentKeyCodeProvider />
+                            <FluentMenuProvider />
+                        </div>
+                    </FluentBodyContent>
+                </FluentStack>
+
+                @if (Configuration.Value.FooterEnabled)
+                {
+                    <FluentFooter><Footer /></FluentFooter>
+                }
+                @if ((CurrentUser.Role == "Admin" || CurrentUser.MenusActive.Any(m => m.Path.TrimEnd('/') == "/ai-chatbot"))
+                    && Navigation.ToBaseRelativePath(Navigation.Uri).Split('?')[0].Trim('/') != "ai-chatbot")
+                {
+                    <Service.UI.CMS.Blazor.Components.Shared.FloatingAIChatbot />
+                }
+            </FluentLayout>
+        </CascadingValue>
+    }
+    else
+    {
+        <div class="login-prompt" style="padding: 30px; text-align: center;">
+            <p>Bạn chưa được phân quyền sử dụng phần mềm này!</p>
+        </div>
+    }
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

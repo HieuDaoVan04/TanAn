@@ -1,0 +1,76 @@
+@* "Một sản phẩm của HieuDV" *@
+
+@using Service.Shared.Contracts.DTOs
+@using Service.UI.CMS.Blazor.Applications.Dtos
+
+@inherits ComponentBase
+@implements IDialogContentComponent<GanVaiTroParametersDto>
+
+<FluentDialogHeader>
+    <h3>Gán vai trò và quyền cho người dùng</h3>
+</FluentDialogHeader>
+<FluentDialogBody>
+    <FluentGrid Class="s-form-view" Spacing="2" AdaptiveRendering="true" Justify="JustifyContent.FlexStart" Style="padding: 4px;">
+
+        <!-- Cột trái -->
+        <FluentGridItem md="6" xs="12">
+            <h3>Gán vai trò</h3>
+            <FluentStack Orientation="Orientation.Vertical" Style="gap: 12px;">
+                @foreach (var role in DanhSachVaiTro)
+                {
+                    <FluentCheckbox Value="role.DaGan"
+                                    Label="@role.RoleName"
+                                    ValueChanged="(checkedValue) => OnRoleCheckedChanged(role, checkedValue)"
+                                    Style="width: 100%;" />
+                }
+            </FluentStack>
+        </FluentGridItem>
+
+        <!-- Cột phải -->
+        <FluentGridItem md="6" xs="12">
+            <h3>Gán quyền</h3>
+            <FluentStack Orientation="Orientation.Vertical" Style="gap: 12px;">
+                <FluentTreeView Items="@PemissionTreeItem"
+                                Style="width: 100%; max-height: 75vh; overflow-y: auto;">
+                    <ItemTemplate>
+                        @{
+                            var item = context as TreeViewItemDTO;
+                            var permissionId = Guid.Parse(item?.Id ?? Guid.Empty.ToString());
+                            var isChecked = AllSelectedPermissions.Contains(permissionId);
+                            var isDisabled = PermissionFromRole.Contains(permissionId);
+                        }
+                        <div class="tree-item-custom-modal level-@item?.Type">
+                            <FluentCheckbox Label="@item?.Text"
+                                            Value="@isChecked"
+                                            Disabled="@isDisabled"
+                                            ValueChanged="(val) => OnPermissionCheckedChanged(item?.Id ?? string.Empty, val)"
+                                            Style="width: 100%;" />
+                        </div>
+                    </ItemTemplate>
+                </FluentTreeView>
+            </FluentStack>
+        </FluentGridItem>
+    </FluentGrid>
+</FluentDialogBody>
+<FluentDialogFooter>
+    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.End" Gap="10" Class="page-toolbar">
+        <FluentButton Appearance="Appearance.Neutral" @onclick="HideDialog">Đóng</FluentButton>
+        <FluentButton Appearance="Appearance.Accent" @onclick="GanQuyenChoNguoiDung">Gán</FluentButton>
+    </FluentStack>
+</FluentDialogFooter>
+<style>
+    .tree-item-custom-modal {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .level-0 { padding-left: 0px; }
+    .level-1 { padding-left: 20px; }
+    .level-2 { padding-left: 40px; }
+    .level-3 { padding-left: 60px; }
+    .level-4 { padding-left: 80px; }
+    .level-5 { padding-left: 100px; }
+</style>

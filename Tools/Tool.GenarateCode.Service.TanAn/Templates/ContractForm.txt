@@ -1,0 +1,12 @@
+// "Một sản phẩm của HieuDV"
+@cmt1@
+using System.ComponentModel.DataAnnotations;
+
+namespace Service.Shared.Contracts.Portal.Forms
+{
+    public class @Entity@Form
+    {
+        
+    }
+}
+@cmt2@

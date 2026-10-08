@@ -1,0 +1,48 @@
+@using Service.Shared.Contracts.DTOs
+@using Service.TanAn.Domain.Enums
+@using Microsoft.FluentUI.AspNetCore.Components
+<DataDialog Title="@Title" Close="Cancel" Busy="busy">
+    @if (!string.IsNullOrEmpty(error)) { <p class="error" role="alert">@error</p> }
+    <EditForm Model="@Model" OnSubmit="Save">
+        <fieldset class="data-form" disabled="@busy">
+        @if (Kind == "household")
+        {
+            <label>Mã sổ hộ *<InputText @bind-Value="household.MaSoHo" required maxlength="50" /></label>
+            <label>Tên chủ hộ *<InputText @bind-Value="household.TenChuHo" required maxlength="200" /></label>
+            <label>Ngày sinh chủ hộ *<InputDate @bind-Value="household.NgaySinhChuHo" required /></label>
+            <label>Giới tính chủ hộ<InputSelect @bind-Value="household.GioiTinhChuHo">@foreach(var gender in Enum.GetValues<GioiTinhEnum>()) { <option value="@gender">@gender</option> }</InputSelect></label>
+            <label>CCCD chủ hộ *<InputText @bind-Value="household.CCCDChuHo" required /></label>
+            <label>Thôn *<InputSelect @bind-Value="household.ApThon" required><option value="">— Chọn thôn —</option>@foreach (var village in villageNames) { <option value="@village">@village</option> }</InputSelect></label>
+            <label class="wide">Địa chỉ *<InputText @bind-Value="household.DiaChi" required /></label>
+            <label class="wide">Ghi chú<InputTextArea @bind-Value="household.GhiChu" /></label>
+        }
+        else if (Kind == "payout")
+        {
+            <p class="wide">Đối tượng: <strong>@TargetName</strong></p>
+            <label>Tháng/năm (MM/yyyy) *<InputText @bind-Value="payout.ThangNam" required placeholder="09/2026" /></label>
+            <label>Số tiền (VNĐ) *<InputNumber @bind-Value="payout.SoTien" min="1" required /></label>
+            <label class="wide">Ghi chú<InputTextArea @bind-Value="payout.GhiChu" /></label>
+        }
+        else
+        {
+            <div class="wide"><label>Tìm nhân khẩu theo họ tên hoặc CCCD<input @bind="keyword" /></label><FluentButton Type="ButtonType.Button" OnClick="FindPeople" Disabled="busy">Tìm nhân khẩu</FluentButton></div>
+            <label class="wide">Nhân khẩu *<InputSelect @bind-Value="personId" required><option value="@Guid.Empty">— Chọn nhân khẩu —</option>@foreach (var person in people) { <option value="@person.Id">@person.HoTen — @person.CCCD — @person.MaSoHo</option> }</InputSelect></label>
+            @if (Kind == "change")
+            {
+                <label>Loại biến động<InputSelect @bind-Value="change.LoaiBienDong" disabled="true">@foreach(var type in Enum.GetValues<LoaiBienDongEnum>()) { <option value="@type">@Label(type.ToString())</option> }</InputSelect></label>
+                <label>Ngày phát sinh *<InputDate @bind-Value="change.NgayPhatSinh" required /></label>
+                <label class="wide">Nơi đi / đến<InputText @bind-Value="change.NoiDenOrDi" /></label>
+                <label class="wide">Lý do *<InputTextArea @bind-Value="change.LyDo" required /></label>
+            }
+            else
+            {
+                <label>Nhóm an sinh<InputSelect @bind-Value="welfare.LoaiDoiTuong" disabled="@(Category != null)">@foreach(var type in Enum.GetValues<DoiTuongAnSinhEnum>()) { <option value="@type">@Label(type.ToString())</option> }</InputSelect></label>
+                <label>Mức trợ cấp/tháng (VNĐ)<InputNumber @bind-Value="welfare.MucTroCapHangThang" min="0" /></label>
+                <label>Ngày bắt đầu hưởng *<InputDate @bind-Value="welfare.NgayBatDauHuong" required /></label>
+                <label>Ghi chú<InputTextArea @bind-Value="welfare.GhiChu" /></label>
+            }
+        }
+        </fieldset>
+        <div class="dialog-actions"><FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.Save())" Disabled="busy">Lưu</FluentButton><FluentButton Type="ButtonType.Button" OnClick="Cancel" Disabled="busy">Hủy</FluentButton></div>
+    </EditForm>
+</DataDialog>

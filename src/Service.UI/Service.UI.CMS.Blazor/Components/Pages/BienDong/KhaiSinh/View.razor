@@ -1,0 +1,77 @@
+@using Service.Shared.Commons.Model.SQL
+<DataDialog Title="Chi tiết khai sinh" Close="Close">
+    @if (!string.IsNullOrWhiteSpace(ApprovalError)) { <p class="error" role="alert">@ApprovalError</p> }
+    @if (Draft != null)
+    {
+        <p>Mã hồ sơ: <strong>@Draft.MaHoSo</strong> · @((Draft.ModerationStatus == ModerationStatus.Approved) ? "Đã duyệt" : "Chưa duyệt")</p>
+        @if ((Draft.ModerationStatus == ModerationStatus.Approved)) { <p>Người duyệt: <strong>@Draft.NguoiDuyet</strong> · @Draft.NgayDuyet?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p> }
+    }
+    @if (Form != null)
+    {
+        <h4>Thông tin khai sinh</h4>
+        <dl>
+            <dt>Hộ gia đình</dt><dd>@Form.MaSoHo — @Form.TenChuHo</dd>
+            <dt>Họ tên trẻ</dt><dd>@Form.HoTen</dd>
+            <dt>Ngày sinh</dt><dd>@Date(Form.NgaySinh)<br />@Form.NgaySinhBangChu</dd>
+            <dt>Giới tính</dt><dd>@GenderLabel(Form.GioiTinh)</dd>
+            <dt>Số định danh</dt><dd>@Text(Form.SoDinhDanh)</dd>
+            <dt>Nơi sinh</dt><dd>@Form.NoiSinh</dd>
+            @if (Form.LoaiNoiSinh == LoaiNoiSinh.CoSoYTe) { <dt>Cơ sở y tế</dt><dd>@Text(Form.TenCoSoYTe)</dd> }
+            @if (Form.LoaiNoiSinh == LoaiNoiSinh.NuocNgoai) { <dt>Thành phố / Bang, tỉnh / Quốc gia nơi sinh</dt><dd>@Text(Form.ThanhPhoNoiSinh) / @Text(Form.BangTinhNoiSinh) / @Text(Form.QuocGiaNoiSinh)</dd> }
+            <dt>Dân tộc / Quốc tịch</dt><dd>@Form.DanToc / @Form.QuocTich</dd>
+            <dt>Quê quán</dt><dd>@Form.QueQuan</dd>
+            <dt>Cư trú của trẻ</dt><dd>@Residence(Form.LoaiCuTruTre) — @Form.ThuongTru</dd>
+            <dt>Quan hệ với chủ hộ</dt><dd>@Form.QuanHeVoiChuHo</dd>
+            <dt>Giấy chứng sinh</dt><dd>@Text(Form.SoGiayChungSinh)</dd>
+        </dl>
+        <h4>Người yêu cầu</h4>
+        <dl>
+            <dt>Họ tên</dt><dd>@Form.HoTenNguoiYeuCau</dd>
+            <dt>Quan hệ với trẻ</dt><dd>@Form.QuanHeVoiTre</dd>
+            <dt>Giấy tờ</dt><dd>@Form.LoaiGiayTo @Form.TenGiayToKhac — @Form.SoGiayTo</dd>
+            <dt>Ngày / Nơi cấp</dt><dd>@Date(Form.NgayCapGiayTo) / @Text(Form.NoiCapGiayTo)</dd>
+            <dt>Nơi cư trú</dt><dd>@Residence(Form.LoaiCuTruNguoiYeuCau) — @Form.NoiCuTruNguoiYeuCau</dd>
+        </dl>
+        @foreach (var item in new[] { (Label: "Mẹ", Parent: Form.Me), (Label: "Cha", Parent: Form.Cha) })
+        {
+            <h4>@item.Label</h4>
+            @if (item.Parent == null) { <p>@((item.Label == "Mẹ" ? Form.TinhTrangMe : Form.TinhTrangCha) == TinhTrangThongTinChaMe.ChuaXacDinh ? "Chưa xác định." : "Chưa khai thông tin.")</p> }
+            else
+            {
+                <dl>
+                    <dt>Họ tên</dt><dd>@item.Parent.HoTen</dd>
+                    <dt>Ngày sinh</dt><dd>@Date(item.Parent.NgaySinh)</dd>
+                    <dt>Dân tộc / Quốc tịch</dt><dd>@Text(item.Parent.DanToc) / @Text(item.Parent.QuocTich)</dd>
+                    <dt>Nơi cư trú</dt><dd>@Text(item.Parent.NoiCuTru)</dd>
+                </dl>
+            }
+        }
+        <h4>Đăng ký</h4>
+        <dl>
+            <dt>Cơ quan đăng ký</dt><dd>@Form.CoQuanDangKy</dd>
+            @if (Draft == null) { <dt>Ngày đăng ký</dt><dd>@Date(Form.NgayDangKy)</dd> }
+            else { <dt>Ngày tạo hồ sơ</dt><dd>@Draft.NgayTao.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd> }
+            <dt>Ghi chú</dt><dd>@Text(Form.GhiChu)</dd>
+        </dl>
+    }
+    else if (Record != null)
+    {
+        <dl>
+            <dt>Nhân khẩu</dt><dd>@Record.HoTenNhanKhau</dd>
+            <dt>CCCD</dt><dd>@Record.CCCDNhanKhau</dd>
+            <dt>Loại biến động</dt><dd>@BusinessCreateDialog.Label(Record.LoaiBienDong.ToString())</dd>
+            <dt>Ngày phát sinh</dt><dd>@Record.NgayPhatSinh.ToString("dd/MM/yyyy")</dd>
+            <dt>Nơi đi / đến</dt><dd>@Record.NoiDenOrDi</dd>
+            <dt>Lý do</dt><dd>@Record.LyDo</dd>
+            <dt>Cán bộ ghi nhận</dt><dd>@Record.CanBoGhiNhan</dd>
+        </dl>
+    }
+    <div class="dialog-actions">
+        @if (Draft?.ModerationStatus == ModerationStatus.Pending)
+        {
+            <FluentButton Appearance="Appearance.Accent" BackgroundColor="@(ApprovalEnabled ? "#107c10" : null)" Color="@(ApprovalEnabled ? "white" : null)"
+                          Disabled="@(!ApprovalEnabled)" IconStart="@(new Icons.Regular.Size16.CheckmarkCircle())" OnClick="Approve">Duyệt hồ sơ</FluentButton>
+        }
+        <FluentButton OnClick="Close">Đóng</FluentButton>
+    </div>
+</DataDialog>

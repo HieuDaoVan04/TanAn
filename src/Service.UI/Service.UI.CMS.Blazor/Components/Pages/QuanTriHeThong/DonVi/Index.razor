@@ -1,0 +1,235 @@
+@namespace Service.UI.Blazor.Components.Pages.QuanTriHeThong.DonVi
+@page "/quan-tri-he-thong/don-vi" 
+<PageTitle>Danh sách đơn vị</PageTitle>
+@using Service.Shared.Commons.Enums
+@using Service.Shared.Commons.Model.SQL
+@using Service.Shared.Contracts.DTOs;
+@using Service.UI.Blazor.Components.Pages.QuanTriHeThong.Menu;
+@using Services.Components.Layouts.ShareComponent.SecurePage;
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Service.UI.CMS.Blazor.Applications.Dtos
+
+@inherits SecurePageBase
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+	<h2>Danh sách đơn vị/hệ thống</h2>
+	@if (!IsAuthorized) { return; }
+	<FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between" Class="page-toolbar">
+		<FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" Class="page-toolbar">
+			<FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.AddCircle())" OnClick="OpenAddModal" Loading="@IsLoadingSync">Thêm mới</FluentButton>
+			<FluentButton Title="Đồng bộ lại toàn bộ client đã duyệt vào cache" Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.ArrowSync())" OnClick="SyncClientCacheAsync" Loading="@IsSyncingClientCache">Đồng bộ cache Client</FluentButton>
+		</FluentStack>
+		@if (ActiveTab == "grid")
+		{
+			<FluentSearch Placeholder="Nhập vào từ khóa" @bind-Value="@SearchKeyword" @bind-Value:after=HandleSearchChanged />
+		}
+		else
+		{
+			<FluentSearch Placeholder="Nhập vào từ khóa" @bind-Value="@TreeSearchKeyword" @bind-Value:after=SearchTree />
+		}
+	</FluentStack>
+
+	<div style="display: flex; gap: 8px; margin-bottom: 8px; width: 100%;">
+		<FluentButton Appearance="@(ActiveTab == "grid" ? Appearance.Accent : Appearance.Stealth)"
+					  OnClick="@(() => SwitchTab("grid"))"
+					  Style="@(ActiveTab == "grid" ? "border-radius: 4px;" : "color: #333; font-weight: 500; border-radius: 4px;")">
+			Dạng lưới
+		</FluentButton>
+		<FluentButton Appearance="@(ActiveTab == "tree" ? Appearance.Accent : Appearance.Stealth)"
+					  OnClick="@(() => SwitchTab("tree"))"
+					  Style="@(ActiveTab == "tree" ? "border-radius: 4px;" : "color: #333; font-weight: 500; border-radius: 4px;")">
+			Dạng cây
+		</FluentButton>
+	</div>
+
+	 @if (ActiveTab == "grid")
+    {
+
+	<FluentDataGrid ShowHover="true"
+		@ref="Grid"
+		TGridItem="GroupDto"
+		ItemsProvider="LoadGroup"
+		GridTemplateColumns="0.5fr 1fr 2fr 2fr 2fr 1.0fr 1.25fr"
+		RowSize="DataGridRowSize.Large"
+		Style="width:100%;"
+		Pagination="@pagination"
+	    MultiLine="true"
+		RowStyle="@(item => "min-height: 60px;")">
+		<TemplateColumn Title="#" Style="display: flex;align-items: center;">
+			<span>@context.Index</span>
+		</TemplateColumn>
+		<TemplateColumn TGridItem="GroupDto" Title="Tên đơn vị/hệ thống" Sortable="true" SortBy="@_roleNameSort.GridSort" Style="display: flex;align-items: center;">
+			<span @onclick="@(() => OpenDetailsModal(context.Id))" style="cursor: pointer; color: dodgerblue;"	>
+				@context.Name
+			</span>
+		</TemplateColumn>
+		<TemplateColumn Title="Mã đơn vị/hệ thống" Style="display: flex;align-items: center;">
+			<span  style="cursor: pointer;">
+				@context.MaGroup
+			</span>
+		</TemplateColumn>
+		<TemplateColumn Title="Đơn vị trực thuộc"  Style="display: flex;align-items: center;">
+			@if(@context.Parent is not null)
+			{
+				<span style="cursor: pointer;">
+					@context.Parent.Name
+				</span>
+			}
+			else
+			{
+				<span style="cursor: pointer;">
+					Không có
+				</span>
+			}
+
+		</TemplateColumn>
+		<TemplateColumn Title="Mô tả"  Style="display: flex;align-items: center;">
+			@if (string.IsNullOrEmpty(context.Description))
+			{
+				<span  style="cursor: pointer;">
+					Trống
+				</span>
+			}else{
+				<span  style="cursor: pointer;">
+					@context.Description
+				</span>
+			}
+			
+		</TemplateColumn>
+		<TemplateColumn Title="Trạng thái" Style="display: flex; align-items: center;">
+           <ModerationView Status="@context.ModerationStatus" />
+        </TemplateColumn>
+		<TemplateColumn Title="Thao tác" Style="display: flex; align-items: center; justify-content:space-between;min-width:175px">
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="5" Class="page-toolbar">
+
+					@if (context.ModerationStatus == ModerationStatus.Approved)
+                    {
+                        <FluentButton Title="Hủy duyệt" Appearance="Appearance.Outline" OnClick="@(() => RejectAsync(context.Id))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" />
+                        </FluentButton>
+                    }
+                    else
+                    {
+                        
+                        <FluentButton Title="Duyệt" Appearance="Appearance.Neutral" OnClick="@(() => ApproveAsync(context.Id))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Checkmark())" />
+                        </FluentButton>
+
+                       <FluentButton Title="Sửa" Appearance="Appearance.Outline" OnClick="()=>OpenUpdateModal(context.Id)">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" />
+                        </FluentButton>
+                        
+                        <FluentButton Title="Xóa" Appearance="Appearance.Outline" OnClick="()=>OpenModalDelete(context.Id)">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" />
+                        </FluentButton>
+
+						@* Client chỉ cấp cho đơn vị nên hệ thống không hiện nút này. *@
+						@if (context.LoaiGroup == EnumLoaiGroup.HeThong)
+						{
+							<FluentButton Title="Gán Client" Appearance="Appearance.Outline" OnClick="()=>OpenModalClient(context.Id,context.Name)">
+								<FluentIcon Value="@(new Icons.Regular.Size20.PersonAdd())" />
+							</FluentButton>
+						}
+                    }
+                        
+                    
+                </FluentStack>
+            </TemplateColumn>
+    </FluentDataGrid>
+    <Paginator PaginationState="@pagination" SelectedPageSizeChanged="RefreshData" />
+
+	}
+	else if (ActiveTab == "tree")
+	{
+		<div style="width:100%; padding:16px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+			<FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" Style="margin-bottom: 12px;" Class="page-toolbar">
+				<FluentButton IconStart="@(new Icons.Regular.Size16.FolderOpen())" OnClick="ExpandAll">
+					Mở tất cả
+				</FluentButton>
+
+				<FluentButton IconStart="@(new Icons.Regular.Size16.Folder())" OnClick="CollapseAll">
+					Đóng tất cả
+				</FluentButton>
+			</FluentStack>
+
+			@if (GroupTreeItem != null && GroupTreeItem.Any())
+			{
+				<FluentTreeView Items="@GroupTreeItem"
+								@bind-SelectedItem="@SelectedItem"
+								LazyLoadItems="false"
+								Style="width:100%; max-height:75vh; overflow-y:auto;">
+					<ItemTemplate>
+						@{
+							var treeView = context as TreeViewItemDTO ?? new TreeViewItemDTO();
+							var groupDto = treeView.Data as GroupTreeDto;
+							bool isParent = treeView.Items != null && treeView.Items.Any();
+							string textClass = isParent ? "donvi-parent" : "donvi-child";
+							var loaiGroup = groupDto?.LoaiGroup ?? EnumLoaiGroup.HeThong;
+							var modStatus = (ModerationStatus)treeView.ModerationStatus;
+
+							<div @onclick="() => SelectTreeItem(treeView)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 4px 0;">
+								<div style="display: flex; align-items: center; gap: 8px;">
+									<span class="@textClass" style="@GetTextStyle(treeView.ModerationStatus)">
+										@treeView.Text
+									</span>
+								</div>
+
+								<div style="display: flex; align-items: center; gap: 4px;">
+									@if (treeView == SelectedItem)
+									{
+										<FluentButton Title="Xem chi tiết" Appearance="Appearance.Outline" Style="display: inline-block;" OnClick="() => OpenDetailsModal(Guid.Parse(treeView.Id))">
+											<FluentIcon Value="@(new Icons.Regular.Size16.Eye())" />
+										</FluentButton>
+
+										@if (modStatus == ModerationStatus.Approved)
+										{
+											<FluentButton Title="Hủy duyệt" Appearance="Appearance.Outline" Style="display: inline-block;" OnClick="() => RejectAsync(Guid.Parse(treeView.Id))">
+												<FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" />
+											</FluentButton>
+										}
+										else
+										{
+											<FluentButton Title="Duyệt" Appearance="Appearance.Neutral" Style="display: inline-block;" OnClick="() => ApproveAsync(Guid.Parse(treeView.Id))">
+												<FluentIcon Value="@(new Icons.Regular.Size16.Checkmark())" />
+											</FluentButton>
+
+											<FluentButton Title="Sửa" Appearance="Appearance.Outline" Style="display: inline-block;" OnClick="() => OpenUpdateModal(Guid.Parse(treeView.Id))">
+												<FluentIcon Value="@(new Icons.Regular.Size16.Edit())" />
+											</FluentButton>
+
+											<FluentButton Title="Xóa" Appearance="Appearance.Outline" Style="display: inline-block;" OnClick="() => OpenModalDelete(Guid.Parse(treeView.Id))">
+												<FluentIcon Value="@(new Icons.Regular.Size16.Delete())" />
+											</FluentButton>
+
+											@if (loaiGroup == EnumLoaiGroup.DonVi)
+											{
+												<FluentButton Title="Gán Client" Appearance="Appearance.Outline" Style="display: inline-block;" OnClick="() => OpenModalClient(Guid.Parse(treeView.Id), groupDto?.Name ?? treeView.Text)">
+													<FluentIcon Value="@(new Icons.Regular.Size20.PersonAdd())" />
+												</FluentButton>
+											}
+										}
+									}
+								</div>
+							</div>
+						}
+					</ItemTemplate>
+				</FluentTreeView>
+			}
+			else
+			{
+				<h4 style="color: #666; font-weight: normal; margin-top: 16px;">Không tìm thấy dữ liệu đơn vị nào</h4>
+			}
+		</div>
+	}
+</FluentStack>
+
+<style>
+	.donvi-parent {
+		font-weight: 600;
+		font-size: 15px;
+	}
+	.donvi-child {
+		font-weight: 400;
+		font-size: 14px;
+	}
+</style>

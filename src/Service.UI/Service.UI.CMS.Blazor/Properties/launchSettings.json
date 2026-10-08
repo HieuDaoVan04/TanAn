@@ -1,0 +1,31 @@
+{
+  "profiles": {
+    "TanAn.UI.Blazor": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "ban-lam-viec",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:3003"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "ban-lam-viec",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  },
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:4687/",
+      "sslPort": 44366
+    }
+  }
+}

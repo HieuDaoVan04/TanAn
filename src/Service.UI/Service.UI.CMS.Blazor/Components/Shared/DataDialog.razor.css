@@ -1,0 +1,11 @@
+.data-dialog { padding:24px; max-height:85vh; overflow:auto; color:var(--neutral-foreground-rest); }
+header { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--neutral-stroke-rest); margin-bottom:20px; padding-bottom:12px; }
+h3 { margin:0; font-size:1.2rem; }
+.data-dialog ::deep .data-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; border:0; padding:0; }
+.data-dialog ::deep label { display:flex; flex-direction:column; gap:6px; }
+.data-dialog ::deep input,.data-dialog ::deep select,.data-dialog ::deep textarea { width:100%; padding:8px; border:1px solid var(--neutral-stroke-rest); border-radius:4px; background:var(--neutral-layer-1); color:inherit; font:inherit; box-sizing:border-box; }
+.data-dialog ::deep .wide { grid-column:1/-1; }
+.data-dialog ::deep .dialog-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:20px; padding-top:16px; border-top:1px solid var(--neutral-stroke-rest); }
+.data-dialog ::deep .error { color:#b42318; }
+.data-dialog ::deep dl { display:grid; grid-template-columns:160px 1fr; gap:12px; overflow-wrap:anywhere; }
+@media(max-width:650px) { .data-dialog ::deep .data-form { grid-template-columns:1fr; } }

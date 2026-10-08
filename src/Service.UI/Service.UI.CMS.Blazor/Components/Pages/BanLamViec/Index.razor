@@ -1,0 +1,42 @@
+@page "/ban-lam-viec"
+@using Service.Shared.Commons.Enums
+@using Service.Shared.Commons.Models
+@rendermode InteractiveServer
+
+<PageTitle>Bàn Làm Việc - Xã Tân An</PageTitle>
+
+<style>
+    .dashboard-container {
+        padding: var(--design-unit-4, 16px);
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    @@media (max-width: 768px) {
+        .dashboard-container {
+            padding: var(--design-unit-2, 8px);
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--design-unit-2, 8px);
+        }
+
+        .stat-card {
+            height: 100px;
+            padding: var(--design-unit-2, 8px);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="dashboard-container">
+
+    <ViewThongBaoHT />
+    <ViewTacVuNhanh />
+    <ViewTinhNangHayDung />
+
+</div>

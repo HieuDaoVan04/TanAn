@@ -1,0 +1,26 @@
+@using Service.TanAn.Domain.Entities
+@if (!HasCtxRole)
+{
+<h3>Thông báo theo thôn</h3>
+@if (!string.IsNullOrEmpty(error)) { <p role="alert">@error</p> }
+<FluentButton Disabled="busy" OnClick="Load">Làm mới</FluentButton>
+@if (AllowSend && user.Role == "Admin")
+{
+    <div class="notice-form">
+        <label>Thôn nhận thông báo<select @bind="villageId"><option value="@Guid.Empty">— Chọn thôn —</option>@foreach(var village in villages) { <option value="@village.Id">@village.Ten</option> }</select></label>
+        <label>Tiêu đề<input @bind="title" maxlength="200" /></label>
+        <label>Nội dung<textarea @bind="body" maxlength="2000"></textarea></label>
+        <FluentButton Disabled="busy" Appearance="Appearance.Accent" OnClick="Send">Gửi tới cán bộ phụ trách thôn</FluentButton>
+    </div>
+}
+<p>@unread thông báo chưa đọc</p>
+@foreach(var notice in notices)
+{
+    <article class="notice @(notice.DaDocLuc == null ? "unread" : "")">
+        <strong>@notice.TieuDe</strong><p>@notice.NoiDung</p>
+        <small>@notice.Thon.Ten · @notice.NgayTao.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
+        @if(notice.DaDocLuc == null) { <FluentButton Disabled="busy" OnClick="@(() => Read(notice.Id))">Đánh dấu đã đọc</FluentButton> }
+    </article>
+}
+@if(notices.Count == 0) { <p>Chưa có thông báo trong các thôn được giao.</p> }
+}

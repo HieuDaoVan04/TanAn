@@ -1,0 +1,89 @@
+using Service.Shared.Commons.Interfaces;
+using Service.Shared.Commons.Enums;
+using Service.UI.CMS.Blazor.Applications;
+using Microsoft.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
+using Service.Shared.Commons.Models;
+using Service.Shared.Contracts.DTOs;
+using System.Text.Json;
+
+namespace Service.UI.CMS.Blazor.Components.Pages.QuanTriHeThong.VaiTro;
+
+public partial class Index
+{
+    [Inject] private ICallServiceRegistry CallService { get; set; } = default!;
+    [CascadingParameter] public CurrentUserDto CurrentUser { get; set; } = new();
+    private bool viewOnly;
+    private PaginationState pagination = new() { ItemsPerPage = 10 };
+    private const string GridColumns = "40px minmax(180px,1.5fr) 130px minmax(180px,2fr) 110px 155px";
+    private const string NameColumnTitle = "Tên vai trò";
+    private bool Match(AdminRecord record) => (status == "all" || record.Active == (status == "active"))
+        && (string.IsNullOrWhiteSpace(search) || $"{record.Name} {record.Code} {record.Path} {record.Email} {record.Description}".Contains(search, StringComparison.OrdinalIgnoreCase));
+    private IQueryable<AdminRecord> FilteredRecords => records.Where(Match).AsQueryable();
+    private Task ResetPage() => pagination.SetCurrentPageIndexAsync(0);
+    private async Task View(AdminRecord record) { await Edit(record); viewOnly = true; }
+
+    private bool loading, busy;
+    private string search = "", status = "all", error = "", message = "";
+    private AdminRecord? form, pendingDelete;
+    private List<AdminRecord> records = new(), assignmentOptions = new();
+    private const string Title = "Quản lý vai trò";
+    protected override Task OnInitializedAsync() => Reload();
+    private async Task Reload()
+    {
+        loading = true; error = "";
+        try {
+            records = (await CallService.Get<List<AdminRecord>>(new ApiRequestModel { ApiService = ServicesRegistryEnum.ServiceTanAn, Endpoint = "/administration/roles" })).RequireData();
+
+            await ResetPage();
+        }
+        catch (Exception ex) { error = ex.Message; records = new(); }
+        finally { loading = false; }
+    }
+    private Task New() => Edit(new AdminRecord());
+    private async Task Edit(AdminRecord record)
+    {
+        error = ""; viewOnly = false;
+        try
+        {
+
+            assignmentOptions = (await CallService.Get<List<AdminRecord>>(new ApiRequestModel { ApiService = ServicesRegistryEnum.ServiceTanAn, Endpoint = "/administration/menus" })).RequireData();
+
+            form = JsonSerializer.Deserialize<AdminRecord>(JsonSerializer.Serialize(record))!;
+        }
+        catch (Exception ex) { error = ex.Message; }
+    }
+    private void Close() { if (busy) return; form = null; viewOnly = false; error = ""; }
+    private void SetAssignment(Guid id, bool selected) { if (selected && !form!.AssignedIds.Contains(id)) form.AssignedIds.Add(id); else if (!selected) form!.AssignedIds.Remove(id); }
+    private bool AllAssignmentsSelected => form != null && assignmentOptions.All(option => form.AssignedIds.Contains(option.Id));
+    private void SelectAllAssignments()
+    {
+        if (busy || viewOnly || form == null) return;
+        form.AssignedIds = form.AssignedIds.Concat(assignmentOptions.Select(option => option.Id)).Distinct().ToList();
+    }
+    private async Task Save()
+    {
+        if (busy || viewOnly || form == null) return;
+        busy = true; error = "";
+        try { (await CallService.Post(new ApiRequestModel { ApiService = ServicesRegistryEnum.ServiceTanAn, Endpoint = "/administration/roles" }, form)).EnsureSuccess(); form = null; message = "Đã lưu thay đổi."; await Reload(); MenuState.SetState(Guid.NewGuid().ToString()); }
+        catch (Exception ex) { error = ex.Message; }
+        finally { busy = false; }
+    }
+    private async Task ChangeStatus(AdminRecord record)
+    {
+        if (busy) return;
+        busy = true;
+        var copy = JsonSerializer.Deserialize<AdminRecord>(JsonSerializer.Serialize(record))!; copy.Active = !copy.Active;
+        try { (await CallService.Post(new ApiRequestModel { ApiService = ServicesRegistryEnum.ServiceTanAn, Endpoint = "/administration/roles" }, copy)).EnsureSuccess(); await Reload(); MenuState.SetState(Guid.NewGuid().ToString()); }
+        catch (Exception ex) { error = ex.Message; }
+        finally { busy = false; }
+    }
+    private async Task Delete()
+    {
+        if (busy || pendingDelete == null) return;
+        busy = true;
+        try { (await CallService.Delete(new ApiRequestModel { ApiService = ServicesRegistryEnum.ServiceTanAn, Endpoint = $"/administration/roles/{pendingDelete.Id}" })).EnsureSuccess(); pendingDelete = null; message = "Đã xóa bản ghi."; await Reload(); MenuState.SetState(Guid.NewGuid().ToString()); }
+        catch (Exception ex) { error = ex.Message; }
+        finally { busy = false; }
+    }
+}

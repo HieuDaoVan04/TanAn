@@ -1,0 +1,3 @@
+.data-pagination { display:flex; align-items:center; gap:20px; flex-wrap:wrap; padding:16px 0; border-top:1px solid var(--neutral-stroke-rest); font-size:13px; }
+label { display:flex; align-items:center; gap:8px; margin:0; }select,button { border:1px solid var(--neutral-stroke-rest); background:var(--neutral-layer-1); color:var(--neutral-foreground-rest); border-radius:4px; min-height:32px; padding:4px 10px; }
+.page-buttons { margin-left:auto; display:flex; align-items:center; gap:8px; } button { cursor:pointer; font-size:18px; }button:disabled { opacity:.4; cursor:default; }

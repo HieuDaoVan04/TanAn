@@ -1,0 +1,6 @@
+@TanAn.Api_HostAddress = http://localhost:5074
+
+GET {{TanAn.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

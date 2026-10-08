@@ -1,0 +1,99 @@
+@* "Một sản phẩm của HieuDV" *@
+
+@using Service.Shared.Commons.Interfaces
+@using Service.Shared.Commons.Model.SQL
+@using Service.Shared.Commons.Models
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
+@using System.Globalization
+@using Service.Shared.Contracts.DTOs
+@using Service.UI.CMS.Blazor.Applications.Dtos
+
+<FluentDialogHeader ShowDismiss="true">
+    @{
+        string title = Content.Object?.UnitType == OrganizationUnitType.DonVi ? "Thêm người dùng vào đơn vị" : "Thêm mới người dùng vào phòng ban";
+    }
+    <h3>@title</h3>
+</FluentDialogHeader>
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+
+    <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between" Class="page-toolbar">
+        <FluentSearch style="width:300px"
+                      Placeholder="Nhập vào từ khóa"
+                      @bind-Value="@SearchKeyWord"
+                      Immediate="true"
+                      @onkeydown="HandleSearchChanged" />
+    </FluentStack>
+
+    <FluentDataGrid ShowHover="true"
+                    @ref="Grid"
+                    RowSize="DataGridRowSize.Large"
+                    TGridItem="UserDto"
+                    ItemsProvider="LoadDatas"
+                    GridTemplateColumns="5% 20% 20% 15% 15% 15%"
+                    Style="width:100%;"
+                    MultiLine="true"
+                    RowStyle="@(item => "min-height: 60px;")"
+                    Pagination="@pagination">
+
+        <TemplateColumn Title="#" Style="display: flex;align-items: center;">
+            <span>@context.Index</span>
+        </TemplateColumn>
+
+        <TemplateColumn Title="Tên người dùng" Style="display: flex;align-items: center;">
+            <span @onclick="@(() => OpenDetailsModal(context.Id))" style="cursor: pointer; color: dodgerblue;">
+                @context.FullName
+            </span>
+        </TemplateColumn>
+        <TemplateColumn Title="Tên tài khoản" Sortable="false" Style="display: flex;align-items: center;">
+            <span style="cursor: pointer;">
+                @context.UserName
+            </span>
+        </TemplateColumn>
+
+        <TemplateColumn Title="Đơn vị" Style="display: flex;align-items: center;">
+            <span style="cursor: pointer;">
+                @context.DonVitxt
+            </span>
+        </TemplateColumn>
+        <TemplateColumn Title="Vai trò"
+                        Style="display: flex; align-items: start; flex-wrap: wrap; gap: 4px; white-space: normal;">
+            @if (!string.IsNullOrEmpty(context.VaiTrotxt))
+            {
+                foreach (var role in context.VaiTrotxt?.Split(',') ?? Enumerable.Empty<string>())
+                {
+                    <FluentBadge Appearance="Appearance.Accent">
+                        @role.Trim()
+                    </FluentBadge>
+                }
+            }
+        </TemplateColumn>
+        <TemplateColumn Title="Trạng thái" Style="display: flex; align-items: center;">
+            @if (context.ModerationStatus == ModerationStatus.Approved)
+            {
+                <FluentBadge Appearance="Appearance.Accent" Style="background-color: #16a34a; color: white;">Đã duyệt</FluentBadge>
+            }
+            else
+            {
+                <FluentBadge Appearance="Appearance.Neutral" Style="background-color: #e2e8f0; color: #475569;">Chưa duyệt</FluentBadge>
+            }
+        </TemplateColumn>
+
+        <TemplateColumn Title="Thao tác" Style="display: flex; align-items: center;">
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="5" Class="page-toolbar">
+                <FluentButton Title="Gán người dùng" Appearance="Appearance.Outline" OnClick="()=>GanNguoiDung(context.Id)">
+                    <FluentIcon Value="@(new Icons.Regular.Size16.PersonAdd())" />
+                </FluentButton>
+            </FluentStack>
+        </TemplateColumn>
+    </FluentDataGrid>
+    <div style="margin-top: 12px;">
+        <FluentPaginator State="@pagination" />
+    </div>
+</FluentStack>
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync">Đóng</FluentButton>
+</FluentDialogFooter>
+
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateParametersGroupDto>

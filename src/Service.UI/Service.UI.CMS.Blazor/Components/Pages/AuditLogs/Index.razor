@@ -1,0 +1,104 @@
+@page "/quan-tri-he-thong/nhat-ky"
+@page "/audit-logs"
+@using Service.UI.CMS.Blazor.Components.Shared
+@using Service.UI.CMS.Blazor.Components.Shares.Filter
+
+<PageTitle>Nhật Ký Thao Tác Hệ Thống - Xã Tân An</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="width:100%">
+    <h2>Nhật ký thao tác hệ thống</h2>
+
+    <SearchPanel Title="Bộ lọc nhật ký thao tác">
+        <BasicFields>
+            <FluentSearch Placeholder="Nhập vào từ khóa (Tên cán bộ, hành động, đối tượng...)"
+                          @bind-Value="searchKeyword"
+                          Immediate="true"
+                          Style="width: 100%;" />
+        </BasicFields>
+        <Actions>
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.Search())" OnClick="LoadData">Tìm kiếm</FluentButton>
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.ArrowSync())" OnClick="ClearSearch">Tải lại</FluentButton>
+        </Actions>
+    </SearchPanel>
+
+    <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between; align-items:center;" Class="page-toolbar">
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" Class="page-toolbar">
+            <FluentButton OnClick="ExportExcel" Appearance="Appearance.Accent">
+                <i class="fa-solid fa-file-excel me-1"></i> Xuất Excel
+            </FluentButton>
+        </FluentStack>
+    </FluentStack>
+
+    <div class="data-grid-scroll">
+        <FluentDataGrid Items="@auditLogsQuery"
+                        TGridItem="AuditLog"
+                        Pagination="@pagination"
+                        ShowHover="true"
+                        MultiLine="true"
+                        RowSize="DataGridRowSize.Large"
+                        GridTemplateColumns="50px 170px 170px minmax(220px,1.2fr) 160px 210px minmax(220px,1fr) minmax(260px,1.2fr) 150px"
+                        Style="width:100%;"
+                        RowStyle="@(item => "min-height:60px;")">
+            <ChildContent>
+                <TemplateColumn Title="#" Sortable="false" Style="display: flex;align-items: center;">
+                    @(auditLogsQuery?.ToList().IndexOf(context) + 1)
+                </TemplateColumn>
+                <PropertyColumn Property="@(p => p.Timestamp.ToString("dd/MM/yyyy HH:mm:ss"))" Title="Thời Gian" Sortable="true" Align="Align.Start" />
+                <TemplateColumn Title="Cán Bộ Thao Tác" Sortable="true" Style="display: flex;align-items: center;">
+                    <span @onclick="@(() => detail = context)" style="cursor: pointer; color: dodgerblue; font-weight: 500;">
+                        @context.Username
+                    </span>
+                </TemplateColumn>
+                <TemplateColumn Title="Hành Động" Sortable="true" Style="display: flex;align-items: center;">
+                    @if (context.Action == "Create")
+                    {
+                        <FluentBadge Appearance="Appearance.Accent" Style="background-color: #16a34a; color: white;">TẠO MỚI</FluentBadge>
+                    }
+                    else if (context.Action == "Update")
+                    {
+                        <FluentBadge Appearance="Appearance.Accent" Style="background-color: #d97706; color: white;">CẬP NHẬT</FluentBadge>
+                    }
+                    else if (context.Action == "Delete")
+                    {
+                        <FluentBadge Appearance="Appearance.Accent" Style="background-color: #dc2626; color: white;">XÓA</FluentBadge>
+                    }
+                    else
+                    {
+                        <FluentBadge Appearance="Appearance.Neutral">@context.Action</FluentBadge>
+                    }
+                </TemplateColumn>
+                <PropertyColumn Property="@(p => p.EntityName)" Title="Đối Tượng" Sortable="true" />
+                <PropertyColumn Property="@(p => p.EntityId)" Title="Mã Định Danh" />
+                <TemplateColumn Title="Giá Trị Cũ">
+                    <span class="audit-value" title="@context.OldValues">@DisplayValue(context.OldValues)</span>
+                </TemplateColumn>
+                <TemplateColumn Title="Giá Trị Mới / Mô Tả">
+                    <span class="audit-value" title="@context.NewValues">@DisplayNewValue(context)</span>
+                </TemplateColumn>
+                <TemplateColumn Title="Địa Chỉ IP">
+                    <span>@DisplayIp(context.IpAddress)</span>
+                </TemplateColumn>
+            </ChildContent>
+            <EmptyContent><p style="padding:20px">Không có dữ liệu phù hợp.</p></EmptyContent>
+        </FluentDataGrid>
+    </div>
+
+    <Paginator PaginationState="@pagination" SelectedPageSizeChanged="RefreshData" />
+</FluentStack>
+
+@if(detail != null)
+{
+    <DataDialog Title="Chi tiết nhật ký" Close="@(() => detail = null)">
+        <dl>
+            <dt>Thời gian</dt><dd>@detail.Timestamp.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+            <dt>Người thao tác</dt><dd>@detail.Username</dd>
+            <dt>Hành động</dt><dd>@detail.Action</dd>
+            <dt>Đối tượng</dt><dd>@detail.EntityName</dd>
+            <dt>Mã định danh</dt><dd>@detail.EntityId</dd>
+            <dt>Giá trị cũ</dt><dd>@DisplayValue(detail.OldValues)</dd>
+            <dt>Giá trị mới</dt><dd>@DisplayNewValue(detail)</dd>
+            <dt>IP</dt><dd>@DisplayIp(detail.IpAddress)</dd>
+        </dl>
+        <div class="dialog-actions"><FluentButton OnClick="@(() => detail = null)">Đóng</FluentButton></div>
+    </DataDialog>
+}

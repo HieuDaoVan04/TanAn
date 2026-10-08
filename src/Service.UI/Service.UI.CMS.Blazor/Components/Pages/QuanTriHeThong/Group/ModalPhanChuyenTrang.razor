@@ -1,0 +1,103 @@
+@* "Một sản phẩm của HieuDV" *@
+
+@using Service.Shared.Contracts.DTOs
+@using Service.UI.CMS.Blazor.Applications.Dtos
+
+@inherits ComponentBase
+@implements IDialogContentComponent<EditOrUpdateModuleParametersDto>
+
+<FluentDialogHeader>
+    <h3>Phân chuyên trang cho người dùng</h3>
+</FluentDialogHeader>
+<FluentDialogBody>
+    <FluentGrid Class="s-form-view" Spacing="2" AdaptiveRendering="true" Justify="JustifyContent.FlexStart" Style="padding: 4px;">
+
+        <div style="display: flex; justify-content: flex-end; align-items: center;">
+            @if (IsAllSelected)
+            {
+                <FluentButton Appearance="Appearance.Stealth"
+                              IconStart="@(new Icons.Regular.Size16.CheckboxUnchecked())"
+                              OnClick="ToggleSelectAll"
+                              Title="Chọn/Bỏ chọn tất cả">
+                    Bỏ chọn tất cả
+                </FluentButton>
+            }
+            else
+            {
+                <FluentButton Appearance="Appearance.Stealth"
+                              IconStart="@(new Icons.Regular.Size16.CheckboxChecked())"
+                              OnClick="ToggleSelectAll"
+                              Title="Chọn/Bỏ chọn tất cả">
+                    Chọn tất cả
+                </FluentButton>
+            }
+        </div>
+        @if (DanhSachChuyenTrang.Count > 5)
+        {
+            <FluentGridItem md="6" xs="12">
+                <FluentStack Orientation="Orientation.Vertical" Style="gap: 12px;">
+                    @foreach (var chuyenTrang in DanhSachChuyenTrang.Take(DanhSachChuyenTrang.Count / 2 + DanhSachChuyenTrang.Count % 2))
+                    {
+                        <FluentCheckbox Value="chuyenTrang.DaGan"
+                                        Label="@chuyenTrang.Name"
+                                        ValueChanged="(checkedValue) => OnChuyenTrangCheckedChanged(chuyenTrang, checkedValue)"
+                                        Style="width: 100%;" />
+                    }
+                </FluentStack>
+            </FluentGridItem>
+
+            <!-- Cột phải -->
+            <FluentGridItem md="6" xs="12">
+                <h4>&nbsp;</h4>
+                <FluentStack Orientation="Orientation.Vertical" Style="gap: 12px;">
+                    @foreach (var chuyenTrang in DanhSachChuyenTrang.Skip(DanhSachChuyenTrang.Count / 2 + DanhSachChuyenTrang.Count % 2))
+                    {
+                        <FluentCheckbox Value="chuyenTrang.DaGan"
+                                        Label="@chuyenTrang.Name"
+                                        ValueChanged="(checkedValue) => OnChuyenTrangCheckedChanged(chuyenTrang, checkedValue)"
+                                        Style="width: 100%;" />
+                    }
+                </FluentStack>
+            </FluentGridItem>
+        }
+        else
+        {
+            <FluentGridItem xs="12">
+                <FluentStack Orientation="Orientation.Vertical" Style="gap: 12px;">
+                    @foreach (var chuyenTrang in DanhSachChuyenTrang)
+                    {
+                        <FluentCheckbox Value="chuyenTrang.DaGan"
+                                        Label="@chuyenTrang.Name"
+                                        ValueChanged="(checkedValue) => OnChuyenTrangCheckedChanged(chuyenTrang, checkedValue)"
+                                        Style="width: 100%;" />
+                    }
+                </FluentStack>
+            </FluentGridItem>
+        }
+
+    </FluentGrid>
+</FluentDialogBody>
+
+<FluentDialogFooter>
+    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.End" Gap="10" Class="page-toolbar">
+        <FluentButton Appearance="Appearance.Neutral" @onclick="HideDialog">
+            Đóng
+        </FluentButton>
+        <FluentButton Appearance="Appearance.Accent"
+                      @onclick="LuuPhanChuyenTrang"
+                      Disabled="@IsSaving">
+            @if (IsSaving)
+            {
+                <FluentIcon Value="@(new Icons.Regular.Size16.ArrowClockwise())" Style="animation: spin 1s linear infinite;" />
+            }
+            Lưu (@DanhSachChuyenTrang.Count(x => x.DaGan))
+        </FluentButton>
+    </FluentStack>
+</FluentDialogFooter>
+
+<style>
+    @@keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>

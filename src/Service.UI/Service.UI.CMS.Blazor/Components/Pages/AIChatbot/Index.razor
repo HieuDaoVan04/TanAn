@@ -1,0 +1,32 @@
+@page "/ai-chatbot"
+@inject IAIService AIService
+
+<PageTitle>Trợ lý AI - Xã Tân An</PageTitle>
+
+<div class="assistant-page">
+    <header class="page-heading"><div><span class="page-kicker">HỖ TRỢ & TRA CỨU</span><h1>Trợ lý AI Tân An</h1><p>Tra cứu hướng dẫn và xác định nhóm yêu cầu ngay trong cuộc trò chuyện.</p></div><span class="knowledge-badge">@status.ProcedureCount nhóm hướng dẫn</span></header>
+    <div class="assistant-grid">
+        <div class="conversation-panel"><AssistantChat @ref="chat" /></div>
+        <aside class="assistant-sidebar">
+            <section class="side-card">
+                <span class="side-kicker">GỢI Ý TIẾP NHẬN</span><h2>Phân loại yêu cầu</h2><p>Mô tả nhu cầu để tìm nhóm thủ tục phù hợp.</p>
+                <label for="classify-input">Nội dung yêu cầu</label>
+                <textarea id="classify-input" @bind="classifyText" @bind:event="oninput" @bind:after="ClearClassification" rows="5" maxlength="4000" disabled="@classifying" placeholder="Ví dụ: Tôi muốn đăng ký tạm trú tại nhà đang thuê…"></textarea>
+                <button type="button" class="classify-button" disabled="@(classifying || string.IsNullOrWhiteSpace(classifyText))" @onclick="ClassifyText">@(classifying ? "Đang phân loại…" : "Gợi ý nhóm thủ tục")</button>
+                @if (!string.IsNullOrEmpty(classifyError)) { <p role="alert" class="classify-error">@classifyError</p> }
+                @if (classifyResult is { } result)
+                {
+                    <div class="classification" role="status">
+                        <small>@(result.NeedsClarification ? "Cần làm rõ nhu cầu" : "Nhóm được gợi ý")</small><h3>@result.SuggestedCategory</h3><p>@result.Explanation</p>
+                        @if (result.AlternativeCategories.Count > 0) { <p>Nhóm liên quan: @string.Join(", ", result.AlternativeCategories)</p> }
+                        @if (result.ConfidenceScore > 0) { <small>Điểm khớp từ khóa: @result.ConfidenceScore.ToString("P0")</small> }
+                        @if (!result.NeedsClarification) { <button type="button" class="learn-button" @onclick="() => LearnMore(result.SuggestedCategory)">Hỏi trợ lý về nhóm này →</button> }
+                    </div>
+                }
+                <small class="classification-note">Phân loại bằng quy tắc từ khóa. Kết quả là gợi ý để cán bộ xác nhận.</small>
+            </section>
+            <section class="side-card help-card"><h2>Bạn có thể hỏi</h2><button type="button" @onclick='() => LearnMore("Cách nộp hồ sơ dịch vụ công")'>Cách nộp hồ sơ dịch vụ công <span>↗</span></button><button type="button" @onclick='() => LearnMore("Tra cứu tiến độ hồ sơ")'>Tra cứu tiến độ hồ sơ <span>↗</span></button><button type="button" @onclick='() => LearnMore("Hộ nghèo và cận nghèo")'>Hộ nghèo và cận nghèo <span>↗</span></button></section>
+            <div class="sidebar-note">Nguồn: hướng dẫn nội bộ bộ mô phỏng Tân An, phiên bản @status.KnowledgeVersion. Hội thoại không tự nộp hoặc phê duyệt hồ sơ.</div>
+        </aside>
+    </div>
+</div>

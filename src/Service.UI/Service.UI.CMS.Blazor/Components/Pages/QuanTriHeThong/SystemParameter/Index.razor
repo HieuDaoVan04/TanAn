@@ -1,0 +1,76 @@
+@* Đường dẫn cũ được trang ThamSoHeThong/Index xử lý để dùng chung nghiệp vụ cấu hình. *@
+@using Service.Shared.Commons.Model.SQL
+@using Service.Shared.Contracts.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="width:100%">
+    <h2 style="margin: 0;">Danh sách tham số hệ thống</h2>
+
+    <FluentCard MinimalStyle="true" Style="padding: 16px;">
+        <FluentStack Orientation="Orientation.Horizontal" Style="display:flex; justify-content:space-between; align-items:center; width:100%" Class="page-toolbar">
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" Class="page-toolbar">
+                <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.AddCircle())" OnClick="OpenAddModal" Loading="@IsLoadingSync">Thêm mới</FluentButton>
+                <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size20.SaveSync())" OnClick="SyncRole" Loading="@IsLoadingSync">Đồng bộ</FluentButton>
+            </FluentStack>
+            <FluentSearch Style="width:300px" Placeholder="Nhập vào từ khóa" @bind-Value="@SearchKeyword" @bind-Value:after=HandleSearchChanged />
+        </FluentStack>
+    </FluentCard>
+
+    <FluentCard MinimalStyle="true" Style="padding: 0;">
+        <FluentDataGrid ShowHover="true" @ref="Grid" TGridItem="SystemParameterDto" ItemsProvider="LoadDatas" GridTemplateColumns="5fr 20fr 20fr 35fr 10fr 10fr" RowSize="DataGridRowSize.Large" Style="width:100%;" Pagination="@pagination">
+
+            <TemplateColumn Title="#" Sortable="false" Style="display: flex;align-items: center;">
+                @context.STT
+            </TemplateColumn>
+            <TemplateColumn Title="Mã tham số" Sortable="false" Align="Align.Center" Style="display: flex;align-items: center;">
+                <span @onclick="@(() => OpenDetailsModal(context.Id))" style="cursor: pointer; color: dodgerblue;">
+                    @context.Code
+                </span>
+            </TemplateColumn>
+            <TemplateColumn Title="Giá trị" Sortable="false" Align="Align.Center" Style="display: flex;align-items: center;">
+                @context.Value
+            </TemplateColumn>
+            <TemplateColumn Title="Mô tả" Sortable="false" Align="Align.Center" Style="display: flex;align-items: center;">
+                @context.Description
+            </TemplateColumn>
+            <TemplateColumn Title="Trạng thái" Sortable="false" SortBy="@_roleNameSort" Style="display: flex;align-items: center;">
+                @if (context.ModerationStatus == ModerationStatus.Approved)
+                {
+                    <FluentBadge Appearance="Appearance.Accent" Style="background-color: #16a34a; color: white;">Đã duyệt</FluentBadge>
+                }
+                else
+                {
+                    <FluentBadge Appearance="Appearance.Neutral" Style="background-color: #e2e8f0; color: #475569;">Chưa duyệt</FluentBadge>
+                }
+            </TemplateColumn>
+
+            <TemplateColumn Title="Thao tác" Style="display: flex; align-items: center; justify-content:space-between;">
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="5" Class="page-toolbar">
+                    @if (context.ModerationStatus == ModerationStatus.Approved)
+                    {
+                        <FluentButton Loading="@IsLoadingSync" Appearance="Appearance.Outline" OnClick="@(() => RejectAction(context.Id))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" />
+                        </FluentButton>
+                    }
+                    else
+                    {
+                        <FluentButton Loading="@IsLoadingSync" Appearance="Appearance.Outline" OnClick="@(() => ApproveAction(context.Id))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Checkmark())" />
+                        </FluentButton>
+                        
+                        <FluentButton Loading="@IsLoadingSync" Appearance="Appearance.Outline" OnClick="@(() => EditAction(context.Id))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" />
+                        </FluentButton>
+                        <FluentButton Title="Xóa" Appearance="Appearance.Outline" OnClick="()=>OpenModalDelete(context.Id)">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" />
+                        </FluentButton>
+                    }
+                </FluentStack>
+            </TemplateColumn>
+        </FluentDataGrid>
+        <div style="margin-top: 12px;">
+            <Paginator PaginationState="@pagination" />
+        </div>
+    </FluentCard>
+</FluentStack>
